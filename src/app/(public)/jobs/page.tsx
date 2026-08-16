@@ -1,0 +1,148 @@
+import { Metadata } from "next";
+import Link from "next/link";
+import { getPublicJobs, getJobTaxonomies } from "@/modules/jobs/service";
+import { JobCard } from "@/modules/jobs/components/job-card";
+import { JobsFilterSidebar } from "@/modules/jobs/components/jobs-filter-sidebar";
+import { SearchBar } from "@/components/shared/search-bar";
+import { EmptyState } from "@/components/shared/empty-state";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { constructMetadata } from "@/lib/seo";
+import { Briefcase, Filter, ChevronLeft, ChevronRight, Sparkles } from "lucide-react";
+
+interface JobsPageProps {
+  searchParams: Promise<{
+    search?: string;
+    category?: string;
+    organization?: string;
+    qualification?: string;
+    state?: string;
+    type?: string;
+    page?: string;
+  }>;
+}
+
+export async function generateMetadata({ searchParams }: JobsPageProps): Promise<Metadata> {
+  const params = await searchParams;
+  let title = "Government Jobs 2026 - Official Recruitment Notifications";
+  if (params.search) {
+    title = `Search: "${params.search}" - Govt Jobs | SuchnaSetu`;
+  }
+  return constructMetadata({
+    title,
+    description: "Verified central and state government recruitment notifications, post vacancies, eligibility criteria, and direct official PDF notices.",
+    path: "/jobs",
+  });
+}
+
+export default async function PublicJobsPage({ searchParams }: JobsPageProps) {
+  const params = await searchParams;
+  const currentPage = parseInt(params.page || "1", 10) || 1;
+
+  const [{ jobs, total, totalPages }, taxonomies] = await Promise.all([
+    getPublicJobs({
+      search: params.search,
+      categorySlug: params.category,
+      organizationSlug: params.organization,
+      qualificationSlug: params.qualification,
+      stateCode: params.state,
+      employmentType: params.type,
+      page: currentPage,
+      limit: 12,
+    }),
+    getJobTaxonomies(),
+  ]);
+
+  return (
+    <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8 space-y-8">
+      {/* Top Banner / Heading */}
+      <div className="flex flex-col md:flex-row md:items-end justify-between border-b border-slate-200 pb-6 gap-4">
+        <div>
+          <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-brand-700">
+            <Briefcase className="h-4 w-4" />
+            <span>Official Recruitment Module</span>
+          </div>
+          <h1 className="text-3xl font-extrabold tracking-tight text-slate-900 sm:text-4xl font-heading mt-1">
+            Government Jobs & Notifications
+          </h1>
+          <p className="text-sm text-slate-500 mt-1 max-w-2xl">
+            Structured notifications aggregated from UPSC, SSC, State PSCs, Banks, and Defence. Every notice links directly to the official government PDF and portal.
+          </p>
+        </div>
+
+        <div className="flex items-center gap-2">
+          <Badge variant="brand" className="text-xs py-1 px-3">
+            {total} Active {total === 1 ? "Notice" : "Notices"}
+          </Badge>
+        </div>
+      </div>
+
+      {/* Search Header */}
+      <div className="max-w-4xl">
+        <SearchBar placeholder="Search by job title, organization (UPSC, SSC), post name, or notification reference..." />
+      </div>
+
+      {/* Main Content: Sidebar + Job Grid */}
+      <div className="grid grid-cols-1 gap-8 lg:grid-cols-4 items-start">
+        {/* Filter Sidebar */}
+        <div className="w-full lg:w-72 flex-shrink-0">
+          <JobsFilterSidebar
+            categories={taxonomies.categories}
+            organizations={taxonomies.organizations}
+            qualifications={taxonomies.qualifications}
+            states={taxonomies.states}
+          />
+        </div>
+
+        {/* Notice Grid / Empty State */}
+        <div className="lg:col-span-3 space-y-6">
+          {jobs.length > 0 ? (
+            <>
+              <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3">
+                {jobs.map((job) => (
+                  <JobCard key={job.id} job={job} />
+                ))}
+              </div>
+
+              {/* Pagination */}
+              {totalPages > 1 && (
+                <div className="flex items-center justify-between border-t border-slate-200 pt-6">
+                  <div className="text-xs text-slate-500">
+                    Showing page <span className="font-semibold text-slate-800">{currentPage}</span> of{" "}
+                    <span className="font-semibold text-slate-800">{totalPages}</span>
+                  </div>
+
+                  <div className="flex items-center gap-2">
+                    {currentPage > 1 && (
+                      <Link href={`/jobs?page=${currentPage - 1}`}>
+                        <Button variant="outline" size="sm" className="gap-1 text-xs">
+                          <ChevronLeft className="h-4 w-4" />
+                          <span>Previous</span>
+                        </Button>
+                      </Link>
+                    )}
+
+                    {currentPage < totalPages && (
+                      <Link href={`/jobs?page=${currentPage + 1}`}>
+                        <Button variant="outline" size="sm" className="gap-1 text-xs">
+                          <span>Next</span>
+                          <ChevronRight className="h-4 w-4" />
+                        </Button>
+                      </Link>
+                    )}
+                  </div>
+                </div>
+              )}
+            </>
+          ) : (
+            <EmptyState
+              icon={Briefcase}
+              title="No Government Job Notices Found"
+              description="There are currently no published official job notices matching your selected filters. Try clearing your filters or checking back as new gazette releases are published."
+            />
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}

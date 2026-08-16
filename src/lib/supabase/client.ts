@@ -1,0 +1,13 @@
+import { createBrowserClient } from "@supabase/ssr";
+import { Database } from "@/types/database.types";
+
+/**
+ * Creates a browser-compatible Supabase client instance.
+ * Uses NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_ANON_KEY.
+ */
+export function createClient() {
+  return createBrowserClient<Database>(
+    process.env.NEXT_PUBLIC_SUPABASE_URL || "https://placeholder-project.supabase.co",
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || "placeholder-anon-token"
+  );
+}
