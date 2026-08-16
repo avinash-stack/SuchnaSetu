@@ -14,11 +14,13 @@ import {
   ShieldCheck,
   CheckCircle2,
   Newspaper,
+  Calendar,
 } from "lucide-react";
 
 const iconMap = {
   LayoutDashboard,
   Briefcase,
+  Calendar,
   Building2,
   Globe,
   ScrollText,

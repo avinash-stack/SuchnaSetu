@@ -31,8 +31,8 @@ export const SYSTEM_MODULES = [
     description: "Examination calendars, test schedules, and qualification milestones.",
     href: "/exams",
     icon: "Calendar",
-    status: "upcoming",
-    badge: "Coming Soon",
+    status: "active",
+    badge: "Available Now",
   },
   {
     key: "results",
@@ -108,15 +108,17 @@ export const SYSTEM_MODULES = [
 
 export const PUBLIC_NAV_ITEMS: NavItem[] = [
   { title: "Home", href: "/" },
-  { title: "Government Jobs", href: "/jobs" },
-  { title: "Employment News & Advisories", href: "/news" },
-  { title: "Upcoming Modules", href: "/#modules" },
+  { title: "Govt Jobs", href: "/jobs" },
+  { title: "Govt Exams", href: "/exams" },
+  { title: "Employment News", href: "/news" },
+  { title: "Directory", href: "/#modules" },
   { title: "Official Sources", href: "/#sources" },
 ];
 
 export const ADMIN_NAV_ITEMS: NavItem[] = [
   { title: "Overview", href: "/admin", icon: "LayoutDashboard" },
   { title: "Government Jobs", href: "/admin/jobs", icon: "Briefcase" },
+  { title: "Government Exams", href: "/admin/exams", icon: "Calendar" },
   { title: "Bulletins & News", href: "/admin/bulletins", icon: "Newspaper" },
   { title: "Organizations", href: "/admin/organizations", icon: "Building2" },
   { title: "Official Sources", href: "/admin/sources", icon: "Globe" },

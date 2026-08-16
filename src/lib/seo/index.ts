@@ -133,3 +133,50 @@ export function buildGovNoticeJsonLd({
     dateModified: dateModified || new Date().toISOString(),
   };
 }
+
+/**
+ * Builds JSON-LD Structured Data for Government Examination Item
+ * Implements Schema.org Event specification with attendance mode & organizers.
+ */
+export function buildGovExamJsonLd({
+  title,
+  description,
+  url,
+  organizationName,
+  startDate,
+  endDate,
+  mode,
+  datePublished,
+  dateModified,
+}: {
+  title: string;
+  description: string;
+  url: string;
+  organizationName: string;
+  startDate?: string | null;
+  endDate?: string | null;
+  mode?: string;
+  datePublished?: string | null;
+  dateModified?: string | null;
+}) {
+  return {
+    "@context": "https://schema.org",
+    "@type": "Event",
+    name: title,
+    description,
+    url,
+    eventAttendanceMode:
+      mode === "online_cbt"
+        ? "https://schema.org/OnlineEventAttendanceMode"
+        : "https://schema.org/OfflineEventAttendanceMode",
+    eventStatus: "https://schema.org/EventScheduled",
+    organizer: {
+      "@type": "GovernmentOrganization",
+      name: organizationName,
+    },
+    startDate: startDate || datePublished || new Date().toISOString(),
+    ...(endDate ? { endDate } : {}),
+    datePublished: datePublished || new Date().toISOString(),
+    dateModified: dateModified || new Date().toISOString(),
+  };
+}
