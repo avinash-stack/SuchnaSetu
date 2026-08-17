@@ -4,6 +4,7 @@ import { notFound } from "next/navigation";
 import { getPublicExamBySlug, getRelatedExams } from "@/modules/exams/service";
 import { ExamTimeline } from "@/modules/exams/components/exam-timeline";
 import { constructMetadata, buildGovExamJsonLd } from "@/lib/seo";
+import { getCanonicalSiteUrl } from "@/lib/constants";
 import { formatDate } from "@/lib/utils";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -83,7 +84,7 @@ export default async function PublicExamDetailPage({ params }: ExamDetailPagePro
   const jsonLd = buildGovExamJsonLd({
     title: exam.title,
     description: exam.description,
-    url: `${process.env.NEXT_PUBLIC_APP_URL || "https://suchnasetu.in"}/exams/${exam.slug}`,
+    url: `${getCanonicalSiteUrl()}/exams/${exam.slug}`,
     organizationName: org?.name || "Government Authority",
     startDate: examStartDate?.event_date || exam.published_at,
     endDate: examEndDate?.event_date,

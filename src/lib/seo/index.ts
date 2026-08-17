@@ -1,5 +1,5 @@
 import { Metadata } from "next";
-import { SITE_CONFIG } from "@/lib/constants";
+import { SITE_CONFIG, getCanonicalSiteUrl } from "@/lib/constants";
 
 interface MetadataProps {
   title?: string;
@@ -35,6 +35,7 @@ export function normalizeAdsenseId(rawId?: string | null): {
 
 /**
  * Generates standardized Next.js Metadata with OpenGraph, Twitter cards, and verification meta tags.
+ * Guarantees absolute canonical HTTPS URL resolution using the production domain.
  */
 export function constructMetadata({
   title,
@@ -43,14 +44,17 @@ export function constructMetadata({
   image = "/og-image.png",
   noIndex = false,
 }: MetadataProps = {}): Metadata {
+  const baseUrl = getCanonicalSiteUrl();
   const pageTitle = title ? `${title} | ${SITE_CONFIG.name}` : `${SITE_CONFIG.name} - ${SITE_CONFIG.tagline}`;
-  const canonicalUrl = `${SITE_CONFIG.url}${path}`;
+  const cleanPath = path ? (path.startsWith("/") ? path : `/${path}`) : "";
+  const canonicalUrl = `${baseUrl}${cleanPath}`;
+  const ogImageUrl = image.startsWith("http") ? image : `${baseUrl}${image.startsWith("/") ? image : `/${image}`}`;
   const adsense = normalizeAdsenseId(process.env.NEXT_PUBLIC_ADSENSE_CLIENT_ID);
 
   return {
     title: pageTitle,
     description,
-    metadataBase: new URL(SITE_CONFIG.url),
+    metadataBase: new URL(baseUrl),
     alternates: {
       canonical: canonicalUrl,
     },
@@ -61,7 +65,7 @@ export function constructMetadata({
       siteName: SITE_CONFIG.name,
       images: [
         {
-          url: image,
+          url: ogImageUrl,
           width: 1200,
           height: 630,
           alt: pageTitle,
@@ -74,7 +78,7 @@ export function constructMetadata({
       card: "summary_large_image",
       title: pageTitle,
       description,
-      images: [image],
+      images: [ogImageUrl],
     },
     robots: {
       index: !noIndex,
@@ -105,17 +109,18 @@ export * from "@/components/seo/head-scripts";
  * Builds Schema.org WebSite JSON-LD with Sitelinks Searchbox
  */
 export function buildWebSiteJsonLd() {
+  const baseUrl = getCanonicalSiteUrl();
   return {
     "@context": "https://schema.org",
     "@type": "WebSite",
     name: SITE_CONFIG.name,
-    url: SITE_CONFIG.url,
+    url: baseUrl,
     description: SITE_CONFIG.description,
     potentialAction: {
       "@type": "SearchAction",
       target: {
         "@type": "EntryPoint",
-        urlTemplate: `${SITE_CONFIG.url}/jobs?search={search_term_string}`,
+        urlTemplate: `${baseUrl}/jobs?search={search_term_string}`,
       },
       "query-input": "required name=search_term_string",
     },
@@ -126,6 +131,7 @@ export function buildWebSiteJsonLd() {
  * Builds Schema.org BreadcrumbList JSON-LD
  */
 export function buildBreadcrumbJsonLd(items: Array<{ name: string; url: string }>) {
+  const baseUrl = getCanonicalSiteUrl();
   return {
     "@context": "https://schema.org",
     "@type": "BreadcrumbList",
@@ -133,7 +139,7 @@ export function buildBreadcrumbJsonLd(items: Array<{ name: string; url: string }
       "@type": "ListItem",
       position: index + 1,
       name: item.name,
-      item: item.url.startsWith("http") ? item.url : `${SITE_CONFIG.url}${item.url}`,
+      item: item.url.startsWith("http") ? item.url : `${baseUrl}${item.url.startsWith("/") ? item.url : `/${item.url}`}`,
     })),
   };
 }
@@ -173,7 +179,6 @@ export function buildGovNoticeJsonLd({
 
 /**
  * Builds JSON-LD Structured Data for Government Examination Item
- * Implements Schema.org Event specification with attendance mode & organizers.
  */
 export function buildGovExamJsonLd({
   title,
@@ -215,5 +220,45 @@ export function buildGovExamJsonLd({
     ...(endDate ? { endDate } : {}),
     datePublished: datePublished || new Date().toISOString(),
     dateModified: dateModified || new Date().toISOString(),
+  };
+}
+
+/**
+ * Builds JSON-LD Structured Data for News Bulletins & Advisories
+ */
+export function buildNewsArticleJsonLd({
+  title,
+  description,
+  url,
+  datePublished,
+  dateModified,
+  authorName = "SuchnaSetu Civic News Desk",
+}: {
+  title: string;
+  description: string;
+  url: string;
+  datePublished?: string | null;
+  dateModified?: string | null;
+  authorName?: string;
+}) {
+  const baseUrl = getCanonicalSiteUrl();
+  return {
+    "@context": "https://schema.org",
+    "@type": "NewsArticle",
+    headline: title,
+    description,
+    url,
+    datePublished: datePublished || new Date().toISOString(),
+    dateModified: dateModified || new Date().toISOString(),
+    author: {
+      "@type": "Organization",
+      name: authorName,
+      url: baseUrl,
+    },
+    publisher: {
+      "@type": "Organization",
+      name: SITE_CONFIG.name,
+      url: baseUrl,
+    },
   };
 }

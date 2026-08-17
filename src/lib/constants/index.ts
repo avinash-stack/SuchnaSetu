@@ -1,10 +1,67 @@
 import { NavItem } from "@/types/common";
 
+/**
+ * Resolves the canonical base URL for SuchnaSetu across environments.
+ * Priority:
+ * 1. NEXT_PUBLIC_SITE_URL
+ * 2. SITE_URL
+ * 3. NEXT_PUBLIC_APP_URL (if not localhost in production)
+ * 4. VERCEL_PROJECT_PRODUCTION_URL (Vercel system variable)
+ * 5. VERCEL_URL (Vercel deployment variable)
+ * 6. Fallback: "https://suchnasetu.in"
+ *
+ * Guarantees:
+ * - Always returns absolute HTTPS URL in production.
+ * - Never returns localhost in production.
+ * - Strips trailing slashes.
+ */
+export function getCanonicalSiteUrl(): string {
+  const isProduction =
+    process.env.NODE_ENV === "production" ||
+    !!process.env.VERCEL ||
+    process.env.NEXT_PUBLIC_VERCEL_ENV === "production";
+
+  const rawUrl =
+    process.env.NEXT_PUBLIC_SITE_URL ||
+    process.env.SITE_URL ||
+    process.env.NEXT_PUBLIC_APP_URL;
+
+  if (isProduction) {
+    if (rawUrl && !rawUrl.includes("localhost") && !rawUrl.includes("127.0.0.1")) {
+      const formatted = rawUrl.startsWith("http://")
+        ? rawUrl.replace("http://", "https://")
+        : rawUrl.startsWith("https://")
+        ? rawUrl
+        : `https://${rawUrl}`;
+      return formatted.replace(/\/+$/, "");
+    }
+
+    if (process.env.VERCEL_PROJECT_PRODUCTION_URL) {
+      return `https://${process.env.VERCEL_PROJECT_PRODUCTION_URL}`.replace(/\/+$/, "");
+    }
+
+    if (process.env.VERCEL_URL) {
+      return `https://${process.env.VERCEL_URL}`.replace(/\/+$/, "");
+    }
+
+    return "https://suchnasetu.in";
+  }
+
+  // Development environment fallback
+  if (rawUrl) {
+    return rawUrl.replace(/\/+$/, "");
+  }
+
+  return "http://localhost:3000";
+}
+
 export const SITE_CONFIG = {
   name: "SuchnaSetu",
   tagline: "Official Public Information Aggregator",
   description: "A centralized, verified public portal aggregating and structuring official notifications from government bodies, commissions, and public authorities across India.",
-  url: process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000",
+  get url() {
+    return getCanonicalSiteUrl();
+  },
   disclaimer: "SuchnaSetu is an independent public information aggregator. It is NOT a government entity, recruitment portal, or job agency. All listings cite direct official notification URLs.",
   links: {
     github: "https://github.com/suchnasetu",

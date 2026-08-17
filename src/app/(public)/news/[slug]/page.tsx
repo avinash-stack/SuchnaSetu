@@ -2,7 +2,8 @@ import { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { getPublicBulletinBySlug } from "@/modules/bulletins/service";
-import { constructMetadata } from "@/lib/seo";
+import { constructMetadata, buildNewsArticleJsonLd } from "@/lib/seo";
+import { getCanonicalSiteUrl } from "@/lib/constants";
 import { formatDate } from "@/lib/utils";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -56,8 +57,24 @@ export default async function PublicBulletinDetailPage({ params }: BulletinDetai
   const org = bulletin.organization;
   const relatedJob = bulletin.related_job;
 
+  const jsonLd = buildNewsArticleJsonLd({
+    title: bulletin.title,
+    description: bulletin.summary,
+    url: `${getCanonicalSiteUrl()}/news/${bulletin.slug}`,
+    datePublished: bulletin.published_at,
+    dateModified: bulletin.updated_at,
+    authorName: org?.name || "SuchnaSetu Civic News Desk",
+  });
+
   return (
-    <div className="mx-auto max-w-4xl px-4 py-8 sm:px-6 lg:px-8 space-y-8">
+    <>
+      {/* Inject Structured JSON-LD */}
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+      />
+
+      <div className="mx-auto max-w-4xl px-4 py-8 sm:px-6 lg:px-8 space-y-8">
       {/* Breadcrumb Navigation */}
       <nav className="flex items-center space-x-2 text-xs text-slate-500">
         <Link href="/" className="hover:text-slate-800 transition-colors">
@@ -183,5 +200,6 @@ export default async function PublicBulletinDetailPage({ params }: BulletinDetai
         </Link>
       </div>
     </div>
+    </>
   );
 }

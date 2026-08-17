@@ -1,34 +1,35 @@
 import { MetadataRoute } from "next";
-import { SITE_CONFIG, SYSTEM_MODULES } from "@/lib/constants";
+import { SYSTEM_MODULES, getCanonicalSiteUrl } from "@/lib/constants";
 import { createAdminClient } from "@/lib/supabase/admin";
 
 export const revalidate = 3600;
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
+  const baseUrl = getCanonicalSiteUrl();
   const currentDate = new Date().toISOString();
 
   // Core public routes
   const routes: MetadataRoute.Sitemap = [
     {
-      url: SITE_CONFIG.url,
+      url: `${baseUrl}`,
       lastModified: currentDate,
       changeFrequency: "hourly",
       priority: 1.0,
     },
     {
-      url: `${SITE_CONFIG.url}/jobs`,
+      url: `${baseUrl}/jobs`,
       lastModified: currentDate,
       changeFrequency: "hourly",
-      priority: 0.9,
+      priority: 0.95,
     },
     {
-      url: `${SITE_CONFIG.url}/exams`,
+      url: `${baseUrl}/exams`,
       lastModified: currentDate,
       changeFrequency: "hourly",
-      priority: 0.9,
+      priority: 0.95,
     },
     {
-      url: `${SITE_CONFIG.url}/news`,
+      url: `${baseUrl}/news`,
       lastModified: currentDate,
       changeFrequency: "hourly",
       priority: 0.85,
@@ -39,7 +40,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   SYSTEM_MODULES.forEach((mod) => {
     if (mod.href !== "/jobs" && mod.href !== "/exams") {
       routes.push({
-        url: `${SITE_CONFIG.url}${mod.href}`,
+        url: `${baseUrl}${mod.href}`,
         lastModified: currentDate,
         changeFrequency: "daily",
         priority: 0.7,
@@ -53,17 +54,18 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     // Fetch published exams
     const { data: exams } = await supabase
       .from("gov_exams")
-      .select("slug, updated_at")
+      .select("slug, updated_at, published_at")
       .eq("status", "published")
-      .is("deleted_at", null);
+      .is("deleted_at", null)
+      .order("published_at", { ascending: false });
 
     if (exams) {
       (exams as any[]).forEach((exam) => {
         routes.push({
-          url: `${SITE_CONFIG.url}/exams/${exam.slug}`,
-          lastModified: exam.updated_at || currentDate,
+          url: `${baseUrl}/exams/${exam.slug}`,
+          lastModified: exam.updated_at || exam.published_at || currentDate,
           changeFrequency: "daily",
-          priority: 0.8,
+          priority: 0.85,
         });
       });
     }
@@ -71,15 +73,34 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     // Fetch published jobs
     const { data: jobs } = await supabase
       .from("gov_jobs")
-      .select("slug, updated_at")
+      .select("slug, updated_at, published_at")
       .eq("status", "published")
-      .is("deleted_at", null);
+      .is("deleted_at", null)
+      .order("published_at", { ascending: false });
 
     if (jobs) {
       (jobs as any[]).forEach((job) => {
         routes.push({
-          url: `${SITE_CONFIG.url}/jobs/${job.slug}`,
-          lastModified: job.updated_at || currentDate,
+          url: `${baseUrl}/jobs/${job.slug}`,
+          lastModified: job.updated_at || job.published_at || currentDate,
+          changeFrequency: "daily",
+          priority: 0.85,
+        });
+      });
+    }
+
+    // Fetch published news bulletins
+    const { data: bulletins } = await supabase
+      .from("public_bulletins")
+      .select("slug, updated_at, published_at")
+      .eq("status", "published")
+      .order("published_at", { ascending: false });
+
+    if (bulletins) {
+      (bulletins as any[]).forEach((b) => {
+        routes.push({
+          url: `${baseUrl}/news/${b.slug}`,
+          lastModified: b.updated_at || b.published_at || currentDate,
           changeFrequency: "daily",
           priority: 0.8,
         });

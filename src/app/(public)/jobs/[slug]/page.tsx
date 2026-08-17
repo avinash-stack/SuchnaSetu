@@ -3,6 +3,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { getPublicJobBySlug } from "@/modules/jobs/service";
 import { constructMetadata, buildGovNoticeJsonLd } from "@/lib/seo";
+import { getCanonicalSiteUrl } from "@/lib/constants";
 import { formatDate, formatINR, formatNumber } from "@/lib/utils";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -74,7 +75,7 @@ export default async function PublicJobDetailPage({ params }: JobDetailPageProps
   const jsonLd = buildGovNoticeJsonLd({
     title: job.title,
     description: job.summary || `${job.title} by ${org?.name || "Government"}`,
-    url: `${process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000"}/jobs/${job.slug}`,
+    url: `${getCanonicalSiteUrl()}/jobs/${job.slug}`,
     organizationName: org?.name || "Government of India",
     datePublished: job.published_at,
     dateModified: job.updated_at,
@@ -431,11 +432,31 @@ export default async function PublicJobDetailPage({ params }: JobDetailPageProps
                       Application Fee Structure:
                     </div>
                     <div className="rounded-lg bg-amber-500/10 border border-amber-500/20 p-3 text-slate-800 text-[11px]">
-                      <pre className="font-sans whitespace-pre-wrap">
-                        {typeof eligibility.application_fee_details === "string"
-                          ? eligibility.application_fee_details
-                          : JSON.stringify(eligibility.application_fee_details, null, 2)}
-                      </pre>
+                      {typeof eligibility.application_fee_details === "string" ? (
+                        <p className="whitespace-pre-wrap">{eligibility.application_fee_details}</p>
+                      ) : typeof eligibility.application_fee_details === "object" && eligibility.application_fee_details !== null ? (
+                        <div className="space-y-1.5">
+                          {Object.entries(eligibility.application_fee_details).map(([key, val]) => (
+                            <div
+                              key={key}
+                              className="flex justify-between items-center py-1 border-b border-amber-200/50 last:border-0"
+                            >
+                              <span className="capitalize text-slate-600 font-medium">
+                                {key.replace(/_/g, " ")}:
+                              </span>
+                              <span className="font-bold text-slate-900">
+                                {typeof val === "number"
+                                  ? val === 0
+                                    ? "Exempted / Nil"
+                                    : `₹${val}`
+                                  : String(val)}
+                              </span>
+                            </div>
+                          ))}
+                        </div>
+                      ) : (
+                        <p>Refer to official notification.</p>
+                      )}
                     </div>
                   </div>
                 )}
