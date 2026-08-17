@@ -102,6 +102,43 @@ export function constructMetadata({
 export * from "@/components/seo/head-scripts";
 
 /**
+ * Builds Schema.org WebSite JSON-LD with Sitelinks Searchbox
+ */
+export function buildWebSiteJsonLd() {
+  return {
+    "@context": "https://schema.org",
+    "@type": "WebSite",
+    name: SITE_CONFIG.name,
+    url: SITE_CONFIG.url,
+    description: SITE_CONFIG.description,
+    potentialAction: {
+      "@type": "SearchAction",
+      target: {
+        "@type": "EntryPoint",
+        urlTemplate: `${SITE_CONFIG.url}/jobs?search={search_term_string}`,
+      },
+      "query-input": "required name=search_term_string",
+    },
+  };
+}
+
+/**
+ * Builds Schema.org BreadcrumbList JSON-LD
+ */
+export function buildBreadcrumbJsonLd(items: Array<{ name: string; url: string }>) {
+  return {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    itemListElement: items.map((item, index) => ({
+      "@type": "ListItem",
+      position: index + 1,
+      name: item.name,
+      item: item.url.startsWith("http") ? item.url : `${SITE_CONFIG.url}${item.url}`,
+    })),
+  };
+}
+
+/**
  * Builds JSON-LD Structured Data for Government Information / Notice Item
  */
 export function buildGovNoticeJsonLd({

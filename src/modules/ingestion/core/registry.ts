@@ -3,6 +3,8 @@ import { DataNormalizer } from "../interfaces/normalizer.interface";
 import { MockBenchmarkSourceAdapter, MockBenchmarkDataNormalizer } from "../adapters/mock-test.adapter";
 import { UpscSourceAdapter } from "../adapters/upsc.adapter";
 import { UpscDataNormalizer } from "../adapters/upsc.normalizer";
+import { GOV_JOB_SOURCES_CONFIG } from "../adapters/sources.config";
+import { StandardGovJobSourceAdapter, StandardGovJobDataNormalizer } from "../adapters/standard-gov-job.adapter";
 
 /**
  * Thread-safe plugin registry for data source adapters and normalizers.
@@ -24,6 +26,14 @@ export class SourceAdapterRegistry {
     // Register built-in benchmark & production adapters
     this.register(new MockBenchmarkSourceAdapter(), new MockBenchmarkDataNormalizer());
     this.register(new UpscSourceAdapter(), new UpscDataNormalizer());
+
+    // Register 28 National & State Public Service Commission adapters
+    for (const config of GOV_JOB_SOURCES_CONFIG) {
+      this.register(
+        new StandardGovJobSourceAdapter(config),
+        new StandardGovJobDataNormalizer(config)
+      );
+    }
   }
 
   /**

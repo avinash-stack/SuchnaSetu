@@ -15,6 +15,7 @@ import {
   CheckCircle2,
   Newspaper,
   Calendar,
+  Activity,
 } from "lucide-react";
 
 const iconMap = {
@@ -23,6 +24,7 @@ const iconMap = {
   Calendar,
   Building2,
   Globe,
+  Activity,
   ScrollText,
   Settings,
   Newspaper,

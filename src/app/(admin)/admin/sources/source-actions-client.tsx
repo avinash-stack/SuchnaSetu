@@ -4,8 +4,24 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Play, Activity, RefreshCw, CheckCircle2, AlertCircle, Eye, Loader2 } from "lucide-react";
-import { triggerImportJob, testSourceConnection, getImportJobLogs } from "@/modules/ingestion/actions";
+import {
+  Play,
+  Activity,
+  RefreshCw,
+  CheckCircle2,
+  AlertCircle,
+  Eye,
+  Loader2,
+  Power,
+  Zap,
+} from "lucide-react";
+import {
+  triggerImportJob,
+  testSourceConnection,
+  getImportJobLogs,
+  toggleSourceEnabledAction,
+  bulkSyncSourcesAction,
+} from "@/modules/ingestion/actions";
 
 interface SourceActionsClientProps {
   sourceId: string;
@@ -23,11 +39,29 @@ export function SourceActionsClient({
   const router = useRouter();
   const [testing, setTesting] = useState(false);
   const [syncing, setSyncing] = useState(false);
+  const [toggling, setToggling] = useState(false);
+  const [enabled, setEnabled] = useState(isEnabled);
   const [result, setResult] = useState<{
     type: "success" | "error" | "info";
     message: string;
     stats?: any;
   } | null>(null);
+
+  const handleToggle = async () => {
+    setToggling(true);
+    try {
+      const nextState = !enabled;
+      const res = await toggleSourceEnabledAction(sourceId, nextState);
+      if (res.success) {
+        setEnabled(nextState);
+        router.refresh();
+      }
+    } catch (err: any) {
+      console.error("Toggle error:", err);
+    } finally {
+      setToggling(false);
+    }
+  };
 
   const handleTestConnection = async () => {
     setTesting(true);
@@ -85,18 +119,38 @@ export function SourceActionsClient({
 
   return (
     <div className="space-y-2">
-      <div className="flex items-center gap-2">
+      <div className="flex items-center gap-1.5 flex-wrap">
+        <Button
+          size="sm"
+          variant="outline"
+          onClick={handleToggle}
+          disabled={toggling || syncing}
+          className={`h-7 px-2 text-[11px] gap-1 ${
+            enabled
+              ? "text-emerald-700 hover:text-emerald-800 hover:bg-emerald-50"
+              : "text-slate-500 hover:text-slate-700"
+          }`}
+          title={enabled ? "Disable this source" : "Enable this source"}
+        >
+          {toggling ? (
+            <Loader2 className="h-3 w-3 animate-spin" />
+          ) : (
+            <Power className={`h-3 w-3 ${enabled ? "text-emerald-600" : "text-slate-400"}`} />
+          )}
+          <span>{enabled ? "Active" : "Disabled"}</span>
+        </Button>
+
         <Button
           size="sm"
           variant="outline"
           onClick={handleTestConnection}
-          disabled={testing || syncing || !isEnabled}
-          className="h-8 text-xs gap-1.5"
+          disabled={testing || syncing || !enabled}
+          className="h-7 px-2 text-[11px] gap-1"
         >
           {testing ? (
-            <Loader2 className="h-3.5 w-3.5 animate-spin" />
+            <Loader2 className="h-3 w-3 animate-spin" />
           ) : (
-            <Activity className="h-3.5 w-3.5 text-blue-600" />
+            <Activity className="h-3 w-3 text-blue-600" />
           )}
           <span>Test Feed</span>
         </Button>
@@ -104,13 +158,13 @@ export function SourceActionsClient({
         <Button
           size="sm"
           onClick={handleTriggerSync}
-          disabled={testing || syncing || !isEnabled}
-          className="h-8 text-xs gap-1.5 bg-brand-700 hover:bg-brand-800 text-white"
+          disabled={testing || syncing || !enabled}
+          className="h-7 px-2.5 text-[11px] gap-1 bg-brand-700 hover:bg-brand-800 text-white font-medium shadow-xs"
         >
           {syncing ? (
-            <Loader2 className="h-3.5 w-3.5 animate-spin" />
+            <Loader2 className="h-3 w-3 animate-spin" />
           ) : (
-            <Play className="h-3.5 w-3.5 fill-current" />
+            <Play className="h-3 w-3 fill-current" />
           )}
           <span>Sync Now</span>
         </Button>
@@ -132,6 +186,56 @@ export function SourceActionsClient({
           <span className="leading-tight">{result.message}</span>
         </div>
       )}
+    </div>
+  );
+}
+
+export function BulkSyncButton() {
+  const router = useRouter();
+  const [syncingAll, setSyncingAll] = useState(false);
+  const [summary, setSummary] = useState<string | null>(null);
+
+  const handleBulkSync = async () => {
+    if (!confirm("Run synchronization across all enabled official sources now?")) return;
+
+    setSyncingAll(true);
+    setSummary(null);
+    try {
+      const res = await bulkSyncSourcesAction();
+      if (res.success) {
+        setSummary(`Successfully synced ${res.totalSynced} source pipelines!`);
+      } else {
+        setSummary(`Synced ${res.totalSynced} sources with ${res.totalErrors} errors.`);
+      }
+      router.refresh();
+    } catch (err: any) {
+      setSummary(err?.message || "Failed to trigger bulk sync");
+    } finally {
+      setSyncingAll(false);
+    }
+  };
+
+  return (
+    <div className="flex items-center gap-3">
+      {summary && (
+        <span className="text-xs text-emerald-700 bg-emerald-50 px-2.5 py-1 rounded-md border border-emerald-200 font-medium">
+          {summary}
+        </span>
+      )}
+      <Button
+        variant="brand"
+        size="sm"
+        onClick={handleBulkSync}
+        disabled={syncingAll}
+        className="gap-2 font-bold shadow-xs hover:shadow-sm"
+      >
+        {syncingAll ? (
+          <Loader2 className="h-4 w-4 animate-spin" />
+        ) : (
+          <Zap className="h-4 w-4 fill-current" />
+        )}
+        <span>{syncingAll ? "Syncing All Sources..." : "Sync All Active Sources"}</span>
+      </Button>
     </div>
   );
 }

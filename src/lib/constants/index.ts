@@ -122,6 +122,7 @@ export const ADMIN_NAV_ITEMS: NavItem[] = [
   { title: "Bulletins & News", href: "/admin/bulletins", icon: "Newspaper" },
   { title: "Organizations", href: "/admin/organizations", icon: "Building2" },
   { title: "Official Sources", href: "/admin/sources", icon: "Globe" },
+  { title: "Operations Center", href: "/admin/operations", icon: "Activity" },
   { title: "Audit Logs", href: "/admin/audit-logs", icon: "ScrollText" },
   { title: "System Settings", href: "/admin/settings", icon: "Settings" },
 ];
