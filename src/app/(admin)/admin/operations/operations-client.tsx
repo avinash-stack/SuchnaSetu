@@ -30,6 +30,7 @@ import {
 import { retryFailedJobAction, cleanupOrphanRecordsAction } from "@/modules/operations/actions";
 import {
   SystemHealthMetrics,
+  SourceHealthRecord,
   DataQualityAuditResult,
   SeoDiagnosticResult,
   OperationalAlert,
@@ -38,6 +39,7 @@ import {
 
 interface OperationsClientProps {
   systemHealth: SystemHealthMetrics;
+  sourceHealthList?: SourceHealthRecord[];
   dataQuality: DataQualityAuditResult;
   seoDiagnostics: SeoDiagnosticResult;
   alerts: OperationalAlert[];
@@ -48,6 +50,7 @@ interface OperationsClientProps {
 
 export function OperationsClient({
   systemHealth,
+  sourceHealthList = [],
   dataQuality,
   seoDiagnostics,
   alerts,
@@ -345,8 +348,40 @@ export function OperationsClient({
               <CardContent className="p-4">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
+                    <Clock className="h-4 w-4 text-orange-600" />
+                    <span className="text-xs font-bold text-slate-800">Auto Sync Schedule</span>
+                  </div>
+                  <Badge variant="brand" className="text-[10px]">
+                    Twice Daily
+                  </Badge>
+                </div>
+                <div className="mt-3 space-y-1 text-xs text-slate-600">
+                  <div className="flex justify-between">
+                    <span>Schedule Times:</span>
+                    <span className="font-bold text-slate-900">06:00 AM &amp; 06:00 PM IST</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span>Next Execution:</span>
+                    <span className="font-semibold text-brand-700">
+                      {systemHealth.ingestion.nextScheduledSync?.formattedIST || "06:00 AM IST"}
+                    </span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span>Countdown:</span>
+                    <span className="font-medium text-emerald-700">
+                      {systemHealth.ingestion.nextScheduledSync?.timeRemaining || "Scheduled"}
+                    </span>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card className="border-slate-200 shadow-xs">
+              <CardContent className="p-4">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
                     <ShieldCheck className="h-4 w-4 text-purple-600" />
-                    <span className="text-xs font-bold text-slate-800">Environment & Keys</span>
+                    <span className="text-xs font-bold text-slate-800">Environment &amp; Keys</span>
                   </div>
                   <Badge variant="success" className="text-[10px]">
                     Validated
@@ -373,19 +408,115 @@ export function OperationsClient({
       )}
 
       {/* ========================================================================= */}
-      {/* TAB 2: SOURCE & INGESTION HEALTH (WITH RETRY ACTION)                       */}
+      {/* TAB 2: SOURCE & INGESTION HEALTH (WITH RETRY ACTION & TELEMETRY MATRIX)    */}
       {/* ========================================================================= */}
       {activeTab === "sources" && (
         <div className="space-y-6">
+          {/* Source Health Telemetry Matrix */}
+          {sourceHealthList.length > 0 && (
+            <Card className="border-slate-200 shadow-xs">
+              <CardHeader className="pb-3 border-b border-slate-100 bg-slate-50/50">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <CardTitle className="text-base font-bold text-slate-900 font-heading">
+                      Source Health &amp; Telemetry Matrix ({sourceHealthList.length})
+                    </CardTitle>
+                    <CardDescription className="text-xs text-slate-500 mt-0.5">
+                      Monitors consecutive failure counts, last successful and failed sync timestamps, and upcoming schedules.
+                    </CardDescription>
+                  </div>
+                  <Badge variant="brand" className="text-xs">
+                    Next Auto Sync: {systemHealth.ingestion.nextScheduledSync?.formattedIST || "06:00 AM IST"}
+                  </Badge>
+                </div>
+              </CardHeader>
+              <CardContent className="p-0">
+                <Table>
+                  <TableHeader>
+                    <TableRow className="bg-slate-50/30">
+                      <TableHead>Pipeline / Source</TableHead>
+                      <TableHead>Target Module</TableHead>
+                      <TableHead>Last Successful Sync</TableHead>
+                      <TableHead>Last Failed Sync</TableHead>
+                      <TableHead>Failures</TableHead>
+                      <TableHead className="text-right">Health Status</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {sourceHealthList.map((src) => (
+                      <TableRow key={src.id} className="hover:bg-slate-50/50">
+                        <TableCell>
+                          <div className="font-semibold text-slate-900 text-xs">
+                            {src.name}
+                          </div>
+                          <div className="text-[10px] text-slate-400 font-mono">
+                            {src.code}
+                          </div>
+                        </TableCell>
+                        <TableCell>
+                          <Badge variant="outline" className="text-[10px] capitalize">
+                            {src.targetModule}
+                          </Badge>
+                        </TableCell>
+                        <TableCell className="text-xs text-slate-600">
+                          {src.lastSuccessfulSync ? (
+                            <span>{new Date(src.lastSuccessfulSync).toLocaleDateString("en-IN", { day: "2-digit", month: "short" })} {new Date(src.lastSuccessfulSync).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}</span>
+                          ) : (
+                            <span className="text-slate-400 italic">Never</span>
+                          )}
+                        </TableCell>
+                        <TableCell className="text-xs text-slate-600">
+                          {src.lastFailedSync ? (
+                            <span className="text-rose-600 font-medium">{new Date(src.lastFailedSync).toLocaleDateString("en-IN", { day: "2-digit", month: "short" })} {new Date(src.lastFailedSync).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}</span>
+                          ) : (
+                            <span className="text-slate-400">None</span>
+                          )}
+                        </TableCell>
+                        <TableCell className="text-xs">
+                          {src.consecutiveFailures > 0 ? (
+                            <Badge variant="danger" className="text-[10px] font-bold">
+                              {src.consecutiveFailures} Failed
+                            </Badge>
+                          ) : (
+                            <span className="text-emerald-600 font-medium">0</span>
+                          )}
+                        </TableCell>
+                        <TableCell className="text-right">
+                          <Badge
+                            variant={
+                              src.currentStatus === "healthy"
+                                ? "success"
+                                : src.currentStatus === "syncing"
+                                ? "brand"
+                                : src.currentStatus === "warning"
+                                ? "warning"
+                                : src.currentStatus === "error"
+                                ? "danger"
+                                : "secondary"
+                            }
+                            className="text-[10px] uppercase font-bold"
+                          >
+                            {src.currentStatus}
+                          </Badge>
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </CardContent>
+            </Card>
+          )}
+
+          {/* Recent Execution Jobs & Error Triage */}
           <Card className="border-slate-200 shadow-xs">
             <CardHeader className="pb-3 border-b border-slate-100 bg-slate-50/50">
               <div className="flex items-center justify-between">
                 <div>
                   <CardTitle className="text-base font-bold text-slate-900 font-heading">
-                    Recent Execution Jobs & Error Triage
+                    Recent Execution Jobs &amp; Error Triage
                   </CardTitle>
                   <CardDescription className="text-xs text-slate-500 mt-0.5">
-                    Click "Retry" on any failed ingestion job to re-trigger the extraction and normalization pipeline.
+                    Click &quot;Retry&quot; on any failed ingestion job to re-trigger the extraction and normalization pipeline.
                   </CardDescription>
                 </div>
               </div>

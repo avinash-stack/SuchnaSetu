@@ -90,7 +90,10 @@ export default async function HomePage() {
           </p>
 
           <div className="mx-auto mt-8 max-w-3xl">
-            <SearchBar />
+            <SearchBar
+              targetPath="/jobs"
+              placeholder="Search central, state, defence, banking jobs, organizations (UPSC, SSC), or post names..."
+            />
             <div className="mt-3 flex flex-wrap items-center justify-center gap-2 text-xs text-slate-500">
               <span className="font-medium text-slate-700">Quick Sectors:</span>
               <span className="rounded-md bg-white px-2 py-0.5 border border-slate-200 text-slate-600">Central Govt</span>

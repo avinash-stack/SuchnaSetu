@@ -4,7 +4,9 @@
 
 :root {
   --background: #f8fafc;
-  --foreground: #0f172a;
+  --foreground: #172033;
+  --brand-navy: #013089;
+  --brand-saffron: #FE8D01;
   --font-inter: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
   --font-outfit: "Outfit", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
 }
@@ -33,5 +35,5 @@ body {
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: #94a3b8;
+  background: #013089;
 }

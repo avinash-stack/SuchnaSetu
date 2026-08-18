@@ -8,7 +8,7 @@ import { EmptyState } from "@/components/shared/empty-state";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { constructMetadata } from "@/lib/seo";
-import { Calendar, ChevronLeft, ChevronRight, Sparkles, BookOpen } from "lucide-react";
+import { Calendar, ChevronLeft, ChevronRight, X, Sparkles, BookOpen } from "lucide-react";
 
 interface ExamsPageProps {
   searchParams: Promise<{
@@ -23,16 +23,37 @@ interface ExamsPageProps {
 
 export async function generateMetadata({ searchParams }: ExamsPageProps): Promise<Metadata> {
   const params = await searchParams;
-  let title = "Government Examinations 2026 - Official Exam Calendars & Schedules";
+  let title = "Exams & Notifications 2026 - Official Exam Calendars & Schedules";
   if (params.search) {
-    title = `Search: "${params.search}" - Govt Exams | SuchnaSetu`;
+    title = `Search: "${params.search}" - Exams & Notifications | SuchnaSetu`;
   }
   return constructMetadata({
     title,
     description:
-      "Structured government examination calendars, syllabus breakdown, shift schedules, eligibility criteria, and verified official PDF circulars from UPSC, SSC, State PSCs, and Railways.",
+      "Government exam notifications, schedules, eligibility and important dates direct from UPSC, SSC, State PSCs, and public authorities.",
     path: "/exams",
   });
+}
+
+function buildPageUrl(params: Record<string, string | undefined>, newPage: number) {
+  const q = new URLSearchParams();
+  Object.entries(params).forEach(([k, v]) => {
+    if (v && k !== "page") q.set(k, v);
+  });
+  if (newPage > 1) {
+    q.set("page", String(newPage));
+  }
+  const qs = q.toString();
+  return qs ? `/exams?${qs}` : "/exams";
+}
+
+function buildClearSearchUrl(params: Record<string, string | undefined>) {
+  const q = new URLSearchParams();
+  Object.entries(params).forEach(([k, v]) => {
+    if (v && k !== "search" && k !== "page") q.set(k, v);
+  });
+  const qs = q.toString();
+  return qs ? `/exams?${qs}` : "/exams";
 }
 
 export default async function PublicExamsPage({ searchParams }: ExamsPageProps) {
@@ -59,26 +80,42 @@ export default async function PublicExamsPage({ searchParams }: ExamsPageProps) 
         <div>
           <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-brand-700">
             <Calendar className="h-4 w-4" />
-            <span>Official Examination Module</span>
+            <span>Exams &amp; Notifications</span>
           </div>
           <h1 className="text-3xl font-extrabold tracking-tight text-slate-900 sm:text-4xl font-heading mt-1">
-            Government Examinations & Schedules
+            Exams &amp; Notifications
           </h1>
           <p className="text-sm text-slate-500 mt-1 max-w-2xl">
-            Authentic examination calendars, multi-stage test patterns, shift schedules, and syllabus summaries direct from official commission gazettes.
+            Government exam notifications, schedules, eligibility and important dates direct from official commission gazettes.
           </p>
         </div>
 
         <div className="flex items-center gap-2">
           <Badge variant="brand" className="text-xs py-1 px-3">
-            {total} Active {total === 1 ? "Examination" : "Examinations"}
+            {total} Active {total === 1 ? "Notice" : "Notices"}
           </Badge>
         </div>
       </div>
 
       {/* Search Header */}
-      <div className="max-w-4xl">
+      <div className="max-w-4xl space-y-3">
         <SearchBar placeholder="Search by exam title, commission (UPSC, SSC), exam code, or syllabus topics..." />
+
+        {/* Active Search Pill */}
+        {params.search && (
+          <div className="flex items-center gap-2 text-xs text-slate-600 bg-brand-50/70 border border-brand-200 px-3 py-1.5 rounded-lg w-fit">
+            <span>
+              Showing results for: <strong>&ldquo;{params.search}&rdquo;</strong> ({total} matches)
+            </span>
+            <Link
+              href={buildClearSearchUrl(params)}
+              className="text-slate-500 hover:text-slate-900 p-0.5 rounded transition-colors"
+              title="Clear search query"
+            >
+              <X className="h-3.5 w-3.5" />
+            </Link>
+          </div>
+        )}
       </div>
 
       {/* Main Content: Sidebar + Exam Grid */}
@@ -96,32 +133,24 @@ export default async function PublicExamsPage({ searchParams }: ExamsPageProps) 
         <div className="lg:col-span-3 space-y-6">
           {exams.length > 0 ? (
             <>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+              <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3">
                 {exams.map((exam) => (
                   <ExamCard key={exam.id} exam={exam} />
                 ))}
               </div>
 
-              {/* Pagination */}
+              {/* Pagination with parameter preservation */}
               {totalPages > 1 && (
                 <div className="flex items-center justify-between border-t border-slate-200 pt-6">
                   <div className="text-xs text-slate-500">
-                    Showing page <span className="font-bold text-slate-800">{currentPage}</span> of{" "}
-                    <span className="font-bold text-slate-800">{totalPages}</span>
+                    Showing page <span className="font-semibold text-slate-800">{currentPage}</span> of{" "}
+                    <span className="font-semibold text-slate-800">{totalPages}</span>
                   </div>
 
                   <div className="flex items-center gap-2">
                     {currentPage > 1 && (
-                      <Link
-                        href={`/exams?page=${currentPage - 1}${
-                          params.search ? `&search=${params.search}` : ""
-                        }${params.organization ? `&organization=${params.organization}` : ""}${
-                          params.category ? `&category=${params.category}` : ""
-                        }${params.mode ? `&mode=${params.mode}` : ""}${
-                          params.state ? `&state=${params.state}` : ""
-                        }`}
-                      >
-                        <Button variant="outline" size="sm" className="gap-1">
+                      <Link href={buildPageUrl(params, currentPage - 1)}>
+                        <Button variant="outline" size="sm" className="gap-1 text-xs">
                           <ChevronLeft className="h-4 w-4" />
                           <span>Previous</span>
                         </Button>
@@ -129,16 +158,8 @@ export default async function PublicExamsPage({ searchParams }: ExamsPageProps) 
                     )}
 
                     {currentPage < totalPages && (
-                      <Link
-                        href={`/exams?page=${currentPage + 1}${
-                          params.search ? `&search=${params.search}` : ""
-                        }${params.organization ? `&organization=${params.organization}` : ""}${
-                          params.category ? `&category=${params.category}` : ""
-                        }${params.mode ? `&mode=${params.mode}` : ""}${
-                          params.state ? `&state=${params.state}` : ""
-                        }`}
-                      >
-                        <Button variant="outline" size="sm" className="gap-1">
+                      <Link href={buildPageUrl(params, currentPage + 1)}>
+                        <Button variant="outline" size="sm" className="gap-1 text-xs">
                           <span>Next</span>
                           <ChevronRight className="h-4 w-4" />
                         </Button>
@@ -151,16 +172,23 @@ export default async function PublicExamsPage({ searchParams }: ExamsPageProps) 
           ) : (
             <div className="space-y-4">
               <EmptyState
-                title="No examinations found"
-                description="No official examination schedules match your filter criteria or search query. Try adjusting filters or searching with a different term."
+                icon={Calendar}
+                title={params.search ? `No exams found for "${params.search}"` : "No Examinations Found"}
+                description={
+                  params.search
+                    ? "No official examination calendars matched your search query. Try searching with different keywords, commission acronyms (e.g. UPSC, SSC, BPSC), or clearing your search."
+                    : "No official examination schedules match your filter criteria or search query. Try adjusting filters or searching with a different term."
+                }
               />
-              <div className="text-center">
-                <Link href="/exams">
-                  <Button variant="primary" size="sm">
-                    View All Examinations
-                  </Button>
-                </Link>
-              </div>
+              {(params.search || Object.keys(params).length > 0) && (
+                <div className="text-center">
+                  <Link href="/exams">
+                    <Button variant="brand" size="sm">
+                      Clear Search &amp; All Filters
+                    </Button>
+                  </Link>
+                </div>
+              )}
             </div>
           )}
         </div>

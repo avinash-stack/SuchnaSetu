@@ -2,6 +2,7 @@
 
 import * as React from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { usePathname } from "next/navigation";
 import { SITE_CONFIG, PUBLIC_NAV_ITEMS } from "@/lib/constants";
 import { Button } from "@/components/ui/button";
@@ -77,14 +78,19 @@ export function PublicHeader() {
       <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8 gap-4">
         {/* Brand Logo & Title */}
         <Link href="/" className="flex items-center gap-3 group flex-shrink-0">
-          <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-amber-600 via-brand-600 to-emerald-700 text-white shadow-md shadow-brand-500/10 transition-transform group-hover:scale-105 group-hover:shadow-brand-500/20">
-            <ShieldCheck className="h-5 w-5" />
-          </div>
+          <Image
+            src="/brand/logo-icon.png"
+            alt="SuchnaSetu Logo"
+            width={52}
+            height={52}
+            className="h-10 w-10 sm:h-12 sm:w-12 md:h-[50px] md:w-[50px] object-contain transition-transform group-hover:scale-105 flex-shrink-0"
+            priority
+          />
           <div className="flex flex-col">
-            <span className="text-lg font-bold tracking-tight text-slate-900 group-hover:text-brand-700 transition-colors font-heading leading-tight">
+            <span className="text-xl sm:text-2xl font-bold tracking-tight text-slate-900 group-hover:text-brand-700 transition-colors font-heading leading-none">
               {SITE_CONFIG.name}
             </span>
-            <span className="text-[10px] font-semibold tracking-wider text-slate-500 uppercase">
+            <span className="text-[10px] sm:text-[11px] font-semibold tracking-wider text-slate-500 uppercase mt-0.5">
               सूचना सेतु • Public Portal
             </span>
           </div>

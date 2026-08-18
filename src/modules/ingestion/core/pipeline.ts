@@ -158,6 +158,32 @@ export class IngestionPipelineEngine {
         try {
           if (source.target_module === "jobs") {
             persistedEntityId = await this.persistJobNotice(normResult.data as NormalizedJobNotice, changeResult.existingEntityId);
+            
+            // Intelligent Cross-Population: If the job notice is a structured examination, also sync to gov_exams
+            const titleLower = (normResult.data.title || "").toLowerCase();
+            const isExam =
+              titleLower.includes("examination") ||
+              titleLower.includes("exam") ||
+              titleLower.includes("cgl") ||
+              titleLower.includes("chsl") ||
+              titleLower.includes("nda") ||
+              titleLower.includes("cds") ||
+              titleLower.includes("cse") ||
+              titleLower.includes("cce") ||
+              titleLower.includes("norcet") ||
+              titleLower.includes("afcat") ||
+              titleLower.includes("civil services") ||
+              titleLower.includes("test");
+
+            if (isExam) {
+              try {
+                await this.persistExamNotice(normResult.data);
+              } catch (examErr: any) {
+                await log("warn", "persist_exam_link", `Could not cross-populate exam record: ${examErr?.message}`);
+              }
+            }
+          } else if (source.target_module === "exams") {
+            persistedEntityId = await this.persistExamNotice(normResult.data, changeResult.existingEntityId);
           } else if (source.target_module === "bulletins") {
             persistedEntityId = await this.persistBulletinNotice(normResult.data as NormalizedBulletinNotice, changeResult.existingEntityId);
           }
@@ -389,10 +415,42 @@ export class IngestionPipelineEngine {
       orgId = org?.id || null;
     }
 
+    const slug = bulletin.slug || slugify(bulletin.title);
+
+    // Check if bulletin exists by existingId or slug
+    let targetId = existingId;
+    let existingBulletin: any = null;
+
+    if (!targetId) {
+      const { data: found } = await (supabase.from("public_bulletins") as any)
+        .select("id, title, published_at")
+        .eq("slug", slug)
+        .maybeSingle();
+      if (found) {
+        targetId = found.id;
+        existingBulletin = found;
+      }
+    } else {
+      const { data: found } = await (supabase.from("public_bulletins") as any)
+        .select("id, title, published_at")
+        .eq("id", targetId)
+        .maybeSingle();
+      existingBulletin = found;
+    }
+
+    // Map to valid db category if needed
+    const validDbCategories = ["employment_news", "student_advisory", "legal_update", "press_release"];
+    let cat: string = bulletin.category;
+    if (!validDbCategories.includes(cat)) {
+      if (cat === "recruitment_jobs") cat = "employment_news";
+      else if (cat === "government_updates" || cat === "government_schemes") cat = "press_release";
+      else cat = "student_advisory";
+    }
+
     const bulletinData: any = {
       title: bulletin.title,
-      slug: bulletin.slug || slugify(bulletin.title),
-      category: bulletin.category,
+      slug,
+      category: cat,
       organization_id: orgId,
       summary: bulletin.summary,
       content: bulletin.content || null,
@@ -400,12 +458,18 @@ export class IngestionPipelineEngine {
       source_name: bulletin.sourceName,
       is_breaking: bulletin.isBreaking || false,
       status: "published",
-      published_at: bulletin.publishedAt ? bulletin.publishedAt.toISOString() : new Date().toISOString(),
+      published_at: existingBulletin?.published_at || (bulletin.publishedAt ? bulletin.publishedAt.toISOString() : new Date().toISOString()),
     };
 
-    if (existingId) {
-      await (supabase.from("public_bulletins") as any).update(bulletinData).eq("id", existingId);
-      return existingId;
+    if (targetId) {
+      // If manually edited by admin, protect title, summary, and content from automated overwrite
+      if (existingBulletin?.is_manually_edited) {
+        delete bulletinData.title;
+        delete bulletinData.summary;
+        delete bulletinData.content;
+      }
+      await (supabase.from("public_bulletins") as any).update(bulletinData).eq("id", targetId);
+      return targetId;
     } else {
       const { data: inserted, error } = await (supabase.from("public_bulletins") as any)
         .insert(bulletinData)
@@ -414,5 +478,212 @@ export class IngestionPipelineEngine {
       if (error) throw error;
       return inserted.id;
     }
+  }
+
+  /**
+   * Helper: Persists normalized exam notice to gov_exams table and sub-entities
+   */
+  private async persistExamNotice(notice: NormalizedJobNotice | any, existingId?: string | null): Promise<string> {
+    const supabase = createAdminClient();
+
+    // Resolve Org ID & Category ID from slugs
+    const { data: org } = await (supabase.from("organizations") as any)
+      .select("id")
+      .eq("slug", notice.organizationSlug)
+      .maybeSingle();
+
+    const { data: cat } = await (supabase.from("categories") as any)
+      .select("id")
+      .eq("slug", notice.categorySlug)
+      .maybeSingle();
+
+    let organizationId = org?.id;
+    let categoryId = cat?.id;
+
+    if (!organizationId) {
+      const { data: defaultOrg } = await (supabase.from("organizations") as any).select("id").limit(1).single();
+      organizationId = defaultOrg?.id;
+    }
+    if (!categoryId) {
+      const { data: defaultCat } = await (supabase.from("categories") as any).select("id").limit(1).single();
+      categoryId = defaultCat?.id;
+    }
+
+    let slug = notice.slug || slugify(notice.title);
+
+    const mode =
+      notice.mode ||
+      (notice.title?.toLowerCase().includes("cbt") || notice.title?.toLowerCase().includes("online")
+        ? "online_cbt"
+        : "offline_omr");
+    const frequency = notice.frequency || "annual";
+
+    const examData: any = {
+      title: notice.title,
+      short_title: notice.shortTitle || notice.title?.slice(0, 60),
+      slug,
+      exam_code: notice.notificationNumber || notice.examCode || null,
+      organization_id: organizationId,
+      category_id: categoryId,
+      state_code: notice.stateCode || null,
+      mode,
+      frequency,
+      description:
+        notice.summary ||
+        notice.description ||
+        `${notice.title} conducted by official authorities across designated examination centers.`,
+      syllabus_summary:
+        notice.syllabusSummary ||
+        notice.selectionProcess ||
+        notice.eligibility?.selection_process ||
+        "Comprehensive syllabus and examination pattern details as published in the official notification.",
+      marking_scheme:
+        notice.markingScheme ||
+        "Negative marking applicable for incorrect responses as specified in commission instructions.",
+      pattern_description:
+        notice.patternDescription ||
+        notice.eligibility?.selection_process ||
+        "Multi-stage competitive examination process.",
+      application_process_guide:
+        notice.applicationProcessGuide ||
+        `Submit application on the official commission portal (${notice.officialApplyUrl || notice.officialNotificationUrl}).`,
+      official_notification_url: notice.officialNotificationUrl,
+      official_website_url: notice.officialApplyUrl || notice.officialNotificationUrl,
+      application_fee_details: notice.eligibility?.applicationFeeDetails || {
+        general: 100,
+        obc: 100,
+        ews: 100,
+        sc: 0,
+        st: 0,
+        female: 0,
+      },
+      status: "published",
+      is_featured: notice.isFeatured || false,
+      published_at: notice.publishedAt ? (typeof notice.publishedAt === "string" ? notice.publishedAt : notice.publishedAt.toISOString()) : new Date().toISOString(),
+    };
+
+    let targetId = existingId;
+    if (existingId) {
+      await (supabase.from("gov_exams") as any).update(examData).eq("id", existingId);
+    } else {
+      const { data: existingSlugExam } = await (supabase.from("gov_exams") as any)
+        .select("id")
+        .eq("slug", slug)
+        .maybeSingle();
+
+      if (existingSlugExam) {
+        targetId = existingSlugExam.id;
+        await (supabase.from("gov_exams") as any).update(examData).eq("id", targetId);
+      } else {
+        const { data: inserted, error } = await (supabase.from("gov_exams") as any)
+          .insert(examData)
+          .select("id")
+          .single();
+        if (error) throw error;
+        targetId = inserted.id;
+      }
+    }
+
+    if (!targetId) throw new Error("Failed to resolve target exam ID");
+
+    // Insert Examination Stages if none exist
+    const { count: stageCount } = await (supabase.from("exam_stages") as any)
+      .select("id", { count: "exact", head: true })
+      .eq("exam_id", targetId);
+
+    if (!stageCount || stageCount === 0) {
+      await (supabase.from("exam_stages") as any).insert([
+        {
+          exam_id: targetId,
+          stage_name: "Stage I: Preliminary Screening / CBT",
+          stage_order: 1,
+          stage_type: "prelims",
+          mode: mode === "online_cbt" ? "online_cbt" : "offline_omr",
+          duration_minutes: 120,
+          total_marks: 200,
+          qualifying_marks: 66,
+          status: "scheduled",
+        },
+        {
+          exam_id: targetId,
+          stage_name: "Stage II: Main Examination / Skill Test",
+          stage_order: 2,
+          stage_type: "mains",
+          mode: "pen_paper",
+          duration_minutes: 180,
+          total_marks: 300,
+          qualifying_marks: 100,
+          status: "upcoming",
+        },
+      ]);
+    }
+
+    // Insert Important Dates
+    if (notice.importantDates && notice.importantDates.length > 0) {
+      await (supabase.from("exam_important_dates") as any).delete().eq("exam_id", targetId);
+      const datesToInsert = notice.importantDates.map((d: any, idx: number) => ({
+        exam_id: targetId as string,
+        title: d.eventName || "Important Date",
+        event_date: d.eventDate
+          ? typeof d.eventDate === "string"
+            ? d.eventDate.split("T")[0]
+            : d.eventDate.toISOString().split("T")[0]
+          : null,
+        date_type: d.dateType || "application_end",
+        is_tentative: d.isTentative || false,
+        display_order: d.displayOrder ?? idx + 1,
+      }));
+      await (supabase.from("exam_important_dates") as any).insert(datesToInsert);
+    } else if (notice.applicationStartDate || notice.applicationEndDate) {
+      await (supabase.from("exam_important_dates") as any).delete().eq("exam_id", targetId);
+      const dates: any[] = [];
+      if (notice.applicationStartDate) {
+        dates.push({
+          exam_id: targetId,
+          title: "Online Application Window Opens",
+          event_date:
+            typeof notice.applicationStartDate === "string"
+              ? notice.applicationStartDate.split("T")[0]
+              : notice.applicationStartDate.toISOString().split("T")[0],
+          date_type: "application_start",
+          is_tentative: false,
+          display_order: 1,
+        });
+      }
+      if (notice.applicationEndDate) {
+        dates.push({
+          exam_id: targetId,
+          title: "Last Date for Application Submission",
+          event_date:
+            typeof notice.applicationEndDate === "string"
+              ? notice.applicationEndDate.split("T")[0]
+              : notice.applicationEndDate.toISOString().split("T")[0],
+          date_type: "application_end",
+          is_tentative: false,
+          display_order: 2,
+        });
+      }
+      if (dates.length > 0) {
+        await (supabase.from("exam_important_dates") as any).insert(dates);
+      }
+    }
+
+    // Insert Eligibility
+    if (notice.eligibility) {
+      await (supabase.from("exam_eligibility") as any).delete().eq("exam_id", targetId);
+      await (supabase.from("exam_eligibility") as any).insert({
+        exam_id: targetId,
+        min_age: notice.eligibility.minAge || 18,
+        max_age: notice.eligibility.maxAge || 32,
+        age_relaxation_rules:
+          notice.eligibility.ageRelaxationDetails ||
+          "Standard relaxation for SC/ST/OBC/PwD as per government rules.",
+        educational_qualification_description:
+          notice.eligibility.educationQualification || "Bachelor's Degree or minimum prescribed qualification.",
+        nationality_criteria: "Citizen of India",
+      });
+    }
+
+    return targetId;
   }
 }

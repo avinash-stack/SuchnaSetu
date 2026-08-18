@@ -1,4 +1,5 @@
 import Link from "next/link";
+import Image from "next/image";
 import { SITE_CONFIG, SYSTEM_MODULES } from "@/lib/constants";
 import { ShieldAlert, ExternalLink, ShieldCheck, Heart } from "lucide-react";
 
@@ -26,9 +27,13 @@ export function PublicFooter() {
           {/* Brand Col */}
           <div className="lg:col-span-2 space-y-4">
             <div className="flex items-center gap-3">
-              <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-gradient-to-br from-amber-600 to-emerald-700 text-white">
-                <ShieldCheck className="h-5 w-5" />
-              </div>
+              <Image
+                src="/brand/logo-icon.png"
+                alt="SuchnaSetu Logo"
+                width={40}
+                height={40}
+                className="h-10 w-10 object-contain bg-white rounded-xl p-1 shadow-sm"
+              />
               <span className="text-xl font-bold tracking-tight text-white">
                 {SITE_CONFIG.name}
               </span>

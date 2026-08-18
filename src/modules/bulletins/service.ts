@@ -1,5 +1,19 @@
 import { createClient } from "@/lib/supabase/server";
 import { PublicBulletinDetailed, BulletinFilterParams } from "./types";
+import { BULLETIN_CATEGORIES } from "./constants";
+
+/**
+ * Maps a user-facing category key to database categories.
+ */
+function resolveDbCategory(categoryKey?: string): string[] | null {
+  if (!categoryKey || categoryKey === "all") return null;
+
+  const found = BULLETIN_CATEGORIES.find((c) => c.key === categoryKey);
+  if (found) {
+    return Array.from(new Set([found.dbCategory, found.key]));
+  }
+  return [categoryKey];
+}
 
 /**
  * Fetch published public bulletins with multi-category filtering for public news desk.
@@ -13,7 +27,7 @@ export async function getPublicBulletins(params: BulletinFilterParams = {}): Pro
 }> {
   const supabase = await createClient();
   const page = Math.max(1, params.page || 1);
-  const limit = Math.min(50, Math.max(1, params.limit || 10));
+  const limit = Math.min(50, Math.max(1, params.limit || 12));
   const offset = (page - 1) * limit;
 
   let query = (supabase.from("public_bulletins") as any)
@@ -29,16 +43,26 @@ export async function getPublicBulletins(params: BulletinFilterParams = {}): Pro
     .order("published_at", { ascending: false });
 
   if (params.category && params.category !== "all") {
-    query = query.eq("category", params.category);
+    const dbCats = resolveDbCategory(params.category);
+    if (dbCats && dbCats.length === 1) {
+      query = query.eq("category", dbCats[0]);
+    } else if (dbCats && dbCats.length > 1) {
+      query = query.in("category", dbCats);
+    }
   }
 
   if (params.isBreaking !== undefined) {
     query = query.eq("is_breaking", params.isBreaking);
   }
 
-  if (params.search) {
-    const term = `%${params.search.trim()}%`;
-    query = query.or(`title.ilike.${term},summary.ilike.${term},source_name.ilike.${term}`);
+  if (params.search && params.search.trim()) {
+    const cleanTerm = params.search.replace(/[,()]/g, " ").trim();
+    if (cleanTerm) {
+      const term = `%${cleanTerm}%`;
+      query = query.or(
+        `title.ilike.${term},summary.ilike.${term},source_name.ilike.${term},content.ilike.${term},slug.ilike.${term}`
+      );
+    }
   }
 
   query = query.range(offset, offset + limit - 1);
@@ -113,6 +137,36 @@ export async function getPublicBulletinBySlug(slug: string): Promise<PublicBulle
 }
 
 /**
+ * Fetch related bulletins in the same category or authority.
+ */
+export async function getRelatedBulletins(
+  currentId: string,
+  category: string,
+  limit: number = 3
+): Promise<PublicBulletinDetailed[]> {
+  const supabase = await createClient();
+
+  const { data, error } = await (supabase.from("public_bulletins") as any)
+    .select(
+      `
+      *,
+      organization:organizations(*)
+    `
+    )
+    .eq("status", "published")
+    .neq("id", currentId)
+    .eq("category", category)
+    .order("published_at", { ascending: false })
+    .limit(limit);
+
+  if (error || !data) {
+    return [];
+  }
+
+  return data as PublicBulletinDetailed[];
+}
+
+/**
  * Fetch all bulletins for Admin management console.
  */
 export async function getAdminBulletins(params: {
@@ -148,12 +202,22 @@ export async function getAdminBulletins(params: {
   }
 
   if (params.category && params.category !== "all") {
-    query = query.eq("category", params.category);
+    const dbCats = resolveDbCategory(params.category);
+    if (dbCats && dbCats.length === 1) {
+      query = query.eq("category", dbCats[0]);
+    } else if (dbCats && dbCats.length > 1) {
+      query = query.in("category", dbCats);
+    }
   }
 
-  if (params.search) {
-    const term = `%${params.search.trim()}%`;
-    query = query.or(`title.ilike.${term},source_name.ilike.${term}`);
+  if (params.search && params.search.trim()) {
+    const cleanTerm = params.search.replace(/[,()]/g, " ").trim();
+    if (cleanTerm) {
+      const term = `%${cleanTerm}%`;
+      query = query.or(
+        `title.ilike.${term},source_name.ilike.${term},summary.ilike.${term},slug.ilike.${term}`
+      );
+    }
   }
 
   query = query.range(offset, offset + limit - 1);

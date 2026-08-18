@@ -1,6 +1,7 @@
 import { createClient } from "@/lib/supabase/server";
 import {
   getSystemHealthOverview,
+  getSourceHealthRegistry,
   getDataQualityAudit,
   getSeoDiagnostics,
   getOperationalAlerts,
@@ -13,6 +14,7 @@ export default async function AdminOperationsPage() {
 
   const [
     systemHealth,
+    sourceHealthList,
     dataQuality,
     seoDiagnostics,
     alerts,
@@ -21,6 +23,7 @@ export default async function AdminOperationsPage() {
     sourcesRes,
   ] = await Promise.all([
     getSystemHealthOverview(),
+    getSourceHealthRegistry(),
     getDataQualityAudit(),
     getSeoDiagnostics(),
     getOperationalAlerts(),
@@ -39,7 +42,7 @@ export default async function AdminOperationsPage() {
       {/* Top Header */}
       <div>
         <h1 className="text-2xl font-bold tracking-tight text-slate-900 font-heading">
-          Operations & Observability Center
+          Operations &amp; Observability Center
         </h1>
         <p className="text-xs text-slate-500 mt-1">
           Monitor source uptime, retry failed ingestion jobs, audit data quality, validate SEO indexing, and review platform telemetry.
@@ -49,6 +52,7 @@ export default async function AdminOperationsPage() {
       {/* Interactive Operations Console */}
       <OperationsClient
         systemHealth={systemHealth}
+        sourceHealthList={sourceHealthList}
         dataQuality={dataQuality}
         seoDiagnostics={seoDiagnostics}
         alerts={alerts}

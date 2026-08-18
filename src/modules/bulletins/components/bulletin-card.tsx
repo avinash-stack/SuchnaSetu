@@ -1,19 +1,18 @@
 import Link from "next/link";
 import { PublicBulletinDetailed } from "../types";
-import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from "@/components/ui/card";
+import { Card, CardHeader, CardTitle, CardContent, CardFooter } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { formatDate } from "@/lib/utils";
 import {
   FileText,
-  Building2,
-  Calendar,
-  ExternalLink,
-  Flame,
-  Scale,
-  Users,
   Briefcase,
+  Users,
+  Scale,
+  GraduationCap,
+  Sparkles,
   ArrowRight,
   ShieldCheck,
+  Building2,
 } from "lucide-react";
 
 interface BulletinCardProps {
@@ -21,7 +20,13 @@ interface BulletinCardProps {
 }
 
 const categoryMeta: Record<string, { label: string; variant: "brand" | "warning" | "success" | "default"; icon: any }> = {
+  government_updates: { label: "Govt Update", variant: "success", icon: Building2 },
+  recruitment_jobs: { label: "Recruitment", variant: "brand", icon: Briefcase },
   employment_news: { label: "Rozgar Samachar", variant: "brand", icon: Briefcase },
+  exams: { label: "Exams", variant: "warning", icon: GraduationCap },
+  education: { label: "Education", variant: "default", icon: GraduationCap },
+  government_schemes: { label: "Govt Schemes", variant: "success", icon: Sparkles },
+  important_notifications: { label: "Notification", variant: "warning", icon: Users },
   student_advisory: { label: "Student Advisory", variant: "warning", icon: Users },
   legal_update: { label: "Court / Legal", variant: "default", icon: Scale },
   press_release: { label: "Press Release", variant: "success", icon: FileText },
@@ -32,7 +37,7 @@ export function BulletinCard({ bulletin }: BulletinCardProps) {
   const Icon = meta.icon;
 
   return (
-    <Card className="flex flex-col justify-between overflow-hidden border-slate-200 bg-white transition-all hover:border-brand-400 hover:shadow-md">
+    <Card className="flex flex-col justify-between overflow-hidden border-slate-200 bg-white transition-all hover:border-brand-400 hover:shadow-md group">
       <CardHeader className="pb-3">
         {/* Category & Status Badges */}
         <div className="flex flex-wrap items-center justify-between gap-2 mb-2">
@@ -82,7 +87,7 @@ export function BulletinCard({ bulletin }: BulletinCardProps) {
 
         <Link href={`/news/${bulletin.slug}`}>
           <span className="inline-flex items-center gap-1 text-xs font-bold text-brand-700 hover:text-brand-800 transition-colors">
-            <span>Read Full Advisory</span>
+            <span>Read Summary</span>
             <ArrowRight className="h-3 w-3" />
           </span>
         </Link>

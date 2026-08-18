@@ -83,9 +83,9 @@ export const SYSTEM_MODULES = [
   },
   {
     key: "exams",
-    title: "Government Exams",
-    shortTitle: "Exams",
-    description: "Examination calendars, test schedules, and qualification milestones.",
+    title: "Exams & Notifications",
+    shortTitle: "Exams & Notifications",
+    description: "Government exam notifications, schedules, eligibility and important dates.",
     href: "/exams",
     icon: "Calendar",
     status: "active",
@@ -166,7 +166,7 @@ export const SYSTEM_MODULES = [
 export const PUBLIC_NAV_ITEMS: NavItem[] = [
   { title: "Home", href: "/" },
   { title: "Govt Jobs", href: "/jobs" },
-  { title: "Govt Exams", href: "/exams" },
+  { title: "Exams & Notifications", href: "/exams" },
   { title: "Employment News", href: "/news" },
   { title: "Directory", href: "/#modules" },
   { title: "Official Sources", href: "/#sources" },
@@ -175,7 +175,7 @@ export const PUBLIC_NAV_ITEMS: NavItem[] = [
 export const ADMIN_NAV_ITEMS: NavItem[] = [
   { title: "Overview", href: "/admin", icon: "LayoutDashboard" },
   { title: "Government Jobs", href: "/admin/jobs", icon: "Briefcase" },
-  { title: "Government Exams", href: "/admin/exams", icon: "Calendar" },
+  { title: "Exams & Notifications", href: "/admin/exams", icon: "Calendar" },
   { title: "Bulletins & News", href: "/admin/bulletins", icon: "Newspaper" },
   { title: "Organizations", href: "/admin/organizations", icon: "Building2" },
   { title: "Official Sources", href: "/admin/sources", icon: "Globe" },

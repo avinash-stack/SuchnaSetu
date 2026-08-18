@@ -117,7 +117,7 @@ export default async function AdminDashboardPage() {
             <div className="flex items-center justify-between">
               <div>
                 <div className="text-xs font-medium text-slate-500 uppercase tracking-wider">
-                  Government Exams
+                  Exams & Notifications
                 </div>
                 <div className="text-2xl font-bold text-slate-900 mt-1 font-heading">
                   {totalExams}
@@ -132,7 +132,7 @@ export default async function AdminDashboardPage() {
                 href="/admin/exams"
                 className="text-xs font-medium text-purple-700 hover:text-purple-800 flex items-center gap-1"
               >
-                <span>Manage Exams</span>
+                <span>Manage Exams & Notices</span>
                 <ArrowRight className="h-3 w-3" />
               </Link>
               <Badge variant="brand" className="text-[10px]">

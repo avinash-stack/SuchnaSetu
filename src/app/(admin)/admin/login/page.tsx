@@ -1,6 +1,7 @@
 "use client";
 
 import * as React from "react";
+import Image from "next/image";
 import { useRouter, useSearchParams } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { Button } from "@/components/ui/button";
@@ -156,9 +157,14 @@ export default function AdminLoginPage() {
       <div className="w-full max-w-md space-y-6">
         {/* Portal Branding */}
         <div className="flex flex-col items-center text-center">
-          <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-br from-amber-600 to-emerald-700 text-white shadow-lg mb-3">
-            <ShieldCheck className="h-7 w-7" />
-          </div>
+          <Image
+            src="/brand/logo-icon.png"
+            alt="SuchnaSetu Logo"
+            width={56}
+            height={56}
+            className="h-14 w-14 object-contain bg-white rounded-2xl p-1.5 shadow-lg mb-3"
+            priority
+          />
           <h1 className="text-2xl font-bold tracking-tight text-white font-heading">
             SuchnaSetu Admin Portal
           </h1>

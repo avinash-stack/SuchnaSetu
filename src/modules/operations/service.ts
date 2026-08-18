@@ -2,8 +2,10 @@ import { createAdminClient } from "@/lib/supabase/admin";
 import { SourceAdapterRegistry } from "@/modules/ingestion/core/registry";
 import { isValidHttpUrl } from "@/lib/data-quality";
 import { SITE_CONFIG } from "@/lib/constants";
+import { getNextScheduledSync } from "@/modules/ingestion/config/scheduler.config";
 import {
   SystemHealthMetrics,
+  SourceHealthRecord,
   DataQualityAuditResult,
   SeoDiagnosticResult,
   OperationalAlert,
@@ -41,7 +43,7 @@ export async function getSystemHealthOverview(): Promise<SystemHealthMetrics> {
     totalJobs = jobs.count || 0;
     totalExams = exams.count || 0;
     totalBulletins = bulletins.count || 0;
-  } catch (err) {
+  } catch {
     dbStatus = "error";
   }
 
@@ -73,6 +75,8 @@ export async function getSystemHealthOverview(): Promise<SystemHealthMetrics> {
     // Graceful fallback
   }
 
+  const nextSync = getNextScheduledSync();
+
   return {
     database: {
       status: dbStatus,
@@ -89,6 +93,11 @@ export async function getSystemHealthOverview(): Promise<SystemHealthMetrics> {
       failedJobsCount,
       totalExtractedAllTime,
       totalInsertedAllTime,
+      nextScheduledSync: {
+        formattedIST: nextSync.formattedIST,
+        timeRemaining: nextSync.timeRemaining,
+        dateUTC: nextSync.date.toISOString(),
+      },
     },
     environment: {
       nodeEnv: process.env.NODE_ENV || "development",
@@ -101,15 +110,92 @@ export async function getSystemHealthOverview(): Promise<SystemHealthMetrics> {
 }
 
 /**
- * 2. Run Comprehensive Data Quality & Integrity Diagnostics.
+ * 2. Fetch Detailed Source Health Registry across all registered pipelines.
+ */
+export async function getSourceHealthRegistry(): Promise<SourceHealthRecord[]> {
+  const supabase = createAdminClient();
+  const nextSync = getNextScheduledSync();
+
+  try {
+    const { data: sources } = await (supabase.from("import_sources") as any)
+      .select("id, code, name, target_module, is_enabled, last_synced_at")
+      .order("name", { ascending: true });
+
+    const { data: recentJobs } = await (supabase.from("import_jobs") as any)
+      .select("source_id, status, error_message, created_at, completed_at")
+      .order("created_at", { ascending: false })
+      .limit(200);
+
+    const jobsBySource = new Map<string, any[]>();
+    (recentJobs || []).forEach((j: any) => {
+      const list = jobsBySource.get(j.source_id) || [];
+      list.push(j);
+      jobsBySource.set(j.source_id, list);
+    });
+
+    return (sources || []).map((src: any) => {
+      const srcJobs = jobsBySource.get(src.id) || [];
+      const runningJob = srcJobs.find((j: any) => j.status === "running");
+      const latestCompleted = srcJobs.find((j: any) => j.status === "completed");
+      const latestFailed = srcJobs.find((j: any) => j.status === "failed");
+
+      // Calculate consecutive failures
+      let consecutiveFailures = 0;
+      let lastErrorMessage: string | null = null;
+      for (const j of srcJobs) {
+        if (j.status === "failed") {
+          consecutiveFailures++;
+          if (!lastErrorMessage) lastErrorMessage = j.error_message;
+        } else if (j.status === "completed") {
+          break;
+        }
+      }
+
+      let currentStatus: "healthy" | "warning" | "error" | "syncing" | "disabled" = "healthy";
+      if (!src.is_enabled) {
+        currentStatus = "disabled";
+      } else if (runningJob) {
+        currentStatus = "syncing";
+      } else if (consecutiveFailures >= 2) {
+        currentStatus = "error";
+      } else if (consecutiveFailures > 0) {
+        currentStatus = "warning";
+      } else {
+        currentStatus = "healthy";
+      }
+
+      return {
+        id: src.id,
+        code: src.code,
+        name: src.name,
+        targetModule: src.target_module,
+        isEnabled: src.is_enabled,
+        lastSuccessfulSync: latestCompleted?.completed_at || src.last_synced_at || null,
+        lastFailedSync: latestFailed?.created_at || null,
+        nextScheduledSync: nextSync.formattedIST,
+        currentStatus,
+        consecutiveFailures,
+        lastErrorMessage,
+      };
+    });
+  } catch (err) {
+    console.error("Failed to load source health registry:", err);
+    return [];
+  }
+}
+
+/**
+ * 3. Run Comprehensive Data Quality & Integrity Diagnostics.
  */
 export async function getDataQualityAudit(): Promise<DataQualityAuditResult> {
   const supabase = createAdminClient();
 
   const { data: jobs } = await (supabase.from("gov_jobs") as any)
     .select("id, title, slug, notification_number, official_notification_url, official_apply_url, application_start_date, application_end_date, total_vacancies, pay_scale_details, meta_title, meta_description, status")
-    .order("created_at", { ascending: false })
     .limit(200);
+
+  const totalAudited = jobs?.length || 0;
+  let passedRecords = 0;
 
   const brokenUrls: Array<{ id: string; title: string; url: string; reason: string }> = [];
   const invalidDates: Array<{ id: string; title: string; issue: string }> = [];
@@ -118,79 +204,64 @@ export async function getDataQualityAudit(): Promise<DataQualityAuditResult> {
   const expiredPublishedNotices: Array<{ id: string; title: string; endDate: string }> = [];
   const missingSeoMeta: Array<{ id: string; title: string }> = [];
 
-  const now = new Date().getTime();
-  let criticalCount = 0;
-  let warningCount = 0;
-  let infoCount = 0;
-  let passedCount = 0;
+  const now = new Date();
 
-  for (const job of jobs || []) {
+  (jobs || []).forEach((job: any) => {
     let hasIssues = false;
 
-    // Check Official URLs
-    const url = job.official_notification_url || job.official_apply_url;
-    if (!url || !isValidHttpUrl(url)) {
-      brokenUrls.push({
-        id: job.id,
-        title: job.title,
-        url: url || "None",
-        reason: !url ? "Missing URL" : "Malformed URL format",
-      });
-      criticalCount++;
+    // URL validation
+    if (job.official_notification_url && !isValidHttpUrl(job.official_notification_url)) {
+      brokenUrls.push({ id: job.id, title: job.title, url: job.official_notification_url, reason: "Malformed URL protocol" });
       hasIssues = true;
     }
 
-    // Check Dates
+    // Date logical sanity
     if (job.application_start_date && job.application_end_date) {
-      const start = new Date(job.application_start_date).getTime();
-      const end = new Date(job.application_end_date).getTime();
-      if (isNaN(start) || isNaN(end) || start > end) {
-        invalidDates.push({
-          id: job.id,
-          title: job.title,
-          issue: "Start date is later than end date or invalid format",
-        });
-        criticalCount++;
+      const start = new Date(job.application_start_date);
+      const end = new Date(job.application_end_date);
+      if (end < start) {
+        invalidDates.push({ id: job.id, title: job.title, issue: "End date precedes start date" });
         hasIssues = true;
-      } else if (end < now && job.status === "published") {
-        expiredPublishedNotices.push({
-          id: job.id,
-          title: job.title,
-          endDate: job.application_end_date,
-        });
-        warningCount++;
       }
     }
 
-    // Check Vacancies
-    if (!job.total_vacancies || job.total_vacancies === 0) {
+    // Vacancy check
+    if (job.total_vacancies === 0 || job.total_vacancies === null) {
       zeroVacancies.push({ id: job.id, title: job.title });
-      warningCount++;
-      hasIssues = true;
     }
 
-    // Check SEO metadata
+    // Expiry check on published notices
+    if (job.status === "published" && job.application_end_date) {
+      const end = new Date(job.application_end_date);
+      if (end < now) {
+        expiredPublishedNotices.push({ id: job.id, title: job.title, endDate: job.application_end_date });
+      }
+    }
+
+    // SEO Meta completeness
     if (!job.meta_title || !job.meta_description) {
       missingSeoMeta.push({ id: job.id, title: job.title });
-      infoCount++;
     }
 
     if (!hasIssues) {
-      passedCount++;
+      passedRecords++;
     }
-  }
+  });
 
-  const total = (jobs || []).length || 1;
-  const rawScore = Math.round((passedCount / total) * 100);
+  const criticalIssues = brokenUrls.length + invalidDates.length;
+  const warningIssues = expiredPublishedNotices.length + zeroVacancies.length;
+  const infoIssues = missingSeoMeta.length;
+
+  const score = totalAudited > 0 ? Math.max(0, Math.round(((totalAudited - criticalIssues * 2 - warningIssues) / totalAudited) * 100)) : 100;
 
   return {
-    score: Math.max(0, Math.min(100, rawScore)),
-    totalAudited: (jobs || []).length,
-    passedRecords: passedCount,
+    score,
+    totalAudited,
+    passedRecords,
     issuesCount: {
-      critical: criticalCount,
-      warning: warningCount,
-      info: infoCount,
+      critical: criticalIssues,
+      warning: warningIssues,
+      info: infoIssues,
     },
     breakdown: {
       brokenUrls,
@@ -204,76 +275,70 @@ export async function getDataQualityAudit(): Promise<DataQualityAuditResult> {
 }
 
 /**
- * 3. Search & SEO Diagnostics.
+ * 4. Run Technical SEO & Indexability Diagnostics.
  */
 export async function getSeoDiagnostics(): Promise<SeoDiagnosticResult> {
   const supabase = createAdminClient();
 
-  const [jobsRes, examsRes, bulletinsRes] = await Promise.all([
-    supabase.from("gov_jobs").select("id, meta_title, meta_description", { count: "exact" }).eq("status", "published"),
-    supabase.from("gov_exams").select("id, meta_title, meta_description", { count: "exact" }).eq("status", "published"),
-    supabase.from("public_bulletins").select("id, meta_title, meta_description", { count: "exact" }).eq("status", "published"),
+  const [jobsCount, examsCount, bulletinsCount] = await Promise.all([
+    supabase.from("gov_jobs").select("*", { count: "exact", head: true }).eq("status", "published"),
+    supabase.from("gov_exams").select("*", { count: "exact", head: true }).eq("status", "published"),
+    supabase.from("public_bulletins").select("*", { count: "exact", head: true }).eq("status", "published"),
   ]);
 
-  const totalPublished =
-    (jobsRes.count || 0) + (examsRes.count || 0) + (bulletinsRes.count || 0) + 5; // +5 static core pages
+  const totalPublishedPages = (jobsCount.count || 0) + (examsCount.count || 0) + (bulletinsCount.count || 0) + 12;
 
   return {
-    indexedPagesEstimate: totalPublished,
+    indexedPagesEstimate: totalPublishedPages,
     sitemapStatus: "healthy",
     sitemapUrl: `${SITE_CONFIG.url}/sitemap.xml`,
     robotsTxtStatus: "valid",
-    structuredDataCoveragePercent: 100, // 100% of published pages generate Schema.org JSON-LD
+    structuredDataCoveragePercent: 100,
     canonicalUrlCompliancePercent: 100,
     openGraphCompliancePercent: 100,
   };
 }
 
 /**
- * 4. Generate Live Operational Alerts.
+ * 5. Fetch Operational Alerts & Actionable Incidents.
  */
 export async function getOperationalAlerts(): Promise<OperationalAlert[]> {
   const supabase = createAdminClient();
   const alerts: OperationalAlert[] = [];
 
   try {
-    // 1. Check for Failed Ingestion Jobs in last 24h
+    // 1. Check for failed ingestion jobs in last 24h
     const { data: failedJobs } = await (supabase.from("import_jobs") as any)
-      .select("id, created_at, error_message, import_sources(name, code)")
+      .select("id, error_message, created_at, import_sources(name, code)")
       .eq("status", "failed")
       .order("created_at", { ascending: false })
       .limit(5);
 
-    if (failedJobs && failedJobs.length > 0) {
+    (failedJobs || []).forEach((job: any) => {
       alerts.push({
-        id: "alert-failed-jobs",
+        id: `alert-failed-job-${job.id}`,
+        level: "critical",
+        title: `Ingestion Failed: ${job.import_sources?.name || "Pipeline"}`,
+        message: job.error_message || "Ingestion pipeline encountered a fatal execution error.",
+        source: job.import_sources?.code,
+        createdAt: job.created_at,
+        actionUrl: `/admin/sources`,
+        actionLabel: "Triage Pipeline",
+      });
+    });
+
+    // 2. Check for missing essential environment keys
+    if (!process.env.NEXT_PUBLIC_ADSENSE_CLIENT_ID) {
+      alerts.push({
+        id: "alert-adsense-missing",
         level: "warning",
-        title: `${failedJobs.length} Failed Ingestion Job(s) Detected`,
-        message: `Recent pipeline failures in ${failedJobs.map((j: any) => j.import_sources?.name).filter(Boolean).join(", ")}.`,
-        createdAt: failedJobs[0].created_at,
-        actionUrl: "/admin/operations#jobs",
-        actionLabel: "View & Retry Failed Jobs",
-      });
-    }
-
-    // 2. Check for Disabled Ingestion Sources
-    const { data: disabledSources } = await (supabase.from("import_sources") as any)
-      .select("id, name")
-      .eq("is_enabled", false);
-
-    if (disabledSources && disabledSources.length > 0) {
-      alerts.push({
-        id: "alert-disabled-sources",
-        level: "info",
-        title: `${disabledSources.length} Ingestion Pipeline(s) Disabled`,
-        message: `Pipelines disabled: ${disabledSources.map((s: any) => s.name).slice(0, 3).join(", ")}${disabledSources.length > 3 ? "..." : ""}`,
+        title: "Google AdSense Client ID Unset",
+        message: "Monetization scripts are in standby. Configure NEXT_PUBLIC_ADSENSE_CLIENT_ID.",
         createdAt: new Date().toISOString(),
-        actionUrl: "/admin/sources",
-        actionLabel: "Manage Sources",
       });
     }
 
-    // 3. System Health Status Alert
+    // 3. Check adapter registry health
     const registeredAdapters = SourceAdapterRegistry.listAdapters();
     if (registeredAdapters.length === 0) {
       alerts.push({
@@ -298,7 +363,7 @@ export async function getOperationalAlerts(): Promise<OperationalAlert[]> {
 }
 
 /**
- * 5. Generate Operational Reports (Daily, Weekly, Monthly Aggregations).
+ * 6. Generate Operational Reports (Daily, Weekly, Monthly Aggregations).
  */
 export async function getOperationalReports(): Promise<OperationalReportSummary> {
   const supabase = createAdminClient();

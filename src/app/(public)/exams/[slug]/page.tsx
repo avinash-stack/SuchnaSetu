@@ -127,7 +127,7 @@ export default async function PublicExamDetailPage({ params }: ExamDetailPagePro
         </Link>
         <ChevronRight className="h-3.5 w-3.5 text-slate-400" />
         <Link href="/exams" className="hover:text-slate-800 transition-colors">
-          Government Exams
+          Exams & Notifications
         </Link>
         <ChevronRight className="h-3.5 w-3.5 text-slate-400" />
         <span className="font-semibold text-slate-900 truncate max-w-md">

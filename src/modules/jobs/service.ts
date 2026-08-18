@@ -91,10 +91,15 @@ export async function getPublicJobs(params: JobFilterParams = {}): Promise<{
     query = query.eq("is_featured", params.isFeatured);
   }
 
-  // Search by keyword in title or notification number
-  if (params.search) {
-    const searchTerm = `%${params.search.trim()}%`;
-    query = query.or(`title.ilike.${searchTerm},notification_number.ilike.${searchTerm}`);
+  // Search by keyword in title, notification number, summary, or slug
+  if (params.search && params.search.trim()) {
+    const cleanTerm = params.search.replace(/[,()]/g, " ").trim();
+    if (cleanTerm) {
+      const searchTerm = `%${cleanTerm}%`;
+      query = query.or(
+        `title.ilike.${searchTerm},notification_number.ilike.${searchTerm},summary.ilike.${searchTerm},slug.ilike.${searchTerm}`
+      );
+    }
   }
 
   // Pagination
@@ -235,9 +240,14 @@ export async function getAdminJobs(params: {
     }
   }
 
-  if (params.search) {
-    const searchTerm = `%${params.search.trim()}%`;
-    query = query.or(`title.ilike.${searchTerm},notification_number.ilike.${searchTerm}`);
+  if (params.search && params.search.trim()) {
+    const cleanTerm = params.search.replace(/[,()]/g, " ").trim();
+    if (cleanTerm) {
+      const searchTerm = `%${cleanTerm}%`;
+      query = query.or(
+        `title.ilike.${searchTerm},notification_number.ilike.${searchTerm},summary.ilike.${searchTerm},slug.ilike.${searchTerm}`
+      );
+    }
   }
 
   query = query.range(offset, offset + limit - 1);

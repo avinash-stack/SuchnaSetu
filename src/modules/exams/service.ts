@@ -28,11 +28,14 @@ export async function getPublicExams(params: ExamFilterParams = {}) {
     .eq("status", "published")
     .is("deleted_at", null);
 
-  if (params.search) {
-    const term = `%${params.search.trim()}%`;
-    query = query.or(
-      `title.ilike.${term},short_title.ilike.${term},description.ilike.${term},exam_code.ilike.${term}`
-    );
+  if (params.search && params.search.trim()) {
+    const cleanTerm = params.search.replace(/[,()]/g, " ").trim();
+    if (cleanTerm) {
+      const term = `%${cleanTerm}%`;
+      query = query.or(
+        `title.ilike.${term},short_title.ilike.${term},description.ilike.${term},exam_code.ilike.${term},slug.ilike.${term}`
+      );
+    }
   }
 
   if (params.mode) {
@@ -217,11 +220,14 @@ export async function getAdminExams(
     }
   }
 
-  if (params.search) {
-    const term = `%${params.search.trim()}%`;
-    query = query.or(
-      `title.ilike.${term},short_title.ilike.${term},slug.ilike.${term},exam_code.ilike.${term}`
-    );
+  if (params.search && params.search.trim()) {
+    const cleanTerm = params.search.replace(/[,()]/g, " ").trim();
+    if (cleanTerm) {
+      const term = `%${cleanTerm}%`;
+      query = query.or(
+        `title.ilike.${term},short_title.ilike.${term},slug.ilike.${term},exam_code.ilike.${term},description.ilike.${term}`
+      );
+    }
   }
 
   query = query

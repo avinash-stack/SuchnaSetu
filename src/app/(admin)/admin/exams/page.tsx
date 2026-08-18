@@ -16,6 +16,7 @@ import {
   Layers,
   Sparkles,
 } from "lucide-react";
+import { AdminSearchInput } from "@/components/shared/admin-search-input";
 
 interface AdminExamsPageProps {
   searchParams: Promise<{
@@ -43,10 +44,10 @@ export default async function AdminExamsPage({ searchParams }: AdminExamsPagePro
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <h1 className="text-2xl font-bold tracking-tight text-slate-900 font-heading">
-            Government Examinations Management
+            Exams & Notifications Management
           </h1>
           <p className="text-xs text-slate-500 mt-1">
-            Create, verify, stage-schedule, publish, and audit structured national and state examinations.
+            Publish standardized examination calendars, syllabus summaries, pattern guidelines, and important date cycles.
           </p>
         </div>
 
@@ -59,7 +60,7 @@ export default async function AdminExamsPage({ searchParams }: AdminExamsPagePro
       </div>
 
       {/* Filter Tabs & Search Bar */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 rounded-xl border border-slate-200 bg-white p-3 shadow-sm">
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 rounded-xl border border-slate-200 bg-white p-3 shadow-sm">
         {/* Status Filter Tabs */}
         <div className="flex flex-wrap items-center gap-1">
           {[
@@ -73,7 +74,7 @@ export default async function AdminExamsPage({ searchParams }: AdminExamsPagePro
             return (
               <Link
                 key={tab.value}
-                href={`/admin/exams?status=${tab.value}${params.search ? `&search=${params.search}` : ""}`}
+                href={`/admin/exams?status=${tab.value}${params.search ? `&search=${encodeURIComponent(params.search)}` : ""}`}
                 className={`rounded-lg px-3 py-1.5 text-xs font-semibold transition-colors ${
                   isActive
                     ? "bg-slate-900 text-white"
@@ -86,9 +87,15 @@ export default async function AdminExamsPage({ searchParams }: AdminExamsPagePro
           })}
         </div>
 
-        {/* Count Indicator */}
-        <div className="text-xs text-slate-500 font-medium">
-          Total: <span className="font-bold text-slate-800">{total}</span> records
+        {/* Right: Search Input & Count Indicator */}
+        <div className="flex items-center gap-3">
+          <AdminSearchInput
+            placeholder="Search exam title, code..."
+            className="w-full sm:w-64"
+          />
+          <div className="text-xs text-slate-500 font-medium shrink-0">
+            Total: <span className="font-bold text-slate-800">{total}</span> records
+          </div>
         </div>
       </div>
 

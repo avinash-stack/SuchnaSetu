@@ -2,6 +2,7 @@
 
 import * as React from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { usePathname } from "next/navigation";
 import { ADMIN_NAV_ITEMS } from "@/lib/constants";
 import {
@@ -38,9 +39,13 @@ export function AdminSidebar() {
       {/* Top Brand Bar */}
       <div>
         <div className="flex h-16 items-center gap-3 border-b border-slate-800 px-6">
-          <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-gradient-to-br from-amber-600 to-emerald-700 text-white shadow-md">
-            <ShieldCheck className="h-5 w-5" />
-          </div>
+          <Image
+            src="/brand/logo-icon.png"
+            alt="SuchnaSetu Logo"
+            width={40}
+            height={40}
+            className="h-10 w-10 object-contain bg-white rounded-xl p-1 shadow-sm"
+          />
           <div className="flex flex-col">
             <span className="text-base font-bold tracking-tight text-white">
               SuchnaSetu

@@ -6,9 +6,30 @@ import { requireAdmin } from "@/lib/auth";
 import { IngestionPipelineEngine } from "./core/pipeline";
 import { SourceAdapterRegistry } from "./core/registry";
 import { IngestionStats, ImportSource } from "./types";
+import { getSchedulerConfig } from "./config/scheduler.config";
+
+/**
+ * Checks whether an active sync job is currently running for a source.
+ * Enforces timeout window to auto-clear stalled jobs.
+ */
+export async function isSourceActivelyRunning(sourceId: string): Promise<boolean> {
+  const supabase = createAdminClient();
+  const config = getSchedulerConfig();
+  const cutoffTime = new Date(Date.now() - config.jobTimeoutMinutes * 60 * 1000).toISOString();
+
+  const { data: runningJobs } = await (supabase.from("import_jobs") as any)
+    .select("id")
+    .eq("source_id", sourceId)
+    .eq("status", "running")
+    .gt("started_at", cutoffTime)
+    .limit(1);
+
+  return Boolean(runningJobs && runningJobs.length > 0);
+}
 
 /**
  * Triggers a manual execution of an import job for a given source.
+ * Prevents concurrent execution if a job is already in progress for this source.
  */
 export async function triggerImportJob(sourceId: string): Promise<{
   success: boolean;
@@ -34,7 +55,16 @@ export async function triggerImportJob(sourceId: string): Promise<{
       return { success: false, error: `Import source "${source.name}" is currently disabled` };
     }
 
-    // 2. Create Import Job Record
+    // 2. Concurrency Lock: Prevent concurrent sync for the same source
+    const isRunning = await isSourceActivelyRunning(sourceId);
+    if (isRunning) {
+      return {
+        success: false,
+        error: `A synchronization job is already running for "${source.name}". Concurrent execution is prevented.`,
+      };
+    }
+
+    // 3. Create Import Job Record with start timestamp
     const { data: job, error: jobError } = await (supabase.from("import_jobs") as any)
       .insert({
         source_id: sourceId,
@@ -51,7 +81,7 @@ export async function triggerImportJob(sourceId: string): Promise<{
 
     const jobId = job.id;
 
-    // 3. Execute the Ingestion Pipeline
+    // 4. Execute the Ingestion Pipeline
     const pipeline = new IngestionPipelineEngine();
     let stats: IngestionStats;
 
@@ -65,7 +95,7 @@ export async function triggerImportJob(sourceId: string): Promise<{
       };
     }
 
-    // 4. Record Admin Audit Log
+    // 5. Record Admin Audit Log
     try {
       await (supabase.from("audit_logs") as any).insert({
         admin_id: admin.id,
@@ -82,9 +112,12 @@ export async function triggerImportJob(sourceId: string): Promise<{
       console.warn("Failed to write audit log for import sync:", auditErr);
     }
 
-    // 5. Revalidate cache
+    // 6. Revalidate cache
     revalidatePath("/admin/sources");
+    revalidatePath("/admin/operations");
     revalidatePath("/jobs");
+    revalidatePath("/exams");
+    revalidatePath("/news");
     revalidatePath("/sitemap.xml");
     revalidatePath("/");
 
@@ -102,7 +135,27 @@ export async function triggerImportJob(sourceId: string): Promise<{
 }
 
 /**
- * Executes a bulk synchronization across multiple enabled sources.
+ * Executes a bulk synchronization across multiple selected sources.
+ */
+export async function syncSelectedSourcesAction(sourceIds: string[]): Promise<{
+  success: boolean;
+  totalSynced: number;
+  totalErrors: number;
+  results: Array<{ sourceId: string; sourceCode: string; success: boolean; error?: string }>;
+}> {
+  if (!sourceIds || sourceIds.length === 0) {
+    return {
+      success: false,
+      totalSynced: 0,
+      totalErrors: 1,
+      results: [],
+    };
+  }
+  return bulkSyncSourcesAction(sourceIds);
+}
+
+/**
+ * Executes a bulk synchronization across all enabled sources or specified IDs.
  */
 export async function bulkSyncSourcesAction(sourceIds?: string[]): Promise<{
   success: boolean;
@@ -153,7 +206,10 @@ export async function bulkSyncSourcesAction(sourceIds?: string[]): Promise<{
     }
 
     revalidatePath("/admin/sources");
+    revalidatePath("/admin/operations");
     revalidatePath("/jobs");
+    revalidatePath("/exams");
+    revalidatePath("/news");
     revalidatePath("/sitemap.xml");
     revalidatePath("/");
 
@@ -169,6 +225,42 @@ export async function bulkSyncSourcesAction(sourceIds?: string[]): Promise<{
       totalSynced: 0,
       totalErrors: 1,
       results: [],
+    };
+  }
+}
+
+/**
+ * Retrieves currently active running sync jobs.
+ */
+export async function getActiveRunningJobsAction(): Promise<{
+  success: boolean;
+  runningJobSourceIds: string[];
+  runningJobs: any[];
+}> {
+  try {
+    await requireAdmin();
+    const supabase = createAdminClient();
+    const config = getSchedulerConfig();
+    const cutoffTime = new Date(Date.now() - config.jobTimeoutMinutes * 60 * 1000).toISOString();
+
+    const { data: jobs, error } = await (supabase.from("import_jobs") as any)
+      .select("id, source_id, started_at, trigger_type, import_sources(name, code)")
+      .eq("status", "running")
+      .gt("started_at", cutoffTime);
+
+    if (error) throw error;
+
+    const sourceIds = (jobs || []).map((j: any) => j.source_id);
+    return {
+      success: true,
+      runningJobSourceIds: sourceIds,
+      runningJobs: jobs || [],
+    };
+  } catch (err: any) {
+    return {
+      success: false,
+      runningJobSourceIds: [],
+      runningJobs: [],
     };
   }
 }

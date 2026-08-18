@@ -17,6 +17,8 @@ import {
   Trash2,
 } from "lucide-react";
 
+import { AdminSearchInput } from "@/components/shared/admin-search-input";
+
 interface AdminJobsPageProps {
   searchParams: Promise<{
     status?: string;
@@ -59,7 +61,7 @@ export default async function AdminJobsPage({ searchParams }: AdminJobsPageProps
       </div>
 
       {/* Filter Tabs & Search Bar */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 rounded-xl border border-slate-200 bg-white p-3 shadow-sm">
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 rounded-xl border border-slate-200 bg-white p-3 shadow-sm">
         {/* Status Filter Tabs */}
         <div className="flex flex-wrap items-center gap-1">
           {[
@@ -73,7 +75,7 @@ export default async function AdminJobsPage({ searchParams }: AdminJobsPageProps
             return (
               <Link
                 key={tab.value}
-                href={`/admin/jobs?status=${tab.value}${params.search ? `&search=${params.search}` : ""}`}
+                href={`/admin/jobs?status=${tab.value}${params.search ? `&search=${encodeURIComponent(params.search)}` : ""}`}
                 className={`rounded-lg px-3 py-1.5 text-xs font-semibold transition-colors ${
                   isActive
                     ? "bg-slate-900 text-white"
@@ -86,9 +88,15 @@ export default async function AdminJobsPage({ searchParams }: AdminJobsPageProps
           })}
         </div>
 
-        {/* Count Indicator */}
-        <div className="text-xs text-slate-500 font-medium">
-          Total: <span className="font-bold text-slate-800">{total}</span> records
+        {/* Right: Search Input & Count Indicator */}
+        <div className="flex items-center gap-3">
+          <AdminSearchInput
+            placeholder="Search title, notice no..."
+            className="w-full sm:w-64"
+          />
+          <div className="text-xs text-slate-500 font-medium shrink-0">
+            Total: <span className="font-bold text-slate-800">{total}</span> records
+          </div>
         </div>
       </div>
 
@@ -209,7 +217,11 @@ export default async function AdminJobsPage({ searchParams }: AdminJobsPageProps
 
           <div className="flex items-center gap-2">
             {currentPage > 1 && (
-              <Link href={`/admin/jobs?page=${currentPage - 1}&status=${currentStatus}`}>
+              <Link
+                href={`/admin/jobs?page=${currentPage - 1}&status=${currentStatus}${
+                  params.search ? `&search=${encodeURIComponent(params.search)}` : ""
+                }`}
+              >
                 <Button variant="outline" size="sm" className="gap-1 text-xs">
                   <ChevronLeft className="h-4 w-4" />
                   <span>Previous</span>
@@ -218,7 +230,11 @@ export default async function AdminJobsPage({ searchParams }: AdminJobsPageProps
             )}
 
             {currentPage < totalPages && (
-              <Link href={`/admin/jobs?page=${currentPage + 1}&status=${currentStatus}`}>
+              <Link
+                href={`/admin/jobs?page=${currentPage + 1}&status=${currentStatus}${
+                  params.search ? `&search=${encodeURIComponent(params.search)}` : ""
+                }`}
+              >
                 <Button variant="outline" size="sm" className="gap-1 text-xs">
                   <span>Next</span>
                   <ChevronRight className="h-4 w-4" />

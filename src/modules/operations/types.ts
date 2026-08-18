@@ -14,6 +14,11 @@ export interface SystemHealthMetrics {
     failedJobsCount: number;
     totalExtractedAllTime: number;
     totalInsertedAllTime: number;
+    nextScheduledSync?: {
+      formattedIST: string;
+      timeRemaining: string;
+      dateUTC: string;
+    };
   };
   environment: {
     nodeEnv: string;
@@ -22,6 +27,20 @@ export interface SystemHealthMetrics {
     hasAdsenseId: boolean;
     hasGoogleSearchConsole: boolean;
   };
+}
+
+export interface SourceHealthRecord {
+  id: string;
+  code: string;
+  name: string;
+  targetModule: string;
+  isEnabled: boolean;
+  lastSuccessfulSync: string | null;
+  lastFailedSync: string | null;
+  nextScheduledSync: string;
+  currentStatus: "healthy" | "warning" | "error" | "syncing" | "disabled";
+  consecutiveFailures: number;
+  lastErrorMessage?: string | null;
 }
 
 export interface DataQualityAuditResult {

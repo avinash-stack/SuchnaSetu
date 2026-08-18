@@ -8,7 +8,7 @@ import { EmptyState } from "@/components/shared/empty-state";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { constructMetadata } from "@/lib/seo";
-import { Briefcase, Filter, ChevronLeft, ChevronRight, Sparkles } from "lucide-react";
+import { Briefcase, Filter, ChevronLeft, ChevronRight, X, Sparkles } from "lucide-react";
 
 interface JobsPageProps {
   searchParams: Promise<{
@@ -33,6 +33,27 @@ export async function generateMetadata({ searchParams }: JobsPageProps): Promise
     description: "Verified central and state government recruitment notifications, post vacancies, eligibility criteria, and direct official PDF notices.",
     path: "/jobs",
   });
+}
+
+function buildPageUrl(params: Record<string, string | undefined>, newPage: number) {
+  const q = new URLSearchParams();
+  Object.entries(params).forEach(([k, v]) => {
+    if (v && k !== "page") q.set(k, v);
+  });
+  if (newPage > 1) {
+    q.set("page", String(newPage));
+  }
+  const qs = q.toString();
+  return qs ? `/jobs?${qs}` : "/jobs";
+}
+
+function buildClearSearchUrl(params: Record<string, string | undefined>) {
+  const q = new URLSearchParams();
+  Object.entries(params).forEach(([k, v]) => {
+    if (v && k !== "search" && k !== "page") q.set(k, v);
+  });
+  const qs = q.toString();
+  return qs ? `/jobs?${qs}` : "/jobs";
 }
 
 export default async function PublicJobsPage({ searchParams }: JobsPageProps) {
@@ -63,7 +84,7 @@ export default async function PublicJobsPage({ searchParams }: JobsPageProps) {
             <span>Official Recruitment Module</span>
           </div>
           <h1 className="text-3xl font-extrabold tracking-tight text-slate-900 sm:text-4xl font-heading mt-1">
-            Government Jobs & Notifications
+            Government Jobs &amp; Notifications
           </h1>
           <p className="text-sm text-slate-500 mt-1 max-w-2xl">
             Structured notifications aggregated from UPSC, SSC, State PSCs, Banks, and Defence. Every notice links directly to the official government PDF and portal.
@@ -78,8 +99,24 @@ export default async function PublicJobsPage({ searchParams }: JobsPageProps) {
       </div>
 
       {/* Search Header */}
-      <div className="max-w-4xl">
+      <div className="max-w-4xl space-y-3">
         <SearchBar placeholder="Search by job title, organization (UPSC, SSC), post name, or notification reference..." />
+
+        {/* Active Search Pill */}
+        {params.search && (
+          <div className="flex items-center gap-2 text-xs text-slate-600 bg-brand-50/70 border border-brand-200 px-3 py-1.5 rounded-lg w-fit">
+            <span>
+              Showing results for: <strong>&ldquo;{params.search}&rdquo;</strong> ({total} matches)
+            </span>
+            <Link
+              href={buildClearSearchUrl(params)}
+              className="text-slate-500 hover:text-slate-900 p-0.5 rounded transition-colors"
+              title="Clear search query"
+            >
+              <X className="h-3.5 w-3.5" />
+            </Link>
+          </div>
+        )}
       </div>
 
       {/* Main Content: Sidebar + Job Grid */}
@@ -104,7 +141,7 @@ export default async function PublicJobsPage({ searchParams }: JobsPageProps) {
                 ))}
               </div>
 
-              {/* Pagination */}
+              {/* Pagination with parameter preservation */}
               {totalPages > 1 && (
                 <div className="flex items-center justify-between border-t border-slate-200 pt-6">
                   <div className="text-xs text-slate-500">
@@ -114,7 +151,7 @@ export default async function PublicJobsPage({ searchParams }: JobsPageProps) {
 
                   <div className="flex items-center gap-2">
                     {currentPage > 1 && (
-                      <Link href={`/jobs?page=${currentPage - 1}`}>
+                      <Link href={buildPageUrl(params, currentPage - 1)}>
                         <Button variant="outline" size="sm" className="gap-1 text-xs">
                           <ChevronLeft className="h-4 w-4" />
                           <span>Previous</span>
@@ -123,7 +160,7 @@ export default async function PublicJobsPage({ searchParams }: JobsPageProps) {
                     )}
 
                     {currentPage < totalPages && (
-                      <Link href={`/jobs?page=${currentPage + 1}`}>
+                      <Link href={buildPageUrl(params, currentPage + 1)}>
                         <Button variant="outline" size="sm" className="gap-1 text-xs">
                           <span>Next</span>
                           <ChevronRight className="h-4 w-4" />
@@ -135,11 +172,26 @@ export default async function PublicJobsPage({ searchParams }: JobsPageProps) {
               )}
             </>
           ) : (
-            <EmptyState
-              icon={Briefcase}
-              title="No Government Job Notices Found"
-              description="There are currently no published official job notices matching your selected filters. Try clearing your filters or checking back as new gazette releases are published."
-            />
+            <div className="space-y-4">
+              <EmptyState
+                icon={Briefcase}
+                title={params.search ? `No results for "${params.search}"` : "No Government Job Notices Found"}
+                description={
+                  params.search
+                    ? "No official recruitment notices matched your search query. Try searching with alternative keywords, acronyms (e.g. UPSC, SSC, RRB), or clearing your search."
+                    : "There are currently no published official job notices matching your selected filters. Try clearing your filters or checking back as new gazette releases are published."
+                }
+              />
+              {(params.search || Object.keys(params).length > 0) && (
+                <div className="text-center">
+                  <Link href="/jobs">
+                    <Button variant="brand" size="sm">
+                      Clear Search &amp; All Filters
+                    </Button>
+                  </Link>
+                </div>
+              )}
+            </div>
           )}
         </div>
       </div>

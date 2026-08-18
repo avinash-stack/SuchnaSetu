@@ -14,6 +14,7 @@ import {
   Loader2,
   Power,
   Zap,
+  CheckSquare,
 } from "lucide-react";
 import {
   triggerImportJob,
@@ -21,6 +22,7 @@ import {
   getImportJobLogs,
   toggleSourceEnabledAction,
   bulkSyncSourcesAction,
+  syncSelectedSourcesAction,
 } from "@/modules/ingestion/actions";
 
 interface SourceActionsClientProps {
@@ -28,6 +30,7 @@ interface SourceActionsClientProps {
   sourceName: string;
   sourceCode: string;
   isEnabled: boolean;
+  isActivelyRunning?: boolean;
 }
 
 export function SourceActionsClient({
@@ -35,10 +38,11 @@ export function SourceActionsClient({
   sourceName,
   sourceCode,
   isEnabled,
+  isActivelyRunning = false,
 }: SourceActionsClientProps) {
   const router = useRouter();
   const [testing, setTesting] = useState(false);
-  const [syncing, setSyncing] = useState(false);
+  const [syncing, setSyncing] = useState(isActivelyRunning);
   const [toggling, setToggling] = useState(false);
   const [enabled, setEnabled] = useState(isEnabled);
   const [result, setResult] = useState<{
@@ -90,6 +94,7 @@ export function SourceActionsClient({
   };
 
   const handleTriggerSync = async () => {
+    if (syncing) return;
     setSyncing(true);
     setResult(null);
     try {
@@ -119,7 +124,7 @@ export function SourceActionsClient({
 
   return (
     <div className="space-y-2">
-      <div className="flex items-center gap-1.5 flex-wrap">
+      <div className="flex items-center gap-1.5 flex-wrap justify-end">
         <Button
           size="sm"
           variant="outline"
@@ -166,7 +171,7 @@ export function SourceActionsClient({
           ) : (
             <Play className="h-3 w-3 fill-current" />
           )}
-          <span>Sync Now</span>
+          <span>{syncing ? "Syncing..." : "Sync Now"}</span>
         </Button>
       </div>
 
@@ -190,18 +195,27 @@ export function SourceActionsClient({
   );
 }
 
-export function BulkSyncButton() {
+export function BulkSyncButton({ selectedSourceIds = [] }: { selectedSourceIds?: string[] }) {
   const router = useRouter();
-  const [syncingAll, setSyncingAll] = useState(false);
+  const [syncing, setSyncing] = useState(false);
   const [summary, setSummary] = useState<string | null>(null);
 
-  const handleBulkSync = async () => {
-    if (!confirm("Run synchronization across all enabled official sources now?")) return;
+  const isSelectionMode = selectedSourceIds.length > 0;
 
-    setSyncingAll(true);
+  const handleSync = async () => {
+    const confirmMsg = isSelectionMode
+      ? `Run synchronization across ${selectedSourceIds.length} selected source pipelines now?`
+      : "Run synchronization across ALL active enabled sources now?";
+
+    if (!confirm(confirmMsg)) return;
+
+    setSyncing(true);
     setSummary(null);
     try {
-      const res = await bulkSyncSourcesAction();
+      const res = isSelectionMode
+        ? await syncSelectedSourcesAction(selectedSourceIds)
+        : await bulkSyncSourcesAction();
+
       if (res.success) {
         setSummary(`Successfully synced ${res.totalSynced} source pipelines!`);
       } else {
@@ -209,32 +223,41 @@ export function BulkSyncButton() {
       }
       router.refresh();
     } catch (err: any) {
-      setSummary(err?.message || "Failed to trigger bulk sync");
+      setSummary(err?.message || "Failed to trigger sync");
     } finally {
-      setSyncingAll(false);
+      setSyncing(false);
     }
   };
 
   return (
-    <div className="flex items-center gap-3">
+    <div className="flex items-center gap-3 flex-wrap">
       {summary && (
         <span className="text-xs text-emerald-700 bg-emerald-50 px-2.5 py-1 rounded-md border border-emerald-200 font-medium">
           {summary}
         </span>
       )}
+
       <Button
         variant="brand"
         size="sm"
-        onClick={handleBulkSync}
-        disabled={syncingAll}
+        onClick={handleSync}
+        disabled={syncing}
         className="gap-2 font-bold shadow-xs hover:shadow-sm"
       >
-        {syncingAll ? (
+        {syncing ? (
           <Loader2 className="h-4 w-4 animate-spin" />
+        ) : isSelectionMode ? (
+          <CheckSquare className="h-4 w-4" />
         ) : (
           <Zap className="h-4 w-4 fill-current" />
         )}
-        <span>{syncingAll ? "Syncing All Sources..." : "Sync All Active Sources"}</span>
+        <span>
+          {syncing
+            ? "Syncing Sources..."
+            : isSelectionMode
+            ? `Sync Selected (${selectedSourceIds.length})`
+            : "Sync All Active Sources"}
+        </span>
       </Button>
     </div>
   );
@@ -275,7 +298,7 @@ export function JobLogsViewer({ jobId }: { jobId: string }) {
       </Button>
 
       {open && (
-        <div className="mt-2 p-3 bg-slate-900 text-slate-100 rounded-md font-mono text-[11px] max-h-64 overflow-y-auto space-y-1 border border-slate-800">
+        <div className="mt-2 p-3 bg-slate-900 text-slate-100 rounded-md font-mono text-[11px] max-h-64 overflow-y-auto space-y-1 border border-slate-800 text-left">
           {loading ? (
             <div className="flex items-center gap-2 text-slate-400 py-2">
               <Loader2 className="h-3.5 w-3.5 animate-spin" />

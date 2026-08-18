@@ -5,6 +5,10 @@ import { UpscSourceAdapter } from "../adapters/upsc.adapter";
 import { UpscDataNormalizer } from "../adapters/upsc.normalizer";
 import { GOV_JOB_SOURCES_CONFIG } from "../adapters/sources.config";
 import { StandardGovJobSourceAdapter, StandardGovJobDataNormalizer } from "../adapters/standard-gov-job.adapter";
+import { GOV_EXAM_SOURCES_CONFIG } from "../adapters/exam-sources.config";
+import { StandardGovExamSourceAdapter, StandardGovExamDataNormalizer } from "../adapters/standard-gov-exam.adapter";
+import { GOV_NEWS_SOURCES_CONFIG } from "../adapters/news-sources.config";
+import { StandardGovNewsSourceAdapter, StandardGovNewsDataNormalizer } from "../adapters/standard-gov-news.adapter";
 
 /**
  * Thread-safe plugin registry for data source adapters and normalizers.
@@ -27,11 +31,27 @@ export class SourceAdapterRegistry {
     this.register(new MockBenchmarkSourceAdapter(), new MockBenchmarkDataNormalizer());
     this.register(new UpscSourceAdapter(), new UpscDataNormalizer());
 
-    // Register 28 National & State Public Service Commission adapters
+    // Register 28 National & State Public Service Commission recruitment adapters
     for (const config of GOV_JOB_SOURCES_CONFIG) {
       this.register(
         new StandardGovJobSourceAdapter(config),
         new StandardGovJobDataNormalizer(config)
+      );
+    }
+
+    // Register 19 Dedicated Examination pipelines
+    for (const config of GOV_EXAM_SOURCES_CONFIG) {
+      this.register(
+        new StandardGovExamSourceAdapter(config),
+        new StandardGovExamDataNormalizer(config)
+      );
+    }
+
+    // Register 6 Official News & Public Bulletin pipelines
+    for (const config of GOV_NEWS_SOURCES_CONFIG) {
+      this.register(
+        new StandardGovNewsSourceAdapter(config),
+        new StandardGovNewsDataNormalizer(config)
       );
     }
   }
