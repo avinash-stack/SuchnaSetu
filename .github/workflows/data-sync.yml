@@ -1,0 +1,60 @@
+name: Automatic Data Synchronization
+
+on:
+  schedule:
+    # Runs twice daily at 00:30 UTC and 12:30 UTC (06:00 AM IST and 06:00 PM IST)
+    - cron: '30 0,12 * * *'
+  workflow_dispatch:
+    inputs:
+      reason:
+        description: 'Reason for manual sync trigger'
+        required: false
+        default: 'Manual workflow dispatch trigger'
+
+concurrency:
+  group: suchnasetu-data-sync
+  cancel-in-progress: false
+
+jobs:
+  sync-data-sources:
+    name: Sync Jobs, Exams & News Feeds
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - name: Trigger Secure Sync API Endpoint
+        env:
+          APP_URL: https://suchnasetu.in
+          SYNC_SECRET: ${{ secrets.CRON_SECRET }}
+        run: |
+          # Sanitize APP_URL (remove trailing slash if present)
+          TARGET_URL="${APP_URL:-https://suchnasetu.in}"
+          TARGET_URL="${TARGET_URL%/}"
+          ENDPOINT="$TARGET_URL/api/cron/sync-all-sources"
+          
+          echo "⏰ [$(date -u '+%Y-%m-%d %H:%M:%S UTC')] Calling sync endpoint..."
+          
+          # Mask secret token from action logs
+          if [ -n "$SYNC_SECRET" ]; then
+            echo "::add-mask::$SYNC_SECRET"
+          fi
+          
+          RESPONSE=$(curl -s -S -w "\nHTTP_STATUS:%{http_code}" -X POST "$ENDPOINT" \
+            -H "Content-Type: application/json" \
+            -H "User-Agent: SuchnaSetu-GitHubActions-Scheduler/1.0" \
+            -H "Authorization: Bearer $SYNC_SECRET")
+          
+          HTTP_BODY=$(echo "$RESPONSE" | sed -e '$d')
+          HTTP_STATUS=$(echo "$RESPONSE" | tail -n1 | cut -d':' -f2)
+
+          echo "Response HTTP Status: $HTTP_STATUS"
+          
+          if [ "$HTTP_STATUS" -ne 200 ]; then
+            echo "❌ Synchronization request failed with HTTP $HTTP_STATUS"
+            echo "Error details: $HTTP_BODY"
+            exit 1
+          fi
+
+          echo "✅ Automated synchronization completed successfully."
+          echo "Sync Summary:"
+          echo "$HTTP_BODY" | jq '.summary // .' 2>/dev/null || echo "$HTTP_BODY"
