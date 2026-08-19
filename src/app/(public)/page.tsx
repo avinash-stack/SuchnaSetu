@@ -91,16 +91,16 @@ export default async function HomePage() {
 
           <div className="mx-auto mt-8 max-w-3xl">
             <SearchBar
-              targetPath="/jobs"
-              placeholder="Search central, state, defence, banking jobs, organizations (UPSC, SSC), or post names..."
+              targetPath="/search"
+              placeholder="Search central, state, defence, banking jobs, exams, organizations (UPSC, SSC), or post names..."
             />
             <div className="mt-3 flex flex-wrap items-center justify-center gap-2 text-xs text-slate-500">
-              <span className="font-medium text-slate-700">Quick Sectors:</span>
-              <span className="rounded-md bg-white px-2 py-0.5 border border-slate-200 text-slate-600">Central Govt</span>
-              <span className="rounded-md bg-white px-2 py-0.5 border border-slate-200 text-slate-600">State PSCs</span>
-              <span className="rounded-md bg-white px-2 py-0.5 border border-slate-200 text-slate-600">Defence & Police</span>
-              <span className="rounded-md bg-white px-2 py-0.5 border border-slate-200 text-slate-600">Banking</span>
-              <span className="rounded-md bg-white px-2 py-0.5 border border-slate-200 text-slate-600">Railways</span>
+              <span className="font-medium text-slate-700">Quick Searches:</span>
+              <Link href="/search?search=Central+Govt" className="rounded-md bg-white px-2 py-0.5 border border-slate-200 text-slate-600 hover:text-brand-700 hover:border-brand-300 transition-colors">Central Govt</Link>
+              <Link href="/search?search=State+PSC" className="rounded-md bg-white px-2 py-0.5 border border-slate-200 text-slate-600 hover:text-brand-700 hover:border-brand-300 transition-colors">State PSCs</Link>
+              <Link href="/search?search=Defence+Police" className="rounded-md bg-white px-2 py-0.5 border border-slate-200 text-slate-600 hover:text-brand-700 hover:border-brand-300 transition-colors">Defence & Police</Link>
+              <Link href="/search?search=Banking" className="rounded-md bg-white px-2 py-0.5 border border-slate-200 text-slate-600 hover:text-brand-700 hover:border-brand-300 transition-colors">Banking</Link>
+              <Link href="/search?search=Railways" className="rounded-md bg-white px-2 py-0.5 border border-slate-200 text-slate-600 hover:text-brand-700 hover:border-brand-300 transition-colors">Railways</Link>
             </div>
           </div>
         </div>

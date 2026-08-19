@@ -2,100 +2,15 @@ import { createClient } from "@/lib/supabase/server";
 import { GovExam, GovExamDetailed, ExamFilterParams } from "./types";
 import { Category, Organization, StateUT, Department, Qualification } from "@/modules/core/types";
 
+import { searchExams } from "@/modules/search/service";
+import { parseSearchQuery } from "@/modules/search/query-parser";
+
 /**
  * Fetches published examinations with multi-faceted filtering, search, and pagination.
+ * Uses the common search engine for intelligent tokenization, taxonomy matching, and ranking.
  */
 export async function getPublicExams(params: ExamFilterParams = {}) {
-  const supabase = await createClient();
-  const page = params.page || 1;
-  const limit = params.limit || 12;
-  const offset = (page - 1) * limit;
-
-  let query = supabase
-    .from("gov_exams")
-    .select(
-      `
-      *,
-      organization:organizations(*),
-      department:departments(*),
-      category:categories(*),
-      state:states_uts(*),
-      stages:exam_stages(*),
-      important_dates:exam_important_dates(*)
-    `,
-      { count: "exact" }
-    )
-    .eq("status", "published")
-    .is("deleted_at", null);
-
-  if (params.search && params.search.trim()) {
-    const cleanTerm = params.search.replace(/[,()]/g, " ").trim();
-    if (cleanTerm) {
-      const term = `%${cleanTerm}%`;
-      query = query.or(
-        `title.ilike.${term},short_title.ilike.${term},description.ilike.${term},exam_code.ilike.${term},slug.ilike.${term}`
-      );
-    }
-  }
-
-  if (params.mode) {
-    query = query.eq("mode", params.mode);
-  }
-
-  if (params.frequency) {
-    query = query.eq("frequency", params.frequency);
-  }
-
-  if (params.stateCode) {
-    query = query.eq("state_code", params.stateCode);
-  }
-
-  if (params.isFeatured !== undefined) {
-    query = query.eq("is_featured", params.isFeatured);
-  }
-
-  // Filter by category slug
-  if (params.categorySlug) {
-    const { data: cat } = (await supabase
-      .from("categories")
-      .select("id")
-      .eq("slug", params.categorySlug)
-      .single()) as any;
-    if (cat) {
-      query = query.eq("category_id", cat.id);
-    }
-  }
-
-  // Filter by organization slug
-  if (params.organizationSlug) {
-    const { data: org } = (await supabase
-      .from("organizations")
-      .select("id")
-      .eq("slug", params.organizationSlug)
-      .single()) as any;
-    if (org) {
-      query = query.eq("organization_id", org.id);
-    }
-  }
-
-  // Order by is_featured and published_at DESC
-  query = query
-    .order("is_featured", { ascending: false })
-    .order("published_at", { ascending: false })
-    .range(offset, offset + limit - 1);
-
-  const { data, count, error } = await query;
-
-  if (error) {
-    console.error("Error fetching public exams:", error);
-    return { exams: [], total: 0, totalPages: 0 };
-  }
-
-  return {
-    exams: (data as unknown as GovExamDetailed[]) || [],
-    total: count || 0,
-    totalPages: Math.ceil((count || 0) / limit),
-  };
+  return searchExams(params);
 }
 
 /**
@@ -221,12 +136,25 @@ export async function getAdminExams(
   }
 
   if (params.search && params.search.trim()) {
-    const cleanTerm = params.search.replace(/[,()]/g, " ").trim();
-    if (cleanTerm) {
-      const term = `%${cleanTerm}%`;
-      query = query.or(
-        `title.ilike.${term},short_title.ilike.${term},slug.ilike.${term},exam_code.ilike.${term},description.ilike.${term}`
-      );
+    const parsed = parseSearchQuery(params.search);
+    const orClauses: string[] = [];
+    if (parsed.cleanQuery) {
+      orClauses.push(`title.ilike.%${parsed.cleanQuery}%`);
+      orClauses.push(`short_title.ilike.%${parsed.cleanQuery}%`);
+      orClauses.push(`exam_code.ilike.%${parsed.cleanQuery}%`);
+      orClauses.push(`slug.ilike.%${parsed.cleanQuery}%`);
+      orClauses.push(`description.ilike.%${parsed.cleanQuery}%`);
+    }
+    for (const token of parsed.contentTokens) {
+      orClauses.push(`title.ilike.%${token}%`);
+      orClauses.push(`short_title.ilike.%${token}%`);
+      orClauses.push(`exam_code.ilike.%${token}%`);
+      orClauses.push(`slug.ilike.%${token}%`);
+      orClauses.push(`description.ilike.%${token}%`);
+    }
+    const unique = Array.from(new Set(orClauses)).filter(Boolean);
+    if (unique.length > 0) {
+      query = query.or(unique.join(","));
     }
   }
 

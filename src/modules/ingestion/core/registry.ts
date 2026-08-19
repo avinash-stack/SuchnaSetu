@@ -31,7 +31,7 @@ export class SourceAdapterRegistry {
     this.register(new MockBenchmarkSourceAdapter(), new MockBenchmarkDataNormalizer());
     this.register(new UpscSourceAdapter(), new UpscDataNormalizer());
 
-    // Register 28 National & State Public Service Commission recruitment adapters
+    // Register National, State PSC, Judicial, Subordinate & Mass Recruitment adapters (56 sources)
     for (const config of GOV_JOB_SOURCES_CONFIG) {
       this.register(
         new StandardGovJobSourceAdapter(config),

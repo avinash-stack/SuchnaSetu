@@ -4,8 +4,12 @@ import { GovJobInput } from "./schemas";
 import { Organization, Category, StateUT, Department, Qualification } from "@/modules/core/types";
 import { slugify } from "@/lib/utils";
 
+import { searchJobs } from "@/modules/search/service";
+import { parseSearchQuery } from "@/modules/search/query-parser";
+
 /**
  * Fetch published government job notices with multi-faceted filtering for public views.
+ * Uses the common search engine for intelligent tokenization, taxonomy matching, and ranking.
  */
 export async function getPublicJobs(params: JobFilterParams = {}): Promise<{
   jobs: GovJobDetailed[];
@@ -14,114 +18,7 @@ export async function getPublicJobs(params: JobFilterParams = {}): Promise<{
   limit: number;
   totalPages: number;
 }> {
-  const supabase = await createClient();
-  const page = Math.max(1, params.page || 1);
-  const limit = Math.min(50, Math.max(1, params.limit || 12));
-  const offset = (page - 1) * limit;
-
-  let query = (supabase.from("gov_jobs") as any)
-    .select(
-      `
-      *,
-      organization:organizations(*),
-      department:departments(*),
-      category:categories(*),
-      qualification:qualifications(*),
-      state:states_uts(*)
-    `,
-      { count: "exact" }
-    )
-    .eq("status", "published")
-    .is("deleted_at", null)
-    .order("published_at", { ascending: false, nullsFirst: false });
-
-  // Filter by Category Slug
-  if (params.categorySlug) {
-    const { data: catData } = await supabase
-      .from("categories")
-      .select("id")
-      .eq("slug", params.categorySlug)
-      .single();
-
-    const cat = catData as { id: string } | null;
-    if (cat) {
-      query = query.eq("category_id", cat.id);
-    }
-  }
-
-  // Filter by Organization Slug
-  if (params.organizationSlug) {
-    const { data: orgData } = await supabase
-      .from("organizations")
-      .select("id")
-      .eq("slug", params.organizationSlug)
-      .single();
-
-    const org = orgData as { id: string } | null;
-    if (org) {
-      query = query.eq("organization_id", org.id);
-    }
-  }
-
-  // Filter by Qualification Slug
-  if (params.qualificationSlug) {
-    const { data: qualData } = await (supabase.from("qualifications") as any)
-      .select("id")
-      .eq("slug", params.qualificationSlug)
-      .single();
-
-    const qual = qualData as { id: string } | null;
-    if (qual) {
-      query = query.eq("min_qualification_id", qual.id);
-    }
-  }
-
-  // Filter by State Code
-  if (params.stateCode) {
-    query = query.eq("state_code", params.stateCode);
-  }
-
-  // Filter by Employment Type
-  if (params.employmentType) {
-    query = query.eq("employment_type", params.employmentType);
-  }
-
-  // Filter by Featured flag
-  if (params.isFeatured !== undefined) {
-    query = query.eq("is_featured", params.isFeatured);
-  }
-
-  // Search by keyword in title, notification number, summary, or slug
-  if (params.search && params.search.trim()) {
-    const cleanTerm = params.search.replace(/[,()]/g, " ").trim();
-    if (cleanTerm) {
-      const searchTerm = `%${cleanTerm}%`;
-      query = query.or(
-        `title.ilike.${searchTerm},notification_number.ilike.${searchTerm},summary.ilike.${searchTerm},slug.ilike.${searchTerm}`
-      );
-    }
-  }
-
-  // Pagination
-  query = query.range(offset, offset + limit - 1);
-
-  const { data, count, error } = await query;
-
-  if (error) {
-    console.error("Error fetching public jobs:", error);
-    return { jobs: [], total: 0, page, limit, totalPages: 0 };
-  }
-
-  const total = count || 0;
-  const totalPages = Math.ceil(total / limit);
-
-  return {
-    jobs: (data || []) as GovJobDetailed[],
-    total,
-    page,
-    limit,
-    totalPages,
-  };
+  return searchJobs(params);
 }
 
 /**
@@ -241,12 +138,23 @@ export async function getAdminJobs(params: {
   }
 
   if (params.search && params.search.trim()) {
-    const cleanTerm = params.search.replace(/[,()]/g, " ").trim();
-    if (cleanTerm) {
-      const searchTerm = `%${cleanTerm}%`;
-      query = query.or(
-        `title.ilike.${searchTerm},notification_number.ilike.${searchTerm},summary.ilike.${searchTerm},slug.ilike.${searchTerm}`
-      );
+    const parsed = parseSearchQuery(params.search);
+    const orClauses: string[] = [];
+    if (parsed.cleanQuery) {
+      orClauses.push(`title.ilike.%${parsed.cleanQuery}%`);
+      orClauses.push(`notification_number.ilike.%${parsed.cleanQuery}%`);
+      orClauses.push(`summary.ilike.%${parsed.cleanQuery}%`);
+      orClauses.push(`slug.ilike.%${parsed.cleanQuery}%`);
+    }
+    for (const token of parsed.contentTokens) {
+      orClauses.push(`title.ilike.%${token}%`);
+      orClauses.push(`notification_number.ilike.%${token}%`);
+      orClauses.push(`summary.ilike.%${token}%`);
+      orClauses.push(`slug.ilike.%${token}%`);
+    }
+    const unique = Array.from(new Set(orClauses)).filter(Boolean);
+    if (unique.length > 0) {
+      query = query.or(unique.join(","));
     }
   }
 

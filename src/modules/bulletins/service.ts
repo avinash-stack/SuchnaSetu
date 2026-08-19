@@ -2,6 +2,9 @@ import { createClient } from "@/lib/supabase/server";
 import { PublicBulletinDetailed, BulletinFilterParams } from "./types";
 import { BULLETIN_CATEGORIES } from "./constants";
 
+import { searchBulletins } from "@/modules/search/service";
+import { parseSearchQuery } from "@/modules/search/query-parser";
+
 /**
  * Maps a user-facing category key to database categories.
  */
@@ -17,6 +20,7 @@ function resolveDbCategory(categoryKey?: string): string[] | null {
 
 /**
  * Fetch published public bulletins with multi-category filtering for public news desk.
+ * Uses the common search engine for intelligent tokenization, taxonomy matching, and ranking.
  */
 export async function getPublicBulletins(params: BulletinFilterParams = {}): Promise<{
   bulletins: PublicBulletinDetailed[];
@@ -25,65 +29,7 @@ export async function getPublicBulletins(params: BulletinFilterParams = {}): Pro
   limit: number;
   totalPages: number;
 }> {
-  const supabase = await createClient();
-  const page = Math.max(1, params.page || 1);
-  const limit = Math.min(50, Math.max(1, params.limit || 12));
-  const offset = (page - 1) * limit;
-
-  let query = (supabase.from("public_bulletins") as any)
-    .select(
-      `
-      *,
-      organization:organizations(*),
-      related_job:gov_jobs(*)
-    `,
-      { count: "exact" }
-    )
-    .eq("status", "published")
-    .order("published_at", { ascending: false });
-
-  if (params.category && params.category !== "all") {
-    const dbCats = resolveDbCategory(params.category);
-    if (dbCats && dbCats.length === 1) {
-      query = query.eq("category", dbCats[0]);
-    } else if (dbCats && dbCats.length > 1) {
-      query = query.in("category", dbCats);
-    }
-  }
-
-  if (params.isBreaking !== undefined) {
-    query = query.eq("is_breaking", params.isBreaking);
-  }
-
-  if (params.search && params.search.trim()) {
-    const cleanTerm = params.search.replace(/[,()]/g, " ").trim();
-    if (cleanTerm) {
-      const term = `%${cleanTerm}%`;
-      query = query.or(
-        `title.ilike.${term},summary.ilike.${term},source_name.ilike.${term},content.ilike.${term},slug.ilike.${term}`
-      );
-    }
-  }
-
-  query = query.range(offset, offset + limit - 1);
-
-  const { data, count, error } = await query;
-
-  if (error) {
-    console.error("Error fetching public bulletins:", error);
-    return { bulletins: [], total: 0, page, limit, totalPages: 0 };
-  }
-
-  const total = count || 0;
-  const totalPages = Math.ceil(total / limit);
-
-  return {
-    bulletins: (data || []) as PublicBulletinDetailed[],
-    total,
-    page,
-    limit,
-    totalPages,
-  };
+  return searchBulletins(params);
 }
 
 /**
@@ -211,12 +157,23 @@ export async function getAdminBulletins(params: {
   }
 
   if (params.search && params.search.trim()) {
-    const cleanTerm = params.search.replace(/[,()]/g, " ").trim();
-    if (cleanTerm) {
-      const term = `%${cleanTerm}%`;
-      query = query.or(
-        `title.ilike.${term},source_name.ilike.${term},summary.ilike.${term},slug.ilike.${term}`
-      );
+    const parsed = parseSearchQuery(params.search);
+    const orClauses: string[] = [];
+    if (parsed.cleanQuery) {
+      orClauses.push(`title.ilike.%${parsed.cleanQuery}%`);
+      orClauses.push(`source_name.ilike.%${parsed.cleanQuery}%`);
+      orClauses.push(`summary.ilike.%${parsed.cleanQuery}%`);
+      orClauses.push(`slug.ilike.%${parsed.cleanQuery}%`);
+    }
+    for (const token of parsed.contentTokens) {
+      orClauses.push(`title.ilike.%${token}%`);
+      orClauses.push(`source_name.ilike.%${token}%`);
+      orClauses.push(`summary.ilike.%${token}%`);
+      orClauses.push(`slug.ilike.%${token}%`);
+    }
+    const unique = Array.from(new Set(orClauses)).filter(Boolean);
+    if (unique.length > 0) {
+      query = query.or(unique.join(","));
     }
   }
 

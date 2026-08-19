@@ -133,7 +133,7 @@ export function PublicHeader() {
 
         {/* Right Header Actions */}
         <div className="hidden md:flex items-center gap-2.5 flex-shrink-0">
-          <Link href="/jobs" className="flex items-center">
+          <Link href="/search" className="flex items-center">
             <Button
               variant="brand"
               size="sm"
