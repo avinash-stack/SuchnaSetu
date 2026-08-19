@@ -17,7 +17,7 @@ interface SearchBarProps {
 }
 
 function SearchBarInner({
-  placeholder = "Search central, state, defence, banking jobs, organizations, or notification numbers...",
+  placeholder = "Search central, state, defence, banking jobs, exams, organizations (UPSC, SSC, BSSC), or post names...",
   targetPath,
   searchParamKey = "search",
   onSearch,
@@ -54,7 +54,7 @@ function SearchBarInner({
     }
 
     startTransition(() => {
-      // If targetPath is specified and different from current pathname (e.g. searching from homepage to /jobs)
+      // If targetPath is specified and different from current pathname
       if (targetPath && targetPath !== pathname) {
         const destParams = new URLSearchParams();
         if (trimmed) {
@@ -65,7 +65,7 @@ function SearchBarInner({
         return;
       }
 
-      // Searching on the current page: clone params, update search, reset page
+      // Searching on current page
       const nextParams = new URLSearchParams(searchParams.toString());
       if (trimmed) {
         nextParams.set(searchParamKey, trimmed);
@@ -93,12 +93,12 @@ function SearchBarInner({
 
   return (
     <form onSubmit={handleSubmit} className={`w-full ${className}`}>
-      <div className="relative flex w-full items-center rounded-xl border border-slate-300 bg-white p-1.5 shadow-xs ring-1 ring-black/5 transition-all focus-within:border-brand-600 focus-within:ring-2 focus-within:ring-brand-600/20">
+      <div className="relative flex w-full items-center rounded-md border-2 border-slate-300 bg-white p-1 shadow-xs transition-all focus-within:border-[#013089] focus-within:ring-2 focus-within:ring-[#013089]/20">
         <div className="flex items-center pl-3 text-slate-400">
           {isPending ? (
-            <Loader2 className="h-4 w-4 animate-spin text-brand-600" />
+            <Loader2 className="h-4 w-4 animate-spin text-[#013089]" />
           ) : (
-            <Search className="h-4 w-4" />
+            <Search className="h-4 w-4 text-slate-500" />
           )}
         </div>
 
@@ -107,14 +107,14 @@ function SearchBarInner({
           value={query}
           onChange={(e) => setQuery(e.target.value)}
           placeholder={placeholder}
-          className="w-full bg-transparent px-3 py-1.5 text-sm text-slate-900 placeholder:text-slate-400 focus:outline-hidden"
+          className="w-full bg-transparent px-3 py-1.5 text-xs sm:text-sm text-slate-900 placeholder:text-slate-400 focus:outline-hidden"
         />
 
         {showClear && query && (
           <button
             type="button"
             onClick={handleClear}
-            className="p-1.5 mr-1 text-slate-400 hover:text-slate-600 rounded-md transition-colors"
+            className="p-1 mr-1 text-slate-400 hover:text-slate-600 rounded-xs transition-colors"
             title="Clear search"
           >
             <X className="h-4 w-4" />
@@ -123,10 +123,10 @@ function SearchBarInner({
 
         <Button
           type="submit"
-          variant="brand"
+          variant="primary"
           size={size === "sm" ? "sm" : "md"}
           disabled={isPending}
-          className="gap-2 rounded-lg font-semibold shrink-0"
+          className="rounded-xs font-bold shrink-0"
         >
           <span>{buttonText}</span>
         </Button>
@@ -140,17 +140,17 @@ export function SearchBar(props: SearchBarProps) {
     <React.Suspense
       fallback={
         <div className={`w-full ${props.className || ""}`}>
-          <div className="relative flex w-full items-center rounded-xl border border-slate-200 bg-white p-1.5 shadow-xs">
+          <div className="relative flex w-full items-center rounded-md border-2 border-slate-200 bg-white p-1 shadow-xs">
             <div className="flex items-center pl-3 text-slate-400">
               <Search className="h-4 w-4" />
             </div>
             <input
               type="text"
-              placeholder={props.placeholder || "Search..."}
+              placeholder={props.placeholder || "Search notices..."}
               disabled
               className="w-full bg-transparent px-3 py-1.5 text-sm text-slate-400"
             />
-            <Button variant="brand" size="md" disabled className="gap-2 rounded-lg font-semibold">
+            <Button variant="primary" size="md" disabled className="rounded-xs font-bold">
               <span>{props.buttonText || "Search Notices"}</span>
             </Button>
           </div>

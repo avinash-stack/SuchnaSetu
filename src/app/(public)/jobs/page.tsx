@@ -77,40 +77,40 @@ export default async function PublicJobsPage({ searchParams }: JobsPageProps) {
   return (
     <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8 space-y-8">
       {/* Top Banner / Heading */}
-      <div className="flex flex-col md:flex-row md:items-end justify-between border-b border-slate-200 pb-6 gap-4">
+      <div className="section-saffron-bar flex flex-col md:flex-row md:items-end justify-between border-b border-slate-200 pb-6 gap-4">
         <div>
-          <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-brand-700">
+          <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-[#013089]">
             <Briefcase className="h-4 w-4" />
             <span>Official Recruitment Module</span>
           </div>
-          <h1 className="text-3xl font-extrabold tracking-tight text-slate-900 sm:text-4xl font-heading mt-1">
-            Government Jobs &amp; Notifications
+          <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-[#0F172A] font-heading mt-1">
+            Government Jobs &amp; Recruitment Notifications
           </h1>
-          <p className="text-sm text-slate-500 mt-1 max-w-2xl">
-            Structured notifications aggregated from UPSC, SSC, State PSCs, Banks, and Defence. Every notice links directly to the official government PDF and portal.
+          <p className="text-xs sm:text-sm text-slate-600 mt-1 max-w-2xl">
+            Structured notifications aggregated from UPSC, SSC, State PSCs, High Courts, Banks, and Defence. Every notice links directly to official government PDFs.
           </p>
         </div>
 
         <div className="flex items-center gap-2">
-          <Badge variant="brand" className="text-xs py-1 px-3">
+          <Badge variant="navy" className="text-xs py-1 px-2.5">
             {total} Active {total === 1 ? "Notice" : "Notices"}
           </Badge>
         </div>
       </div>
 
       {/* Search Header */}
-      <div className="max-w-4xl space-y-3">
-        <SearchBar placeholder="Search by job title, organization (UPSC, SSC), post name, or notification reference..." />
+      <div className="max-w-3xl space-y-3">
+        <SearchBar placeholder="Search by job title, organization (UPSC, SSC, BSSC), post name, or reference..." />
 
         {/* Active Search Pill */}
         {params.search && (
-          <div className="flex items-center gap-2 text-xs text-slate-600 bg-brand-50/70 border border-brand-200 px-3 py-1.5 rounded-lg w-fit">
+          <div className="flex items-center gap-2 text-xs text-slate-700 bg-slate-100 border border-slate-200 px-3 py-1 rounded-xs w-fit">
             <span>
               Showing results for: <strong>&ldquo;{params.search}&rdquo;</strong> ({total} matches)
             </span>
             <Link
               href={buildClearSearchUrl(params)}
-              className="text-slate-500 hover:text-slate-900 p-0.5 rounded transition-colors"
+              className="text-slate-500 hover:text-slate-900 p-0.5 rounded-xs transition-colors"
               title="Clear search query"
             >
               <X className="h-3.5 w-3.5" />

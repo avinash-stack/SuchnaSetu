@@ -3,8 +3,8 @@
 @tailwind utilities;
 
 :root {
-  --background: #f8fafc;
-  --foreground: #172033;
+  --background: #FFFFFF;
+  --foreground: #0F172A;
   --brand-navy: #013089;
   --brand-saffron: #FE8D01;
   --font-inter: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
@@ -13,27 +13,47 @@
 
 body {
   color: var(--foreground);
-  background: var(--background);
+  background: #F8FAFC;
   font-family: var(--font-inter);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
 
-/* Civic Scrollbar Customization */
+/* Civic Editorial Scrollbar */
 ::-webkit-scrollbar {
-  width: 8px;
-  height: 8px;
+  width: 6px;
+  height: 6px;
 }
 
 ::-webkit-scrollbar-track {
-  background: #f1f5f9;
+  background: #F1F5F9;
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #cbd5e1;
-  border-radius: 4px;
+  background: #CBD5E1;
+  border-radius: 2px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
   background: #013089;
+}
+
+/* Editorial Section Header Marker */
+.section-saffron-bar {
+  border-left: 4px solid #FE8D01;
+  padding-left: 0.75rem;
+}
+
+.section-navy-bar {
+  border-left: 4px solid #013089;
+  padding-left: 0.75rem;
+}
+
+/* Clean Gazette Table Striping */
+.gazette-table tr:nth-child(even) {
+  background-color: #F8FAFC;
+}
+
+.gazette-table tr:hover {
+  background-color: #F1F5F9;
 }

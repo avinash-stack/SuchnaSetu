@@ -1,17 +1,13 @@
 import Link from "next/link";
 import { GovExamDetailed } from "../types";
-import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { formatDate } from "@/lib/utils";
 import {
   Calendar,
-  Building2,
-  MapPin,
-  Clock,
   Layers,
-  ExternalLink,
-  ChevronRight,
-  Sparkles,
+  ArrowRight,
+  Clock,
+  Building2,
 } from "lucide-react";
 
 interface ExamCardProps {
@@ -27,56 +23,29 @@ export function ExamCard({ exam }: ExamCardProps) {
   const examStartDate = importantDates.find((d) => d.date_type === "exam_start");
   const appEndDate = importantDates.find((d) => d.date_type === "application_end");
 
-  // Mode Display Formatter
-  const formatMode = (mode: string) => {
-    switch (mode) {
-      case "online_cbt":
-        return "Online Computer Based Test (CBT)";
-      case "offline_omr":
-        return "Offline OMR Sheet";
-      case "pen_paper":
-        return "Pen & Paper Conventional";
-      case "hybrid":
-        return "Hybrid (CBT + Written)";
-      case "interview_only":
-        return "Interview / Personality Test";
-      default:
-        return mode;
-    }
-  };
-
   return (
-    <Card className="group relative flex flex-col justify-between overflow-hidden border border-slate-200/80 bg-white transition-all duration-200 hover:-translate-y-0.5 hover:border-brand-500 hover:shadow-md">
-      {/* Featured Accent Strip */}
-      {exam.is_featured && (
-        <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-brand-600 via-amber-500 to-brand-600" />
-      )}
-
-      <CardContent className="p-5 flex flex-col justify-between h-full space-y-4">
-        {/* Header Badges & Authority */}
-        <div className="space-y-2.5">
-          <div className="flex items-center justify-between gap-2 flex-wrap">
-            <div className="flex items-center gap-1.5 text-xs font-bold text-slate-700">
-              <Building2 className="h-3.5 w-3.5 text-brand-600 flex-shrink-0" />
-              <span>{org?.acronym ? `${org.acronym} • ${org.name}` : org?.name || "Official Commission"}</span>
+    <Card className="flex flex-col justify-between overflow-hidden border border-slate-200 bg-white transition-all hover:border-[#013089] hover:shadow-xs group">
+      <CardContent className="p-4 space-y-3 flex flex-col justify-between h-full">
+        <div className="space-y-2">
+          {/* Authority and Exam Code */}
+          <div className="flex items-center justify-between gap-1.5 flex-wrap">
+            <div className="flex items-center gap-1.5 text-xs font-bold text-slate-800">
+              <span className="inline-flex items-center rounded-xs bg-[#013089] px-2 py-0.5 text-[10px] font-bold text-white uppercase tracking-wider">
+                {org?.acronym || "COMMISSION"}
+              </span>
+              <span className="truncate max-w-[180px] text-slate-600">{org?.name}</span>
             </div>
 
-            <div className="flex items-center gap-1.5">
-              {exam.is_featured && (
-                <Badge variant="warning" className="gap-1 text-[10px] py-0 px-2">
-                  <Sparkles className="h-2.5 w-2.5" />
-                  <span>Featured</span>
-                </Badge>
-              )}
-              <Badge variant="outline" className="text-[10px] py-0 px-2 uppercase font-mono">
-                {exam.exam_code || exam.frequency}
-              </Badge>
-            </div>
+            {exam.exam_code && (
+              <span className="rounded-xs bg-slate-100 px-1.5 py-0.5 text-[10px] font-mono text-slate-600 border border-slate-200">
+                {exam.exam_code}
+              </span>
+            )}
           </div>
 
           {/* Title */}
-          <Link href={`/exams/${exam.slug}`} className="block group-hover:text-brand-700 transition-colors">
-            <h3 className="text-base font-bold text-slate-900 leading-snug line-clamp-2 font-heading">
+          <Link href={`/exams/${exam.slug}`} className="block group-hover:text-[#013089] transition-colors">
+            <h3 className="text-sm sm:text-base font-bold text-slate-900 leading-snug line-clamp-2 font-heading">
               {exam.title}
             </h3>
           </Link>
@@ -87,69 +56,48 @@ export function ExamCard({ exam }: ExamCardProps) {
           </p>
         </div>
 
-        {/* Multi-stage & Mode Highlights */}
-        <div className="rounded-lg bg-slate-50 p-3 space-y-2 text-xs border border-slate-100">
-          <div className="flex items-center justify-between gap-2 text-slate-600">
-            <div className="flex items-center gap-1.5">
-              <Layers className="h-3.5 w-3.5 text-slate-400" />
-              <span>Stages:</span>
-            </div>
-            <span className="font-semibold text-slate-800">
-              {stages.length > 0 ? `${stages.length} Stages Selection` : "Standard Evaluation"}
-            </span>
-          </div>
-
-          <div className="flex items-center justify-between gap-2 text-slate-600">
-            <div className="flex items-center gap-1.5">
-              <Clock className="h-3.5 w-3.5 text-slate-400" />
-              <span>Test Mode:</span>
-            </div>
-            <span className="font-semibold text-slate-800 truncate max-w-[170px]">
-              {formatMode(exam.mode)}
-            </span>
-          </div>
-
-          {exam.state_code && (
-            <div className="flex items-center justify-between gap-2 text-slate-600">
-              <div className="flex items-center gap-1.5">
-                <MapPin className="h-3.5 w-3.5 text-slate-400" />
-                <span>Jurisdiction:</span>
-              </div>
+        {/* Structured Selection & Date Strip */}
+        <div className="space-y-2 pt-1 border-t border-slate-100">
+          <div className="rounded-xs bg-slate-50 p-2.5 space-y-1.5 text-xs border border-slate-100">
+            <div className="flex items-center justify-between text-[11px]">
+              <span className="text-slate-500 flex items-center gap-1">
+                <Layers className="h-3.5 w-3.5 text-slate-400" />
+                <span>Evaluation:</span>
+              </span>
               <span className="font-semibold text-slate-800">
-                {exam.state?.name || exam.state_code}
+                {stages.length > 0 ? `${stages.length} Stages Selection` : "Standard Written Exam"}
               </span>
             </div>
-          )}
-        </div>
 
-        {/* Footer Dates & Action Button */}
-        <div className="pt-2 border-t border-slate-100 flex items-center justify-between gap-2 text-xs">
-          <div className="space-y-0.5">
-            {examStartDate ? (
-              <div className="flex items-center gap-1 text-slate-700 font-medium">
-                <Calendar className="h-3.5 w-3.5 text-emerald-600" />
-                <span>Exam: {formatDate(examStartDate.event_date)}</span>
-              </div>
-            ) : appEndDate ? (
-              <div className="flex items-center gap-1 text-slate-700 font-medium">
-                <Calendar className="h-3.5 w-3.5 text-amber-600" />
-                <span>Last Date: {formatDate(appEndDate.event_date)}</span>
-              </div>
-            ) : (
-              <div className="flex items-center gap-1 text-slate-500">
-                <Calendar className="h-3.5 w-3.5" />
-                <span>Published: {formatDate(exam.published_at)}</span>
-              </div>
-            )}
+            <div className="flex items-center justify-between text-[11px]">
+              <span className="text-slate-500 flex items-center gap-1">
+                <Calendar className="h-3.5 w-3.5 text-slate-400" />
+                <span>Exam Date:</span>
+              </span>
+              <span className="font-bold text-[#013089]">
+                {examStartDate ? formatDate(examStartDate.event_date) : "Announced Shortly"}
+              </span>
+            </div>
           </div>
 
-          <Link
-            href={`/exams/${exam.slug}`}
-            className="inline-flex items-center gap-1 font-semibold text-brand-700 hover:text-brand-800 transition-colors group-hover:translate-x-0.5"
-          >
-            <span>View Details</span>
-            <ChevronRight className="h-3.5 w-3.5" />
-          </Link>
+          {/* Card Footer */}
+          <div className="flex items-center justify-between pt-1">
+            {appEndDate ? (
+              <span className="text-[10px] text-slate-500 flex items-center gap-1">
+                <Clock className="h-3 w-3 text-slate-400" />
+                <span>Apply till: {formatDate(appEndDate.event_date)}</span>
+              </span>
+            ) : (
+              <span className="text-[10px] text-slate-400">Official Calendar</span>
+            )}
+
+            <Link href={`/exams/${exam.slug}`}>
+              <span className="inline-flex items-center gap-1 text-xs font-bold text-[#013089] hover:underline">
+                <span>View Schedule</span>
+                <ArrowRight className="h-3 w-3" />
+              </span>
+            </Link>
+          </div>
         </div>
       </CardContent>
     </Card>

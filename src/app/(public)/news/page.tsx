@@ -79,21 +79,21 @@ export default async function PublicNewsPage({ searchParams }: NewsPageProps) {
   return (
     <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8 space-y-8">
       {/* Heading */}
-      <div className="flex flex-col md:flex-row md:items-end justify-between border-b border-slate-200 pb-6 gap-4">
+      <div className="section-saffron-bar flex flex-col md:flex-row md:items-end justify-between border-b border-slate-200 pb-6 gap-4">
         <div>
-          <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-brand-700">
+          <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-[#013089]">
             <Newspaper className="h-4 w-4" />
-            <span>Official Information Desk</span>
+            <span>Official Gazette &amp; Information Desk</span>
           </div>
-          <h1 className="text-3xl font-extrabold tracking-tight text-slate-900 sm:text-4xl font-heading mt-1">
-            Government News &amp; Bulletins
+          <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-[#0F172A] font-heading mt-1">
+            Government News, Rozgar Samachar &amp; Advisories
           </h1>
-          <p className="text-sm text-slate-500 mt-1 max-w-2xl">
+          <p className="text-xs sm:text-sm text-slate-600 mt-1 max-w-2xl">
             Verified public-service communiques, weekly Employment News digests, welfare schemes, examination notices, and court rulings.
           </p>
         </div>
 
-        <Badge variant="brand" className="text-xs py-1 px-3">
+        <Badge variant="navy" className="text-xs py-1 px-2.5">
           {total} Active {total === 1 ? "Bulletin" : "Bulletins"}
         </Badge>
       </div>
@@ -103,10 +103,10 @@ export default async function PublicNewsPage({ searchParams }: NewsPageProps) {
         <div className="flex items-center gap-1.5 overflow-x-auto pb-2 no-scrollbar">
           <Link
             href={buildCategoryUrl(params, "all")}
-            className={`rounded-lg px-3.5 py-1.5 text-xs font-semibold transition-colors shrink-0 ${
+            className={`rounded-xs px-3 py-1.5 text-xs font-semibold transition-colors shrink-0 ${
               currentCategory === "all"
-                ? "bg-slate-900 text-white"
-                : "bg-slate-100 text-slate-700 hover:bg-slate-200"
+                ? "bg-[#013089] text-white"
+                : "bg-slate-100 text-slate-700 hover:bg-slate-200 border border-slate-200"
             }`}
           >
             All News
@@ -118,10 +118,10 @@ export default async function PublicNewsPage({ searchParams }: NewsPageProps) {
               <Link
                 key={cat.key}
                 href={buildCategoryUrl(params, cat.key)}
-                className={`rounded-lg px-3.5 py-1.5 text-xs font-semibold transition-colors shrink-0 ${
+                className={`rounded-xs px-3 py-1.5 text-xs font-semibold transition-colors shrink-0 ${
                   isActive
-                    ? "bg-slate-900 text-white"
-                    : "bg-slate-100 text-slate-700 hover:bg-slate-200"
+                    ? "bg-[#013089] text-white font-bold"
+                    : "bg-slate-100 text-slate-700 hover:bg-slate-200 border border-slate-200"
                 }`}
               >
                 {cat.label}
@@ -135,13 +135,13 @@ export default async function PublicNewsPage({ searchParams }: NewsPageProps) {
 
           {/* Active Search Pill */}
           {params.search && (
-            <div className="flex items-center gap-2 text-xs text-slate-600 bg-brand-50/70 border border-brand-200 px-3 py-1.5 rounded-lg w-fit">
+            <div className="flex items-center gap-2 text-xs text-slate-700 bg-slate-100 border border-slate-200 px-3 py-1 rounded-xs w-fit">
               <span>
                 Showing results for: <strong>&ldquo;{params.search}&rdquo;</strong> ({total} matches)
               </span>
               <Link
                 href={buildClearSearchUrl(params)}
-                className="text-slate-500 hover:text-slate-900 p-0.5 rounded transition-colors"
+                className="text-slate-500 hover:text-slate-900 p-0.5 rounded-xs transition-colors"
                 title="Clear search query"
               >
                 <X className="h-3.5 w-3.5" />
