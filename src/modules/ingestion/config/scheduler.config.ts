@@ -1,7 +1,7 @@
 /**
  * Ingestion Scheduler Configuration
  * Configurable schedules, execution time windows, timezone management, and concurrency locks.
- * Default: Twice daily at 06:00 AM IST and 06:00 PM IST (30 0,12 * * * in UTC).
+ * Default: 3 times daily at 08:00 AM IST (02:30 UTC), 04:00 PM IST (10:30 UTC), and 01:30 AM IST (20:00 UTC).
  */
 
 export interface SyncWindowConfig {
@@ -22,11 +22,12 @@ export interface SchedulerConfig {
 
 export const DEFAULT_SCHEDULER_CONFIG: SchedulerConfig = {
   enabled: process.env.SYNC_ENABLED !== "false",
-  cronExpression: process.env.SYNC_SCHEDULE_CRON || "30 0,12 * * *", // 06:00 AM IST & 06:00 PM IST
+  cronExpression: process.env.SYNC_SCHEDULE_CRON || "30 2 * * *, 30 10 * * *, 0 20 * * *", // 08:00 AM, 04:00 PM & 01:30 AM IST
   timezone: "Asia/Kolkata",
   windows: [
-    { hourIST: 6, minuteIST: 0, label: "06:00 AM IST" },
-    { hourIST: 18, minuteIST: 0, label: "06:00 PM IST" },
+    { hourIST: 1, minuteIST: 30, label: "01:30 AM IST" },
+    { hourIST: 8, minuteIST: 0, label: "08:00 AM IST" },
+    { hourIST: 16, minuteIST: 0, label: "04:00 PM IST" },
   ],
   concurrencyLimit: parseInt(process.env.SYNC_CONCURRENCY_LIMIT || "4", 10),
   jobTimeoutMinutes: parseInt(process.env.SYNC_JOB_TIMEOUT_MINUTES || "15", 10),

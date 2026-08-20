@@ -684,6 +684,19 @@ export class IngestionPipelineEngine {
       });
     }
 
+    // Insert Official Documents
+    if (notice.officialDocuments && notice.officialDocuments.length > 0) {
+      await (supabase.from("exam_official_documents") as any).delete().eq("exam_id", targetId);
+      const docsToInsert = notice.officialDocuments.map((doc: any) => ({
+        exam_id: targetId as string,
+        document_type: doc.documentType || "full_notification",
+        title: doc.title || "Official Notification Gazette",
+        file_url: doc.fileUrl,
+        published_date: doc.publishedDate || null,
+      }));
+      await (supabase.from("exam_official_documents") as any).insert(docsToInsert);
+    }
+
     return targetId;
   }
 }

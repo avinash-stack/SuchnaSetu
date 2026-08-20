@@ -79,7 +79,7 @@ export default async function AdminSourcesPage() {
           <div>
             <span className="font-bold text-slate-900">Automatic Sync Schedule: </span>
             <span className="text-slate-700">
-              Runs twice daily at <strong>06:00 AM IST</strong> &amp; <strong>06:00 PM IST</strong>.
+              Runs 3 times daily at <strong>08:00 AM IST</strong>, <strong>04:00 PM IST</strong> &amp; <strong>01:30 AM IST</strong>.
             </span>
           </div>
         </div>

@@ -1,16 +1,18 @@
 "use client";
 
+import * as React from "react";
 import Link from "next/link";
 import { GovExamDetailed } from "../types";
 import { useLanguage } from "@/lib/i18n/context";
 import { resolveLocalizedExam } from "@/lib/i18n/localize";
 import { getLocalizedDateLabel } from "@/lib/i18n/config";
 import { ExamTimeline } from "@/modules/exams/components/exam-timeline";
-import { formatDate } from "@/lib/utils";
+import { formatDate, isPdfUrl } from "@/lib/utils";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Table, TableHeader, TableBody, TableHead, TableRow, TableCell } from "@/components/ui/table";
+import { InlinePdfViewer } from "@/modules/jobs/components/inline-pdf-viewer";
 import {
   Building2,
   Calendar,
@@ -18,7 +20,6 @@ import {
   MapPin,
   Clock,
   ExternalLink,
-  Download,
   ShieldCheck,
   ShieldAlert,
   GraduationCap,
@@ -27,6 +28,8 @@ import {
   FileText,
   Briefcase,
   ChevronRight,
+  Globe,
+  X,
 } from "lucide-react";
 
 interface ExamDetailViewProps {
@@ -37,6 +40,10 @@ interface ExamDetailViewProps {
 export function ExamDetailView({ exam: rawExam, relatedExams = [] }: ExamDetailViewProps) {
   const { language, t } = useLanguage();
   const exam = resolveLocalizedExam(rawExam, language);
+  const [isPdfViewerOpen, setIsPdfViewerOpen] = React.useState(false);
+  const [activePdfUrl, setActivePdfUrl] = React.useState<string | null>(
+    exam.official_notification_url || null
+  );
 
   const org = exam.organization;
   const dept = exam.department;
@@ -47,6 +54,17 @@ export function ExamDetailView({ exam: rawExam, relatedExams = [] }: ExamDetailV
   const centers = exam.centers || [];
   const documents = exam.official_documents || [];
   const relatedJob = exam.related_job;
+
+  const handleTogglePdf = () => {
+    if (!isPdfViewerOpen && (activePdfUrl || exam.official_notification_url)) {
+      if (!activePdfUrl && exam.official_notification_url) {
+        setActivePdfUrl(exam.official_notification_url);
+      }
+      setIsPdfViewerOpen(true);
+    } else {
+      setIsPdfViewerOpen(false);
+    }
+  };
 
   const examStartDate = dates.find((d) => d.date_type === "exam_start");
   const examEndDate = dates.find((d) => d.date_type === "exam_end");
@@ -162,17 +180,47 @@ export function ExamDetailView({ exam: rawExam, relatedExams = [] }: ExamDetailV
             )}
 
             {exam.official_notification_url && (
-              <a
-                href={exam.official_notification_url}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="w-full"
-              >
-                <Button variant="outline" size="md" className="w-full justify-center gap-1.5 text-xs font-semibold">
-                  <Download className="h-3.5 w-3.5" />
-                  <span>{t("card.official_pdf")}</span>
+              isPdfUrl(exam.official_notification_url) ? (
+                <Button
+                  variant={isPdfViewerOpen ? "primary" : "outline"}
+                  size="md"
+                  onClick={handleTogglePdf}
+                  className={`w-full justify-center gap-1.5 text-xs font-semibold transition-all ${
+                    isPdfViewerOpen
+                      ? "bg-slate-800 hover:bg-slate-900 text-white border-slate-700 shadow-xs"
+                      : "border-slate-300 hover:border-brand-500 hover:text-brand-700"
+                  }`}
+                >
+                  {isPdfViewerOpen ? (
+                    <>
+                      <X className="h-3.5 w-3.5" />
+                      <span>Hide PDF</span>
+                    </>
+                  ) : (
+                    <>
+                      <FileText className="h-3.5 w-3.5 text-brand-600" />
+                      <span>{t("card.official_pdf")}</span>
+                    </>
+                  )}
                 </Button>
-              </a>
+              ) : (
+                <a
+                  href={exam.official_notification_url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="w-full"
+                >
+                  <Button
+                    variant="outline"
+                    size="md"
+                    className="w-full justify-center gap-1.5 text-xs font-semibold text-slate-700 hover:text-[#013089] hover:border-brand-500"
+                  >
+                    <Globe className="h-3.5 w-3.5 text-slate-500" />
+                    <span>Official Notification Page</span>
+                    <ExternalLink className="h-3 w-3 text-slate-400 ml-auto" />
+                  </Button>
+                </a>
+              )
             )}
 
             {relatedJob && (
@@ -185,6 +233,16 @@ export function ExamDetailView({ exam: rawExam, relatedExams = [] }: ExamDetailV
             )}
           </div>
         </div>
+
+        {/* Inline PDF Viewer (Directly below Notification PDF button in hero) */}
+        {isPdfViewerOpen && activePdfUrl && (
+          <InlinePdfViewer
+            url={activePdfUrl}
+            title={`${exam.short_title || exam.title} - Official Notification`}
+            organizationName={org?.name || "Government Authority"}
+            onClose={() => setIsPdfViewerOpen(false)}
+          />
+        )}
       </div>
 
       {/* Main Content Layout */}
@@ -320,6 +378,66 @@ export function ExamDetailView({ exam: rawExam, relatedExams = [] }: ExamDetailV
                     <span className="font-bold text-slate-900 font-mono">
                       {formatDate(d.event_date)}
                     </span>
+                  </div>
+                ))}
+              </CardContent>
+            </Card>
+          )}
+
+          {/* Official Documents Catalog */}
+          {documents.length > 0 && (
+            <Card>
+              <CardHeader className="pb-3 border-b border-slate-100">
+                <div className="flex items-center gap-2">
+                  <FileText className="h-4 w-4 text-[#013089]" />
+                  <CardTitle className="text-sm font-bold text-slate-900 font-heading">
+                    Official Gazette Documents
+                  </CardTitle>
+                </div>
+              </CardHeader>
+              <CardContent className="pt-3 space-y-2">
+                {documents.map((doc, idx) => (
+                  <div
+                    key={idx}
+                    className="flex items-center justify-between p-2.5 rounded-lg border border-slate-200 bg-white hover:bg-slate-50 transition-colors text-xs"
+                  >
+                    <div className="flex items-center gap-2 min-w-0">
+                      <FileText className="h-4 w-4 text-slate-500 shrink-0" />
+                      <div className="truncate">
+                        <div className="font-bold text-slate-900 truncate">{doc.title}</div>
+                        <div className="text-[10px] text-slate-500 font-mono">
+                          {doc.document_type.toUpperCase()} • Official Source
+                        </div>
+                      </div>
+                    </div>
+
+                    {doc.file_url && (
+                      isPdfUrl(doc.file_url) ? (
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setActivePdfUrl(doc.file_url);
+                            setIsPdfViewerOpen(true);
+                            window.scrollTo({ top: 300, behavior: "smooth" });
+                          }}
+                          className="inline-flex items-center gap-1 text-[11px] font-bold text-[#013089] hover:underline cursor-pointer bg-brand-50 px-2 py-1 rounded-md hover:bg-brand-100 transition-colors shrink-0 ml-2"
+                        >
+                          <FileText className="h-3 w-3" />
+                          <span>View PDF</span>
+                        </button>
+                      ) : (
+                        <a
+                          href={doc.file_url}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="inline-flex items-center gap-1 text-[11px] font-bold text-slate-700 hover:text-[#013089] hover:underline bg-slate-100 px-2 py-1 rounded-md transition-colors shrink-0 ml-2"
+                        >
+                          <Globe className="h-3 w-3" />
+                          <span>Portal</span>
+                          <ExternalLink className="h-3 w-3" />
+                        </a>
+                      )
+                    )}
                   </div>
                 ))}
               </CardContent>

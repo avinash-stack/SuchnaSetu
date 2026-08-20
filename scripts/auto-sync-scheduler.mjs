@@ -24,16 +24,18 @@ function getNextSyncTime() {
   const currentMinute = nowIST.getUTCMinutes();
   const currentTotal = currentHour * 60 + currentMinute;
 
-  // Windows: 06:00 AM (360m) & 06:00 PM (1080m)
-  let targetTotal = 360;
+  // Windows: 01:30 AM (90m), 08:00 AM (480m) & 04:00 PM (960m)
+  let targetTotal = 90;
   let addDays = 0;
 
-  if (currentTotal < 360) {
-    targetTotal = 360;
-  } else if (currentTotal < 1080) {
-    targetTotal = 1080;
+  if (currentTotal < 90) {
+    targetTotal = 90;
+  } else if (currentTotal < 480) {
+    targetTotal = 480;
+  } else if (currentTotal < 960) {
+    targetTotal = 960;
   } else {
-    targetTotal = 360;
+    targetTotal = 90;
     addDays = 1;
   }
 
@@ -83,7 +85,7 @@ async function triggerSync() {
 async function main() {
   console.log("=============================================================================");
   console.log(" SuchnaSetu - Automated Background Scheduler Daemon");
-  console.log(" Schedule: 06:00 AM IST & 06:00 PM IST (Twice Daily)");
+  console.log(" Schedule: 08:00 AM, 04:00 PM & 01:30 AM IST (3x Daily)");
   console.log(" Target: " + SITE_URL + "/api/cron/sync-all-sources");
   console.log("=============================================================================\n");
 

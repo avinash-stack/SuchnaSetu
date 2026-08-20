@@ -64,7 +64,7 @@ export const pa: Record<TranslationKey, string> = {
   "card.stage": "ਮੌਜੂਦਾ ਪੜਾਅ",
   "card.posts": "ਅਸਾਮੀਆਂ",
   "card.closes": "ਸਮਾਪਤ ਹੋਵੇਗੀ",
-  "card.official_pdf": "ਅਧਿਕਾਰਤ PDF",
+  "card.official_pdf": "ਨੋਟੀਫਿਕੇਸ਼ਨ PDF",
   "card.view_details": "ਵੇਰਵੇ ਦੇਖੋ",
   "card.apply_online": "ਆਨਲਾਈਨ ਅਪਲਾਈ ਕਰੋ",
 

@@ -64,7 +64,7 @@ export const bn: Record<TranslationKey, string> = {
   "card.stage": "বর্তমান পর্যায়",
   "card.posts": "টি পদ",
   "card.closes": "শেষ হবে",
-  "card.official_pdf": "অফিসিয়াল PDF",
+  "card.official_pdf": "বিজ্ঞপ্তি PDF",
   "card.view_details": "বিস্তারিত দেখুন",
   "card.apply_online": "অনলাইনে আবেদন করুন",
 

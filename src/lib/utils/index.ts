@@ -57,3 +57,32 @@ export function slugify(text: string): string {
     .replace(/[^\w-]+/g, "")
     .replace(/--+/g, "-");
 }
+
+/**
+ * Determines whether a URL points to an authentic PDF document
+ * rather than an HTML webpage, portal landing page, or root homepage.
+ */
+export function isPdfUrl(url?: string | null): boolean {
+  if (!url || typeof url !== "string") return false;
+  const trimmed = url.trim();
+  if (!trimmed.startsWith("http://") && !trimmed.startsWith("https://")) return false;
+
+  try {
+    const parsed = new URL(trimmed);
+    const pathname = parsed.pathname.toLowerCase();
+
+    // Direct .pdf file paths
+    if (pathname.endsWith(".pdf") || pathname.includes(".pdf/")) return true;
+
+    // Query parameter containing .pdf or pdf format
+    const search = parsed.search.toLowerCase();
+    if (search.includes(".pdf") || search.includes("format=pdf") || search.includes("type=pdf") || search.includes("download=pdf")) {
+      return true;
+    }
+
+    return false;
+  } catch {
+    return false;
+  }
+}
+

@@ -172,11 +172,33 @@ export class StandardGovJobSourceAdapter extends BaseSourceAdapter<any, Canonica
         const pdfLinkMatch = cellMatches[cellMatches.length - 1][1].match(/href="([^"]+)"/i);
 
         if (titleCell && titleCell.length > 8) {
-          const pdfUrl = pdfLinkMatch
-            ? pdfLinkMatch[1].startsWith("http")
-              ? pdfLinkMatch[1]
-              : `${this.config.baseUrl}${pdfLinkMatch[1].startsWith("/") ? "" : "/"}${pdfLinkMatch[1]}`
-            : `${this.config.baseUrl}/notice.pdf`;
+          let pdfHref: string | null = null;
+          const pdfRegex = /href="([^"]+?\.pdf[^"]*)"/i;
+          const anyHrefRegex = /href="([^"]+)"/i;
+
+          const rowPdfMatch = rowContent.match(pdfRegex);
+          if (rowPdfMatch) {
+            pdfHref = rowPdfMatch[1];
+          } else {
+            const lastCellMatch = cellMatches[cellMatches.length - 1][1].match(anyHrefRegex);
+            if (lastCellMatch) {
+              pdfHref = lastCellMatch[1];
+            }
+          }
+
+          let pdfUrl: string;
+          if (pdfHref) {
+            if (pdfHref.startsWith("http://") || pdfHref.startsWith("https://")) {
+              pdfUrl = pdfHref;
+            } else {
+              const cleanPath = pdfHref.startsWith("/") ? pdfHref : `/${pdfHref}`;
+              pdfUrl = `${this.config.baseUrl}${cleanPath}`;
+            }
+          } else {
+            const fallbackNotice =
+              this.config.canonicalNotices[notices.length % (this.config.canonicalNotices.length || 1)];
+            pdfUrl = fallbackNotice?.pdf_url || `${this.config.baseUrl}${this.config.recruitmentPath}`;
+          }
 
           notices.push({
             advertisement_number: `${this.config.organizationSlug.toUpperCase()}-${Date.now().toString().slice(-6)}-${notices.length + 1}`,

@@ -2,8 +2,12 @@ name: Automatic Data Synchronization
 
 on:
   schedule:
-    # Runs twice daily at 00:30 UTC and 12:30 UTC (06:00 AM IST and 06:00 PM IST)
-    - cron: '30 0,12 * * *'
+    # 08:00 AM IST -> 02:30 UTC
+    - cron: '30 2 * * *'
+    # 04:00 PM IST -> 10:30 UTC
+    - cron: '30 10 * * *'
+    # 01:30 AM IST -> 20:00 UTC
+    - cron: '0 20 * * *'
   workflow_dispatch:
     inputs:
       reason:

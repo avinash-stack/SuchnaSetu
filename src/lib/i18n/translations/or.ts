@@ -64,7 +64,7 @@ export const or: Record<TranslationKey, string> = {
   "card.stage": "ବର୍ତ୍ତମାନର ପର୍ଯ୍ୟାୟ",
   "card.posts": "ପଦ",
   "card.closes": "ସମାପ୍ତି",
-  "card.official_pdf": "ଅଫିସିଆଲ୍ PDF",
+  "card.official_pdf": "ବିଜ୍ଞପ୍ତି PDF",
   "card.view_details": "ବିସ୍ତୃତ ସୂଚନା",
   "card.apply_online": "ଅନଲାଇନ୍ ଆବେଦନ କରନ୍ତୁ",
 

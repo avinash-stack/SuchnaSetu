@@ -64,7 +64,7 @@ export const hi: Record<TranslationKey, string> = {
   "card.stage": "वर्तमान चरण",
   "card.posts": "पद",
   "card.closes": "समाप्ति",
-  "card.official_pdf": "आधिकारिक PDF",
+  "card.official_pdf": "अधिसूचना PDF",
   "card.view_details": "विस्तृत सूचना",
   "card.apply_online": "ऑनलाइन आवेदन करें",
 

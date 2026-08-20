@@ -9,7 +9,7 @@ export const dynamic = "force-dynamic";
 
 /**
  * Automated Cron Execution Handler for All Enabled Government Jobs, Exams, and News Sources.
- * Invoked twice daily at 06:00 AM IST and 06:00 PM IST (30 0,12 * * *).
+ * Invoked 3 times daily at 08:00 AM IST (02:30 UTC), 04:00 PM IST (10:30 UTC), and 01:30 AM IST (20:00 UTC).
  */
 export async function GET(request: NextRequest) {
   return handleSync(request);

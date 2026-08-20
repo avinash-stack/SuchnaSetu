@@ -6,13 +6,14 @@ import { useLanguage } from "@/lib/i18n/context";
 import { resolveLocalizedJob } from "@/lib/i18n/localize";
 import { Card, CardHeader, CardTitle, CardContent, CardFooter } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { formatDate, formatINR, formatNumber } from "@/lib/utils";
+import { formatDate, formatINR, formatNumber, isPdfUrl } from "@/lib/utils";
 import {
   Calendar,
   MapPin,
   ArrowRight,
   Clock,
   FileText,
+  Globe,
 } from "lucide-react";
 
 interface JobCardProps {
@@ -118,8 +119,17 @@ export function JobCard({ job: rawJob }: JobCardProps) {
             rel="noopener noreferrer"
             className="inline-flex items-center gap-1 text-[11px] font-semibold text-slate-600 hover:text-[#013089] transition-colors"
           >
-            <FileText className="h-3.5 w-3.5 text-slate-400" />
-            <span>{t("card.official_pdf")}</span>
+            {isPdfUrl(job.official_notification_url) ? (
+              <>
+                <FileText className="h-3.5 w-3.5 text-slate-400" />
+                <span>{t("card.official_pdf")}</span>
+              </>
+            ) : (
+              <>
+                <Globe className="h-3.5 w-3.5 text-slate-400" />
+                <span>Official Notice</span>
+              </>
+            )}
           </a>
         ) : (
           <span className="text-[10px] text-slate-400 font-mono">Gazette Verified</span>

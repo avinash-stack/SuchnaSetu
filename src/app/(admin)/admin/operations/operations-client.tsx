@@ -352,18 +352,18 @@ export function OperationsClient({
                     <span className="text-xs font-bold text-slate-800">Auto Sync Schedule</span>
                   </div>
                   <Badge variant="brand" className="text-[10px]">
-                    Twice Daily
+                    3x Daily
                   </Badge>
                 </div>
                 <div className="mt-3 space-y-1 text-xs text-slate-600">
                   <div className="flex justify-between">
                     <span>Schedule Times:</span>
-                    <span className="font-bold text-slate-900">06:00 AM &amp; 06:00 PM IST</span>
+                    <span className="font-bold text-slate-900">08:00 AM, 04:00 PM &amp; 01:30 AM IST</span>
                   </div>
                   <div className="flex justify-between">
                     <span>Next Execution:</span>
                     <span className="font-semibold text-brand-700">
-                      {systemHealth.ingestion.nextScheduledSync?.formattedIST || "06:00 AM IST"}
+                      {systemHealth.ingestion.nextScheduledSync?.formattedIST || "08:00 AM IST"}
                     </span>
                   </div>
                   <div className="flex justify-between">
@@ -426,7 +426,7 @@ export function OperationsClient({
                     </CardDescription>
                   </div>
                   <Badge variant="brand" className="text-xs">
-                    Next Auto Sync: {systemHealth.ingestion.nextScheduledSync?.formattedIST || "06:00 AM IST"}
+                    Next Auto Sync: {systemHealth.ingestion.nextScheduledSync?.formattedIST || "08:00 AM IST"}
                   </Badge>
                 </div>
               </CardHeader>

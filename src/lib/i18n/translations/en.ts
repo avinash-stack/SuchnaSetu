@@ -62,7 +62,7 @@ export const en = {
   "card.stage": "Current Stage",
   "card.posts": "posts",
   "card.closes": "Closes",
-  "card.official_pdf": "Official PDF",
+  "card.official_pdf": "Notification PDF",
   "card.view_details": "View Notice",
   "card.apply_online": "Apply Online",
 

@@ -23,15 +23,17 @@ function getNextScheduledSync() {
   const currentMinute = nowIST.getUTCMinutes();
   const currentTotal = currentHour * 60 + currentMinute;
 
-  let nextWindow = { hourIST: 6, minuteIST: 0, label: "06:00 AM IST" };
+  let nextWindow = { hourIST: 1, minuteIST: 30, label: "01:30 AM IST" };
   let addDays = 0;
 
-  if (currentTotal < 360) {
-    nextWindow = { hourIST: 6, minuteIST: 0, label: "06:00 AM IST" };
-  } else if (currentTotal < 1080) {
-    nextWindow = { hourIST: 18, minuteIST: 0, label: "06:00 PM IST" };
+  if (currentTotal < 90) {
+    nextWindow = { hourIST: 1, minuteIST: 30, label: "01:30 AM IST" };
+  } else if (currentTotal < 480) {
+    nextWindow = { hourIST: 8, minuteIST: 0, label: "08:00 AM IST" };
+  } else if (currentTotal < 960) {
+    nextWindow = { hourIST: 16, minuteIST: 0, label: "04:00 PM IST" };
   } else {
-    nextWindow = { hourIST: 6, minuteIST: 0, label: "06:00 AM IST" };
+    nextWindow = { hourIST: 1, minuteIST: 30, label: "01:30 AM IST" };
     addDays = 1;
   }
 
@@ -74,12 +76,12 @@ async function runTests() {
   console.log("🧪 [Test 1] Verifying Configurable Scheduler & Next Sync Calculation...");
   const nextSync = getNextScheduledSync();
 
-  console.log(`  Schedule Expression : 30 0,12 * * * (06:00 AM & 06:00 PM IST)`);
+  console.log(`  Schedule Expression : 30 2 * * *, 30 10 * * *, 0 20 * * * (08:00 AM, 04:00 PM & 01:30 AM IST)`);
   console.log(`  Next Sync IST       : ${nextSync.formattedIST} (${nextSync.timeRemaining})`);
   console.log(`  Next Sync UTC       : ${nextSync.date.toISOString()}`);
 
   if (nextSync.label.includes("IST")) {
-    console.log("  ✅ Test 1 Passed: Schedule calculations verified in IST (06:00 AM & 06:00 PM).\n");
+    console.log("  ✅ Test 1 Passed: Schedule calculations verified in IST (08:00 AM, 04:00 PM & 01:30 AM).\n");
     passed++;
   } else {
     console.error("  ❌ Test 1 Failed: Schedule configuration mismatch.\n");

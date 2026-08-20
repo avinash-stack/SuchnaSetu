@@ -1,15 +1,17 @@
 "use client";
 
+import * as React from "react";
 import Link from "next/link";
 import { GovJobDetailed } from "../types";
 import { useLanguage } from "@/lib/i18n/context";
 import { resolveLocalizedJob } from "@/lib/i18n/localize";
 import { getLocalizedDateLabel } from "@/lib/i18n/config";
-import { formatDate, formatINR, formatNumber } from "@/lib/utils";
+import { formatDate, formatINR, formatNumber, isPdfUrl } from "@/lib/utils";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Table, TableHeader, TableBody, TableHead, TableRow, TableCell } from "@/components/ui/table";
+import { InlinePdfViewer } from "./inline-pdf-viewer";
 import {
   Building2,
   Calendar,
@@ -18,13 +20,14 @@ import {
   MapPin,
   FileText,
   ExternalLink,
-  Download,
   ShieldCheck,
   ShieldAlert,
   GraduationCap,
   Briefcase,
   Layers,
   FileSpreadsheet,
+  Globe,
+  X,
 } from "lucide-react";
 
 interface JobDetailViewProps {
@@ -34,6 +37,10 @@ interface JobDetailViewProps {
 export function JobDetailView({ job: rawJob }: JobDetailViewProps) {
   const { language, t } = useLanguage();
   const job = resolveLocalizedJob(rawJob, language);
+  const [isPdfViewerOpen, setIsPdfViewerOpen] = React.useState(false);
+  const [activePdfUrl, setActivePdfUrl] = React.useState<string | null>(
+    job.official_notification_url || null
+  );
 
   const org = job.organization;
   const dept = job.department;
@@ -43,6 +50,17 @@ export function JobDetailView({ job: rawJob }: JobDetailViewProps) {
   const dates = job.important_dates || [];
   const eligibility = job.eligibility;
   const documents = job.official_documents || [];
+
+  const handleTogglePdf = () => {
+    if (!isPdfViewerOpen && (activePdfUrl || job.official_notification_url)) {
+      if (!activePdfUrl && job.official_notification_url) {
+        setActivePdfUrl(job.official_notification_url);
+      }
+      setIsPdfViewerOpen(true);
+    } else {
+      setIsPdfViewerOpen(false);
+    }
+  };
 
   return (
     <div className="mx-auto max-w-5xl px-4 py-8 sm:px-6 lg:px-8 space-y-8">
@@ -157,17 +175,47 @@ export function JobDetailView({ job: rawJob }: JobDetailViewProps) {
           )}
 
           {job.official_notification_url && (
-            <a
-              href={job.official_notification_url}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="flex-1 sm:flex-none"
-            >
-              <Button variant="outline" size="lg" className="w-full gap-2 font-semibold">
-                <Download className="h-4 w-4 text-slate-600" />
-                <span>{t("card.official_pdf")}</span>
+            isPdfUrl(job.official_notification_url) ? (
+              <Button
+                variant={isPdfViewerOpen ? "primary" : "outline"}
+                size="lg"
+                onClick={handleTogglePdf}
+                className={`flex-1 sm:flex-none gap-2 font-semibold transition-all ${
+                  isPdfViewerOpen
+                    ? "bg-slate-800 hover:bg-slate-900 text-white border-slate-700 shadow-xs"
+                    : "border-slate-300 hover:border-brand-500 hover:text-brand-700"
+                }`}
+              >
+                {isPdfViewerOpen ? (
+                  <>
+                    <X className="h-4 w-4" />
+                    <span>Hide PDF</span>
+                  </>
+                ) : (
+                  <>
+                    <FileText className="h-4 w-4 text-brand-600" />
+                    <span>{t("card.official_pdf")}</span>
+                  </>
+                )}
               </Button>
-            </a>
+            ) : (
+              <a
+                href={job.official_notification_url}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex-1 sm:flex-none"
+              >
+                <Button
+                  variant="outline"
+                  size="lg"
+                  className="w-full gap-2 font-semibold text-slate-700 hover:text-[#013089] hover:border-brand-500"
+                >
+                  <Globe className="h-4 w-4 text-slate-500" />
+                  <span>Official Notification Page</span>
+                  <ExternalLink className="h-3.5 w-3.5 text-slate-400" />
+                </Button>
+              </a>
+            )
           )}
 
           {org?.website_url && (
@@ -184,6 +232,16 @@ export function JobDetailView({ job: rawJob }: JobDetailViewProps) {
             </a>
           )}
         </div>
+
+        {/* Inline PDF Viewer (Directly below Notification PDF button) */}
+        {isPdfViewerOpen && activePdfUrl && (
+          <InlinePdfViewer
+            url={activePdfUrl}
+            title={`${job.title} - Official Notification`}
+            organizationName={org?.name || "Government Authority"}
+            onClose={() => setIsPdfViewerOpen(false)}
+          />
+        )}
       </div>
 
       {/* Summary / Description if present */}
@@ -354,15 +412,20 @@ export function JobDetailView({ job: rawJob }: JobDetailViewProps) {
                   </div>
                 </div>
 
-                <a
-                  href={doc.file_url}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="inline-flex items-center gap-1 text-xs font-bold text-[#013089] hover:underline"
-                >
-                  <span>{t("card.official_pdf")}</span>
-                  <ExternalLink className="h-3.5 w-3.5" />
-                </a>
+                {doc.file_url && (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setActivePdfUrl(doc.file_url);
+                      setIsPdfViewerOpen(true);
+                      window.scrollTo({ top: 300, behavior: "smooth" });
+                    }}
+                    className="inline-flex items-center gap-1 text-xs font-bold text-[#013089] hover:underline cursor-pointer bg-brand-50 px-2.5 py-1 rounded-md hover:bg-brand-100 transition-colors"
+                  >
+                    <FileText className="h-3.5 w-3.5" />
+                    <span>{t("card.official_pdf")}</span>
+                  </button>
+                )}
               </div>
             ))}
           </CardContent>
