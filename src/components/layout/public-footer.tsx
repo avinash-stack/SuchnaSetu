@@ -1,9 +1,14 @@
+"use client";
+
 import Link from "next/link";
 import Image from "next/image";
-import { SITE_CONFIG, SYSTEM_MODULES } from "@/lib/constants";
+import { SITE_CONFIG } from "@/lib/constants";
+import { useLanguage } from "@/lib/i18n/context";
 import { ShieldAlert, ExternalLink, ShieldCheck } from "lucide-react";
 
 export function PublicFooter() {
+  const { t } = useLanguage();
+
   return (
     <footer className="border-t border-slate-200 bg-[#0F172A] text-slate-400">
       {/* Mandatory Statutory Disclaimer Banner */}
@@ -14,8 +19,8 @@ export function PublicFooter() {
               <ShieldAlert className="h-5 w-5" />
             </div>
             <div className="text-xs leading-relaxed text-slate-300">
-              <span className="font-bold text-[#FE8D01]">Statutory Transparency Disclaimer: </span>
-              {SITE_CONFIG.disclaimer} All candidates are strictly advised to cross-verify notification details, eligibility requirements, and deadlines directly with the official recruitment portal or Gazette circular before application.
+              <span className="font-bold text-[#FE8D01]">Statutory Transparency Notice: </span>
+              {t("footer.statutory_disclaimer")}
             </div>
           </div>
         </div>
@@ -39,7 +44,7 @@ export function PublicFooter() {
               </span>
             </div>
             <p className="text-xs text-slate-400 leading-relaxed max-w-sm">
-              {SITE_CONFIG.description}
+              {t("footer.description")}
             </p>
             <div className="flex items-center gap-2 text-[11px] text-slate-500">
               <ShieldCheck className="h-3.5 w-3.5 text-emerald-500" />
@@ -50,33 +55,40 @@ export function PublicFooter() {
           {/* Platform Sections */}
           <div>
             <h4 className="text-xs font-bold uppercase tracking-wider text-slate-200 border-b border-slate-800 pb-1.5">
-              Information Modules
+              {t("footer.public_modules")}
             </h4>
             <ul className="mt-3 space-y-2 text-xs">
-              {SYSTEM_MODULES.slice(0, 5).map((mod) => (
-                <li key={mod.key}>
-                  <Link
-                    href={mod.href}
-                    className="hover:text-white transition-colors flex items-center justify-between"
-                  >
-                    <span>{mod.shortTitle}</span>
-                    {mod.status === "active" ? (
-                      <span className="rounded-xs bg-[#013089] px-1 text-[9px] text-white font-bold">
-                        Live
-                      </span>
-                    ) : (
-                      <span className="text-[9px] text-slate-600">Upcoming</span>
-                    )}
-                  </Link>
-                </li>
-              ))}
+              <li>
+                <Link href="/jobs" className="hover:text-white transition-colors flex items-center justify-between">
+                  <span>{t("nav.jobs")}</span>
+                  <span className="rounded-xs bg-[#013089] px-1 text-[9px] text-white font-bold">Live</span>
+                </Link>
+              </li>
+              <li>
+                <Link href="/exams" className="hover:text-white transition-colors flex items-center justify-between">
+                  <span>{t("nav.exams")}</span>
+                  <span className="rounded-xs bg-[#013089] px-1 text-[9px] text-white font-bold">Live</span>
+                </Link>
+              </li>
+              <li>
+                <Link href="/news" className="hover:text-white transition-colors flex items-center justify-between">
+                  <span>{t("nav.news")}</span>
+                  <span className="rounded-xs bg-[#013089] px-1 text-[9px] text-white font-bold">Live</span>
+                </Link>
+              </li>
+              <li>
+                <Link href="/directory" className="hover:text-white transition-colors flex items-center justify-between">
+                  <span>{t("nav.directory")}</span>
+                  <span className="rounded-xs bg-[#013089] px-1 text-[9px] text-white font-bold">Live</span>
+                </Link>
+              </li>
             </ul>
           </div>
 
           {/* Quick State Access */}
           <div>
             <h4 className="text-xs font-bold uppercase tracking-wider text-slate-200 border-b border-slate-800 pb-1.5">
-              State Portals
+              {t("footer.state_portals")}
             </h4>
             <ul className="mt-3 space-y-2 text-xs">
               <li>
@@ -90,18 +102,23 @@ export function PublicFooter() {
                 </Link>
               </li>
               <li>
-                <Link href="/jobs?state=RJ" className="hover:text-white transition-colors">
-                  Rajasthan Jobs (RPSC/RSMSSB)
+                <Link href="/jobs?state=WB" className="hover:text-white transition-colors">
+                  West Bengal Jobs (WBPSC)
                 </Link>
               </li>
               <li>
-                <Link href="/jobs?state=MP" className="hover:text-white transition-colors">
-                  MP Govt Jobs (MPPSC/MPESB)
+                <Link href="/jobs?state=OR" className="hover:text-white transition-colors">
+                  Odisha Govt Jobs (OPSC)
                 </Link>
               </li>
               <li>
-                <Link href="/jobs?state=DL" className="hover:text-white transition-colors">
-                  Delhi Govt Jobs (DSSSB/DHC)
+                <Link href="/jobs?state=AS" className="hover:text-white transition-colors">
+                  Assam Govt Jobs (APSC)
+                </Link>
+              </li>
+              <li>
+                <Link href="/jobs?state=PB" className="hover:text-white transition-colors">
+                  Punjab Govt Jobs (PPSC)
                 </Link>
               </li>
             </ul>
@@ -110,7 +127,7 @@ export function PublicFooter() {
           {/* Verified Official Portals */}
           <div>
             <h4 className="text-xs font-bold uppercase tracking-wider text-slate-200 border-b border-slate-800 pb-1.5">
-              Official Portals
+              {t("footer.official_commissions")}
             </h4>
             <ul className="mt-3 space-y-2 text-xs">
               <li>
@@ -163,7 +180,7 @@ export function PublicFooter() {
 
         {/* Bottom Bar */}
         <div className="mt-10 border-t border-slate-800 pt-6 flex flex-col md:flex-row items-center justify-between text-xs text-slate-500 gap-4">
-          <p>© {new Date().getFullYear()} {SITE_CONFIG.name}. Official Public Information &amp; Gazette Aggregator.</p>
+          <p>{t("footer.rights")}</p>
           <div className="flex items-center space-x-6 text-[11px]">
             <Link href="/robots.txt" className="hover:text-slate-300 transition-colors">
               Robots.txt

@@ -26,6 +26,7 @@ export interface PublicBulletinDetailed extends PublicBulletin {
   tags?: string[] | null;
   image_url?: string | null;
   is_manually_edited?: boolean;
+  translations?: any[];
 }
 
 export interface BulletinFilterParams {

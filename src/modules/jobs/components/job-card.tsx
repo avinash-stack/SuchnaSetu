@@ -1,15 +1,16 @@
+"use client";
+
 import Link from "next/link";
 import { GovJobDetailed } from "../types";
+import { useLanguage } from "@/lib/i18n/context";
+import { resolveLocalizedJob } from "@/lib/i18n/localize";
 import { Card, CardHeader, CardTitle, CardContent, CardFooter } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { formatDate, formatINR, formatNumber } from "@/lib/utils";
 import {
   Calendar,
-  Users,
   MapPin,
   ArrowRight,
-  ExternalLink,
   Clock,
   FileText,
 } from "lucide-react";
@@ -18,7 +19,10 @@ interface JobCardProps {
   job: GovJobDetailed;
 }
 
-export function JobCard({ job }: JobCardProps) {
+export function JobCard({ job: rawJob }: JobCardProps) {
+  const { language, t } = useLanguage();
+  const job = resolveLocalizedJob(rawJob, language);
+
   const isClosingSoon = job.application_end_date
     ? new Date(job.application_end_date).getTime() - Date.now() < 7 * 24 * 60 * 60 * 1000 &&
       new Date(job.application_end_date).getTime() > Date.now()
@@ -47,7 +51,7 @@ export function JobCard({ job }: JobCardProps) {
           </span>
         </div>
 
-        {/* Title */}
+        {/* Localized Title */}
         <Link href={`/jobs/${job.slug}`} className="block">
           <CardTitle className="text-sm sm:text-base font-bold leading-snug text-slate-900 group-hover:text-[#013089] transition-colors line-clamp-2">
             {job.title}
@@ -57,7 +61,7 @@ export function JobCard({ job }: JobCardProps) {
         {/* Official Reference / Advt No */}
         {job.notification_number && (
           <p className="text-[10px] font-mono text-slate-500">
-            Advt No: <span className="font-semibold text-slate-700">{job.notification_number}</span>
+            {t("card.advt_no")}: <span className="font-semibold text-slate-700">{job.notification_number}</span>
           </p>
         )}
       </CardHeader>
@@ -66,14 +70,19 @@ export function JobCard({ job }: JobCardProps) {
         {/* Structured Data Grid */}
         <div className="grid grid-cols-2 gap-2 rounded-xs bg-slate-50 p-2.5 border border-slate-100 text-xs">
           <div>
-            <div className="text-[10px] uppercase font-bold text-slate-400 tracking-wider">Total Vacancies</div>
+            <div className="text-[10px] uppercase font-bold text-slate-400 tracking-wider">
+              {t("card.vacancies")}
+            </div>
             <div className="font-bold text-[#0F172A] text-sm mt-0.5">
-              {formatNumber(job.total_vacancies)} <span className="text-[11px] font-normal text-slate-500">Posts</span>
+              {formatNumber(job.total_vacancies)}{" "}
+              <span className="text-[11px] font-normal text-slate-500">{t("card.posts")}</span>
             </div>
           </div>
 
           <div>
-            <div className="text-[10px] uppercase font-bold text-slate-400 tracking-wider">Pay Scale</div>
+            <div className="text-[10px] uppercase font-bold text-slate-400 tracking-wider">
+              {t("card.salary")}
+            </div>
             <div className="font-medium text-slate-800 text-xs truncate mt-0.5">
               {job.salary_min || job.salary_max
                 ? `${formatINR(job.salary_min)} - ${formatINR(job.salary_max)}`
@@ -86,7 +95,7 @@ export function JobCard({ job }: JobCardProps) {
         <div className="flex items-center justify-between text-[11px] pt-0.5">
           <div className="flex items-center gap-1.5 text-slate-500">
             <Calendar className="h-3.5 w-3.5 text-slate-400" />
-            <span>Last Date:</span>
+            <span>{t("card.last_date")}:</span>
             <span className={`font-semibold ${isClosingSoon ? "text-amber-700 font-bold" : "text-slate-800"}`}>
               {formatDate(job.application_end_date)}
             </span>
@@ -95,7 +104,7 @@ export function JobCard({ job }: JobCardProps) {
           {isClosingSoon && (
             <span className="inline-flex items-center gap-1 rounded-xs bg-[#FE8D01] px-1.5 py-0.5 text-[10px] font-bold text-white">
               <Clock className="h-3 w-3" />
-              <span>Closing Soon</span>
+              <span>{t("card.closes")}</span>
             </span>
           )}
         </div>
@@ -110,7 +119,7 @@ export function JobCard({ job }: JobCardProps) {
             className="inline-flex items-center gap-1 text-[11px] font-semibold text-slate-600 hover:text-[#013089] transition-colors"
           >
             <FileText className="h-3.5 w-3.5 text-slate-400" />
-            <span>Official PDF</span>
+            <span>{t("card.official_pdf")}</span>
           </a>
         ) : (
           <span className="text-[10px] text-slate-400 font-mono">Gazette Verified</span>
@@ -118,7 +127,7 @@ export function JobCard({ job }: JobCardProps) {
 
         <Link href={`/jobs/${job.slug}`}>
           <Button variant="outline" size="sm" className="h-7 px-2.5 text-[11px] font-bold text-[#013089] hover:bg-[#013089] hover:text-white border-[#013089]/40 hover:border-[#013089]">
-            <span>Full Details</span>
+            <span>{t("card.view_details")}</span>
             <ArrowRight className="h-3 w-3 ml-1" />
           </Button>
         </Link>

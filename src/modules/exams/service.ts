@@ -1,4 +1,7 @@
 import { createClient } from "@/lib/supabase/server";
+import { createPublicClient } from "@/lib/supabase/public";
+import { cache } from "react";
+import { unstable_cache } from "next/cache";
 import { GovExam, GovExamDetailed, ExamFilterParams } from "./types";
 import { Category, Organization, StateUT, Department, Qualification } from "@/modules/core/types";
 
@@ -14,10 +17,10 @@ export async function getPublicExams(params: ExamFilterParams = {}) {
 }
 
 /**
- * Fetches a single public examination by slug with all nested relations.
+ * Internal uncached fetcher for single exam by slug.
  */
-export async function getPublicExamBySlug(slug: string): Promise<GovExamDetailed | null> {
-  const supabase = await createClient();
+const fetchExamBySlugUncached = async (slug: string): Promise<GovExamDetailed | null> => {
+  const supabase = createPublicClient();
 
   const { data, error } = await supabase
     .from("gov_exams")
@@ -34,7 +37,8 @@ export async function getPublicExamBySlug(slug: string): Promise<GovExamDetailed
       eligibility:exam_eligibility(*, min_qualification:qualifications(*)),
       important_dates:exam_important_dates(*),
       centers:exam_centers(*),
-      official_documents:exam_official_documents(*)
+      official_documents:exam_official_documents(*),
+      translations:gov_exam_translations(*)
     `
     )
     .eq("slug", slug)
@@ -71,13 +75,25 @@ export async function getPublicExamBySlug(slug: string): Promise<GovExamDetailed
   }
 
   return detailed;
-}
+};
+
+/**
+ * Fetches a single public examination by slug with all nested relations.
+ * Wrapped with React.cache() and Next.js unstable_cache for instant rendering.
+ */
+export const getPublicExamBySlug = cache(async (slug: string): Promise<GovExamDetailed | null> => {
+  return unstable_cache(
+    async () => fetchExamBySlugUncached(slug),
+    [`exam-by-slug-${slug}`],
+    { revalidate: 60, tags: [`exam-${slug}`, "exams"] }
+  )();
+});
 
 /**
  * Fetches related exams from the same organization or category.
  */
 export async function getRelatedExams(organizationId: string, currentExamId: string, limit = 4) {
-  const supabase = await createClient();
+  const supabase = createPublicClient();
 
   const { data } = await supabase
     .from("gov_exams")
@@ -97,6 +113,36 @@ export async function getRelatedExams(organizationId: string, currentExamId: str
 
   return (data as unknown as GovExamDetailed[]) || [];
 }
+
+/**
+ * Fetches master taxonomies required for filters and examination forms.
+ * Cached for high-speed navigation.
+ */
+export const getExamTaxonomies = unstable_cache(
+  async () => {
+    const supabase = createPublicClient();
+
+    const [categoriesRes, orgsRes, deptsRes, qualsRes, statesRes, jobsRes] = await Promise.all([
+      supabase.from("categories").select("*").eq("is_active", true).order("display_order"),
+      supabase.from("organizations").select("*").eq("is_active", true).order("name"),
+      supabase.from("departments").select("*").eq("is_active", true).order("name"),
+      supabase.from("qualifications").select("*").eq("is_active", true).order("display_order"),
+      supabase.from("states_uts").select("*").eq("is_active", true).order("name"),
+      supabase.from("gov_jobs").select("id, title, slug, organization_id").is("deleted_at", null).order("title"),
+    ]);
+
+    return {
+      categories: (categoriesRes.data as Category[]) || [],
+      organizations: (orgsRes.data as Organization[]) || [],
+      departments: (deptsRes.data as Department[]) || [],
+      qualifications: (qualsRes.data as Qualification[]) || [],
+      states: (statesRes.data as StateUT[]) || [],
+      jobs: jobsRes.data || [],
+    };
+  },
+  ["exam-taxonomies-catalog"],
+  { revalidate: 300, tags: ["taxonomies"] }
+);
 
 /**
  * Fetches exams for administrative console with status filters, search, and soft delete tabs.
@@ -217,29 +263,4 @@ export async function getAdminExamById(id: string): Promise<GovExamDetailed | nu
   }
 
   return detailed;
-}
-
-/**
- * Fetches master taxonomies required for filters and examination forms.
- */
-export async function getExamTaxonomies() {
-  const supabase = await createClient();
-
-  const [categoriesRes, orgsRes, deptsRes, qualsRes, statesRes, jobsRes] = await Promise.all([
-    supabase.from("categories").select("*").eq("is_active", true).order("display_order"),
-    supabase.from("organizations").select("*").eq("is_active", true).order("name"),
-    supabase.from("departments").select("*").eq("is_active", true).order("name"),
-    supabase.from("qualifications").select("*").eq("is_active", true).order("display_order"),
-    supabase.from("states_uts").select("*").eq("is_active", true).order("name"),
-    supabase.from("gov_jobs").select("id, title, slug, organization_id").is("deleted_at", null).order("title"),
-  ]);
-
-  return {
-    categories: (categoriesRes.data as Category[]) || [],
-    organizations: (orgsRes.data as Organization[]) || [],
-    departments: (deptsRes.data as Department[]) || [],
-    qualifications: (qualsRes.data as Qualification[]) || [],
-    states: (statesRes.data as StateUT[]) || [],
-    jobs: jobsRes.data || [],
-  };
 }

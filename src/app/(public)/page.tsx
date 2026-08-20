@@ -8,6 +8,7 @@ import { BreakingTicker } from "@/modules/bulletins/components/breaking-ticker";
 import { BulletinCard } from "@/modules/bulletins/components/bulletin-card";
 import { JobCard } from "@/modules/jobs/components/job-card";
 import { ExamCard } from "@/modules/exams/components/exam-card";
+import { HomeHero } from "@/components/home/home-hero";
 import { SearchBar } from "@/components/shared/search-bar";
 import { Button } from "@/components/ui/button";
 import { formatDate } from "@/lib/utils";
@@ -112,49 +113,8 @@ export default async function HomePage({ searchParams }: HomePageProps) {
         <BreakingTicker bulletins={breakingBulletins} />
       )}
 
-      {/* 2. Editorial Search Header & State Switcher Strip */}
-      <section className="bg-white border-b border-slate-200 pt-6 pb-6">
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 space-y-5">
-          <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
-            <div className="max-w-2xl">
-              <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-[#013089]">
-                <span className="h-2 w-2 rounded-xs bg-[#FE8D01]" />
-                <span>Verified Public Information Ledger</span>
-              </div>
-              <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-[#0F172A] font-heading mt-1">
-                Official Government Notices &amp; Recruitment Gazette
-              </h1>
-              <p className="text-xs sm:text-sm text-slate-600 mt-1 leading-relaxed">
-                Directly aggregated from Union &amp; State commissions, High Courts, and official departments. Free from rumors and speculation.
-              </p>
-            </div>
-
-            <div className="w-full md:w-auto md:min-w-[360px] lg:min-w-[440px]">
-              <SearchBar
-                targetPath="/"
-                placeholder="Search by post, department (UPSC, BSSC, SSC), state, or keyword..."
-              />
-            </div>
-          </div>
-
-          {/* Quick State / Sector Horizontal Strip */}
-          <div className="pt-3 border-t border-slate-100 flex items-center gap-1.5 overflow-x-auto no-scrollbar text-xs">
-            <span className="font-bold text-slate-700 whitespace-nowrap mr-1 flex items-center gap-1">
-              <MapPin className="h-3.5 w-3.5 text-[#013089]" />
-              <span>Quick Access:</span>
-            </span>
-            {stateQuickFilters.map((filter, idx) => (
-              <Link
-                key={idx}
-                href={filter.href}
-                className="whitespace-nowrap rounded-xs bg-slate-100 px-2.5 py-1 text-slate-700 hover:bg-[#013089] hover:text-white transition-colors font-medium border border-slate-200"
-              >
-                {filter.label}
-              </Link>
-            ))}
-          </div>
-        </div>
-      </section>
+      {/* 2. Multilingual Editorial Search Header & State Switcher Strip */}
+      <HomeHero />
 
       {/* ========================================================================= */}
       {/* 3. ACTIVE SEARCH RESULTS VIEW (Shown when user searches) */}
@@ -404,10 +364,15 @@ export default async function HomePage({ searchParams }: HomePageProps) {
                   <div className="flex items-center gap-2">
                     <CheckCircle2 className="h-4 w-4 text-emerald-700" />
                     <h3 className="text-base font-bold text-[#0F172A] font-heading">
-                      Verified Public Sources Directory
+                      Verified Organizations &amp; Commissions
                     </h3>
                   </div>
-                  <span className="text-[11px] text-slate-500 font-mono">100% Data Provenance</span>
+                  <Link href="/directory">
+                    <Button variant="outline" size="sm" className="h-6 px-2 text-[11px] font-bold text-[#013089]">
+                      <span>Full Directory</span>
+                      <ArrowRight className="h-3 w-3 ml-1" />
+                    </Button>
+                  </Link>
                 </div>
 
                 <div className="overflow-x-auto rounded-xs border border-slate-200 bg-white">

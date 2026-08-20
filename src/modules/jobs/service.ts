@@ -1,4 +1,7 @@
 import { createClient } from "@/lib/supabase/server";
+import { createPublicClient } from "@/lib/supabase/public";
+import { cache } from "react";
+import { unstable_cache } from "next/cache";
 import { GovJob, GovJobDetailed, JobFilterParams, JobVacancy, JobImportantDate, JobEligibility, JobOfficialDocument } from "./types";
 import { GovJobInput } from "./schemas";
 import { Organization, Category, StateUT, Department, Qualification } from "@/modules/core/types";
@@ -22,10 +25,10 @@ export async function getPublicJobs(params: JobFilterParams = {}): Promise<{
 }
 
 /**
- * Fetch a single published job notice with all associated sub-tables by unique slug.
+ * Internal cached fetcher for a single job by slug.
  */
-export async function getPublicJobBySlug(slug: string): Promise<GovJobDetailed | null> {
-  const supabase = await createClient();
+const fetchJobBySlugUncached = async (slug: string): Promise<GovJobDetailed | null> => {
+  const supabase = createPublicClient();
 
   const { data: job, error } = await (supabase.from("gov_jobs") as any)
     .select(
@@ -39,7 +42,8 @@ export async function getPublicJobBySlug(slug: string): Promise<GovJobDetailed |
       vacancies:job_vacancies(*),
       important_dates:job_important_dates(*),
       eligibility:job_eligibility(*),
-      official_documents:job_official_documents(*)
+      official_documents:job_official_documents(*),
+      translations:gov_job_translations(*)
     `
     )
     .eq("slug", slug)
@@ -60,39 +64,57 @@ export async function getPublicJobBySlug(slug: string): Promise<GovJobDetailed |
     ),
     eligibility: Array.isArray(rawJob.eligibility) ? rawJob.eligibility[0] : (rawJob.eligibility as JobEligibility),
     official_documents: (rawJob.official_documents || []) as JobOfficialDocument[],
+    translations: (rawJob.translations || []) as any[],
   };
 
   return detailedJob;
-}
+};
+
+/**
+ * Fetch a single published job notice with all associated sub-tables by unique slug.
+ * Wrapped with React.cache() and Next.js unstable_cache for instant rendering.
+ */
+export const getPublicJobBySlug = cache(async (slug: string): Promise<GovJobDetailed | null> => {
+  return unstable_cache(
+    async () => fetchJobBySlugUncached(slug),
+    [`job-by-slug-${slug}`],
+    { revalidate: 60, tags: [`job-${slug}`, "jobs"] }
+  )();
+});
 
 /**
  * Fetch active taxonomies (categories, organizations, departments, qualifications, states) for filter sidebars and forms.
+ * Cached with unstable_cache for high-speed instant navigation.
  */
-export async function getJobTaxonomies(): Promise<{
-  categories: Category[];
-  organizations: Organization[];
-  departments: Department[];
-  qualifications: Qualification[];
-  states: StateUT[];
-}> {
-  const supabase = await createClient();
+export const getJobTaxonomies = unstable_cache(
+  async (): Promise<{
+    categories: Category[];
+    organizations: Organization[];
+    departments: Department[];
+    qualifications: Qualification[];
+    states: StateUT[];
+  }> => {
+    const supabase = createPublicClient();
 
-  const [categoriesRes, organizationsRes, departmentsRes, qualificationsRes, statesRes] = await Promise.all([
-    supabase.from("categories").select("*").eq("is_active", true).order("display_order", { ascending: true }),
-    supabase.from("organizations").select("*").eq("is_active", true).order("name", { ascending: true }),
-    (supabase.from("departments") as any).select("*").eq("is_active", true).order("name", { ascending: true }),
-    (supabase.from("qualifications") as any).select("*").eq("is_active", true).order("display_order", { ascending: true }),
-    supabase.from("states_uts").select("*").eq("is_active", true).order("name", { ascending: true }),
-  ]);
+    const [categoriesRes, organizationsRes, departmentsRes, qualificationsRes, statesRes] = await Promise.all([
+      supabase.from("categories").select("*").eq("is_active", true).order("display_order", { ascending: true }),
+      supabase.from("organizations").select("*").eq("is_active", true).order("name", { ascending: true }),
+      (supabase.from("departments") as any).select("*").eq("is_active", true).order("name", { ascending: true }),
+      (supabase.from("qualifications") as any).select("*").eq("is_active", true).order("display_order", { ascending: true }),
+      supabase.from("states_uts").select("*").eq("is_active", true).order("name", { ascending: true }),
+    ]);
 
-  return {
-    categories: (categoriesRes.data || []) as Category[],
-    organizations: (organizationsRes.data || []) as Organization[],
-    departments: (departmentsRes.data || []) as Department[],
-    qualifications: (qualificationsRes.data || []) as Qualification[],
-    states: (statesRes.data || []) as StateUT[],
-  };
-}
+    return {
+      categories: (categoriesRes.data || []) as Category[],
+      organizations: (organizationsRes.data || []) as Organization[],
+      departments: (departmentsRes.data || []) as Department[],
+      qualifications: (qualificationsRes.data || []) as Qualification[],
+      states: (statesRes.data || []) as StateUT[],
+    };
+  },
+  ["job-taxonomies-catalog"],
+  { revalidate: 300, tags: ["taxonomies"] }
+);
 
 /**
  * Fetch all jobs for Admin management console (including draft, archived, and soft-deleted/trash).

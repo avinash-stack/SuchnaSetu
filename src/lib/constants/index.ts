@@ -168,8 +168,7 @@ export const PUBLIC_NAV_ITEMS: NavItem[] = [
   { title: "Govt Jobs", href: "/jobs" },
   { title: "Exams & Notifications", href: "/exams" },
   { title: "Employment News", href: "/news" },
-  { title: "Directory", href: "/#modules" },
-  { title: "Official Sources", href: "/#sources" },
+  { title: "Directory", href: "/directory" },
 ];
 
 export const ADMIN_NAV_ITEMS: NavItem[] = [

@@ -1,4 +1,7 @@
 import { createClient } from "@/lib/supabase/server";
+import { createPublicClient } from "@/lib/supabase/public";
+import { cache } from "react";
+import { unstable_cache } from "next/cache";
 import { PublicBulletinDetailed, BulletinFilterParams } from "./types";
 import { BULLETIN_CATEGORIES } from "./constants";
 
@@ -34,41 +37,48 @@ export async function getPublicBulletins(params: BulletinFilterParams = {}): Pro
 
 /**
  * Fetch top breaking news headlines for live marquee ticker.
+ * Cached for 60 seconds with unstable_cache for high-speed loads.
  */
-export async function getBreakingBulletins(limit: number = 5): Promise<PublicBulletinDetailed[]> {
-  const supabase = await createClient();
+export const getBreakingBulletins = unstable_cache(
+  async (limit: number = 5): Promise<PublicBulletinDetailed[]> => {
+    const supabase = createPublicClient();
 
-  const { data, error } = await (supabase.from("public_bulletins") as any)
-    .select(
+    const { data, error } = await (supabase.from("public_bulletins") as any)
+      .select(
+        `
+        *,
+        organization:organizations(*),
+        translations:bulletin_translations(*)
       `
-      *,
-      organization:organizations(*)
-    `
-    )
-    .eq("status", "published")
-    .order("is_breaking", { ascending: false })
-    .order("published_at", { ascending: false })
-    .limit(limit);
+      )
+      .eq("status", "published")
+      .order("is_breaking", { ascending: false })
+      .order("published_at", { ascending: false })
+      .limit(limit);
 
-  if (error || !data) {
-    return [];
-  }
+    if (error || !data) {
+      return [];
+    }
 
-  return data as PublicBulletinDetailed[];
-}
+    return data as PublicBulletinDetailed[];
+  },
+  ["breaking-bulletins-feed"],
+  { revalidate: 60, tags: ["bulletins"] }
+);
 
 /**
- * Fetch a single public bulletin by slug.
+ * Internal uncached fetcher for single bulletin by slug.
  */
-export async function getPublicBulletinBySlug(slug: string): Promise<PublicBulletinDetailed | null> {
-  const supabase = await createClient();
+const fetchBulletinBySlugUncached = async (slug: string): Promise<PublicBulletinDetailed | null> => {
+  const supabase = createPublicClient();
 
   const { data, error } = await (supabase.from("public_bulletins") as any)
     .select(
       `
       *,
       organization:organizations(*),
-      related_job:gov_jobs(*)
+      related_job:gov_jobs(*),
+      translations:bulletin_translations(*)
     `
     )
     .eq("slug", slug)
@@ -80,7 +90,19 @@ export async function getPublicBulletinBySlug(slug: string): Promise<PublicBulle
   }
 
   return data as PublicBulletinDetailed;
-}
+};
+
+/**
+ * Fetch a single public bulletin by slug.
+ * Wrapped with React.cache() and Next.js unstable_cache.
+ */
+export const getPublicBulletinBySlug = cache(async (slug: string): Promise<PublicBulletinDetailed | null> => {
+  return unstable_cache(
+    async () => fetchBulletinBySlugUncached(slug),
+    [`bulletin-by-slug-${slug}`],
+    { revalidate: 60, tags: [`bulletin-${slug}`, "bulletins"] }
+  )();
+});
 
 /**
  * Fetch related bulletins in the same category or authority.
@@ -90,7 +112,7 @@ export async function getRelatedBulletins(
   category: string,
   limit: number = 3
 ): Promise<PublicBulletinDetailed[]> {
-  const supabase = await createClient();
+  const supabase = createPublicClient();
 
   const { data, error } = await (supabase.from("public_bulletins") as any)
     .select(

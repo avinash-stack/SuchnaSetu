@@ -83,11 +83,36 @@ const STATE_ALIASES: Record<string, string> = {
   manipur: "MN",
   nagaland: "NL",
   mizoram: "MZ",
-  "arunachal pradesh": "AR",
-  sikkim: "SK",
   ladakh: "LA",
   puducherry: "PY",
   pondicherry: "PY",
+
+  // Indic Script State Aliases (Hindi, Bengali, Odia, Assamese, Punjabi)
+  बिहार: "BR",
+  पटना: "BR",
+  "उत्तर प्रदेश": "UP",
+  यूपी: "UP",
+  लखनऊ: "UP",
+  प्रयागराज: "UP",
+  "मध्य प्रदेश": "MP",
+  एमपी: "MP",
+  भोपाल: "MP",
+  राजस्थान: "RJ",
+  जयपुर: "RJ",
+  दिल्ली: "DL",
+  हरियाणा: "HR",
+  उत्तराखंड: "UK",
+  झारखंड: "JH",
+  रांची: "JH",
+  পশ্চিমবঙ্গ: "WB",
+  বাংলা: "WB",
+  কলকাতা: "WB",
+  ଓଡ଼ିଶା: "OD",
+  ଭୁବନେଶ୍ୱର: "OD",
+  অসম: "AS",
+  গুৱাহাটী: "AS",
+  ਪੰਜਾਬ: "PB",
+  ਚੰਡੀਗੜ੍ਹ: "PB",
 };
 
 // Known Organization and Commission Keywords / Acronyms
@@ -373,7 +398,7 @@ export function parseSearchQuery(rawQuery?: string): ParsedSearchQuery {
   }
 
   const cleanQuery = rawQuery
-    .replace(/[^\w\s\-\.\,\(\)]/gi, " ")
+    .replace(/[^\p{L}\p{M}\p{N}\s.,()\-]/gu, " ")
     .replace(/\s+/g, " ")
     .trim();
 

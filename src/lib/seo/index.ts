@@ -57,6 +57,15 @@ export function constructMetadata({
     metadataBase: new URL(baseUrl),
     alternates: {
       canonical: canonicalUrl,
+      languages: {
+        "en": `${canonicalUrl}`,
+        "hi": `${canonicalUrl}${cleanPath.includes("?") ? "&" : "?"}lang=hi`,
+        "bn": `${canonicalUrl}${cleanPath.includes("?") ? "&" : "?"}lang=bn`,
+        "or": `${canonicalUrl}${cleanPath.includes("?") ? "&" : "?"}lang=or`,
+        "as": `${canonicalUrl}${cleanPath.includes("?") ? "&" : "?"}lang=as`,
+        "pa": `${canonicalUrl}${cleanPath.includes("?") ? "&" : "?"}lang=pa`,
+        "x-default": `${canonicalUrl}`,
+      },
     },
     openGraph: {
       title: pageTitle,

@@ -5,6 +5,8 @@ import { useRouter, useSearchParams, usePathname } from "next/navigation";
 import { Search, X, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
+import { useLanguage } from "@/lib/i18n/context";
+
 interface SearchBarProps {
   placeholder?: string;
   targetPath?: string;
@@ -17,18 +19,22 @@ interface SearchBarProps {
 }
 
 function SearchBarInner({
-  placeholder = "Search central, state, defence, banking jobs, exams, organizations (UPSC, SSC, BSSC), or post names...",
+  placeholder,
   targetPath,
   searchParamKey = "search",
   onSearch,
   className = "",
-  buttonText = "Search Notices",
+  buttonText,
   showClear = true,
   size = "md",
 }: SearchBarProps) {
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
+  const { t } = useLanguage();
+
+  const activePlaceholder = placeholder || t("hero.search_placeholder");
+  const activeButtonText = buttonText || t("hero.search_button");
 
   // Read current active search query from URL
   const currentQuery =
@@ -106,7 +112,7 @@ function SearchBarInner({
           type="text"
           value={query}
           onChange={(e) => setQuery(e.target.value)}
-          placeholder={placeholder}
+          placeholder={activePlaceholder}
           className="w-full bg-transparent px-3 py-1.5 text-xs sm:text-sm text-slate-900 placeholder:text-slate-400 focus:outline-hidden"
         />
 
@@ -128,7 +134,7 @@ function SearchBarInner({
           disabled={isPending}
           className="rounded-xs font-bold shrink-0"
         >
-          <span>{buttonText}</span>
+          <span>{activeButtonText}</span>
         </Button>
       </div>
     </form>

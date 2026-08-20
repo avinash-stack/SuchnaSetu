@@ -1,4 +1,5 @@
-import { createClient } from "@/lib/supabase/server";
+import { createPublicClient } from "@/lib/supabase/public";
+import { unstable_cache } from "next/cache";
 import { GovJobDetailed, JobFilterParams } from "@/modules/jobs/types";
 import { GovExamDetailed, ExamFilterParams } from "@/modules/exams/types";
 import { PublicBulletinDetailed, BulletinFilterParams } from "@/modules/bulletins/types";
@@ -6,19 +7,31 @@ import { ParsedSearchQuery, GlobalSearchResult } from "./types";
 import { parseSearchQuery } from "./query-parser";
 
 /**
+ * Cached taxonomy catalog for high-performance query token resolution.
+ */
+const getCachedSearchTaxonomies = unstable_cache(
+  async () => {
+    const supabase = createPublicClient();
+    const [orgsRes, catsRes] = await Promise.all([
+      (supabase.from("organizations") as any).select("id, name, acronym, slug, state_code").eq("is_active", true),
+      (supabase.from("categories") as any).select("id, name, slug").eq("is_active", true),
+    ]);
+
+    return {
+      allOrgs: (orgsRes.data || []) as Array<{ id: string; name: string; acronym: string | null; slug: string; state_code: string | null }>,
+      allCats: (catsRes.data || []) as Array<{ id: string; name: string; slug: string }>,
+    };
+  },
+  ["search-taxonomies-catalog"],
+  { revalidate: 300, tags: ["taxonomies"] }
+);
+
+/**
  * Cached/in-memory helper to resolve matching organization IDs and category IDs
  * for cross-entity search enhancement.
  */
 async function resolveTaxonomyMatches(parsed: ParsedSearchQuery) {
-  const supabase = await createClient();
-
-  const [orgsRes, catsRes] = await Promise.all([
-    (supabase.from("organizations") as any).select("id, name, acronym, slug, state_code").eq("is_active", true),
-    (supabase.from("categories") as any).select("id, name, slug").eq("is_active", true),
-  ]);
-
-  const allOrgs = (orgsRes.data || []) as Array<{ id: string; name: string; acronym: string | null; slug: string; state_code: string | null }>;
-  const allCats = (catsRes.data || []) as Array<{ id: string; name: string; slug: string }>;
+  const { allOrgs, allCats } = await getCachedSearchTaxonomies();
 
   const matchedOrgIds = new Set<string>();
   const matchedCatIds = new Set<string>();
@@ -115,7 +128,24 @@ function rankJobItem(job: GovJobDetailed, parsed: ParsedSearchQuery): number {
     }
   }
 
-  // 5. Featured / freshness boost
+  // 5. Translated content matches (Indic scripts / Hindi / Regional)
+  if ((job as any).translations && Array.isArray((job as any).translations)) {
+    for (const t of (job as any).translations) {
+      const tTitle = (t.title || "").toLowerCase();
+      const tPost = (t.post_name || "").toLowerCase();
+      const tDesc = (t.description || "").toLowerCase();
+      if (tTitle.includes(lowerQuery)) score += 100;
+      if (tPost.includes(lowerQuery)) score += 80;
+      if (tDesc.includes(lowerQuery)) score += 40;
+      for (const token of parsed.contentTokens) {
+        if (tTitle.includes(token)) score += 35;
+        if (tPost.includes(token)) score += 30;
+        if (tDesc.includes(token)) score += 15;
+      }
+    }
+  }
+
+  // 6. Featured / freshness boost
   if (job.is_featured) score += 5;
 
   return score;
@@ -161,6 +191,23 @@ function rankExamItem(exam: GovExamDetailed, parsed: ParsedSearchQuery): number 
     if (stateCode === sc.toUpperCase()) score += 45;
   }
 
+  // 4. Translated content matches
+  if ((exam as any).translations && Array.isArray((exam as any).translations)) {
+    for (const t of (exam as any).translations) {
+      const tTitle = (t.title || "").toLowerCase();
+      const tShort = (t.short_title || "").toLowerCase();
+      const tDesc = (t.description || "").toLowerCase();
+      if (tTitle.includes(lowerQuery)) score += 100;
+      if (tShort.includes(lowerQuery)) score += 80;
+      if (tDesc.includes(lowerQuery)) score += 30;
+      for (const token of parsed.contentTokens) {
+        if (tTitle.includes(token)) score += 35;
+        if (tShort.includes(token)) score += 25;
+        if (tDesc.includes(token)) score += 15;
+      }
+    }
+  }
+
   if (exam.is_featured) score += 5;
 
   return score;
@@ -192,6 +239,20 @@ function rankBulletinItem(bulletin: PublicBulletinDetailed, parsed: ParsedSearch
     if (category.includes(token)) score += 20;
   }
 
+  // 3. Translated content matches
+  if ((bulletin as any).translations && Array.isArray((bulletin as any).translations)) {
+    for (const t of (bulletin as any).translations) {
+      const tTitle = (t.title || "").toLowerCase();
+      const tSum = (t.summary || "").toLowerCase();
+      if (tTitle.includes(lowerQuery)) score += 100;
+      if (tSum.includes(lowerQuery)) score += 40;
+      for (const token of parsed.contentTokens) {
+        if (tTitle.includes(token)) score += 35;
+        if (tSum.includes(token)) score += 20;
+      }
+    }
+  }
+
   if (bulletin.is_breaking) score += 10;
 
   return score;
@@ -208,7 +269,7 @@ export async function searchJobs(params: JobFilterParams = {}): Promise<{
   limit: number;
   totalPages: number;
 }> {
-  const supabase = await createClient();
+  const supabase = createPublicClient();
   const page = Math.max(1, params.page || 1);
   const limit = Math.max(1, Math.min(100, params.limit || 12));
   const offset = (page - 1) * limit;
@@ -223,7 +284,8 @@ export async function searchJobs(params: JobFilterParams = {}): Promise<{
       qualification:qualifications(*),
       state:states_uts(*),
       vacancies:job_vacancies(*),
-      important_dates:job_important_dates(*)
+      important_dates:job_important_dates(*),
+      translations:gov_job_translations(*)
     `,
       { count: "exact" }
     )
@@ -372,7 +434,7 @@ export async function searchExams(params: ExamFilterParams = {}): Promise<{
   limit: number;
   totalPages: number;
 }> {
-  const supabase = await createClient();
+  const supabase = createPublicClient();
   const page = Math.max(1, params.page || 1);
   const limit = Math.max(1, Math.min(100, params.limit || 12));
   const offset = (page - 1) * limit;
@@ -386,7 +448,8 @@ export async function searchExams(params: ExamFilterParams = {}): Promise<{
       category:categories(*),
       state:states_uts(*),
       stages:exam_stages(*),
-      important_dates:exam_important_dates(*)
+      important_dates:exam_important_dates(*),
+      translations:gov_exam_translations(*)
     `,
       { count: "exact" }
     )
@@ -530,7 +593,7 @@ export async function searchBulletins(params: BulletinFilterParams = {}): Promis
   limit: number;
   totalPages: number;
 }> {
-  const supabase = await createClient();
+  const supabase = createPublicClient();
   const page = Math.max(1, params.page || 1);
   const limit = Math.max(1, Math.min(100, params.limit || 12));
   const offset = (page - 1) * limit;
@@ -540,7 +603,8 @@ export async function searchBulletins(params: BulletinFilterParams = {}): Promis
       `
       *,
       organization:organizations(*),
-      related_job:gov_jobs(id, title, slug)
+      related_job:gov_jobs(id, title, slug),
+      translations:bulletin_translations(*)
     `,
       { count: "exact" }
     )

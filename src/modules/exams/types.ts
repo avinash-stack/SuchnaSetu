@@ -25,6 +25,8 @@ export interface GovExamDetailed extends GovExam {
   important_dates?: ExamImportantDate[];
   centers?: ExamCenter[];
   official_documents?: ExamOfficialDocument[];
+  eligibility_summary?: string | null;
+  translations?: any[];
 }
 
 export interface ExamFilterParams {

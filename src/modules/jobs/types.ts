@@ -20,6 +20,12 @@ export interface GovJobDetailed extends GovJob {
   important_dates?: JobImportantDate[];
   eligibility?: JobEligibility | null;
   official_documents?: JobOfficialDocument[];
+  post_name?: string | null;
+  qualification_summary?: string | null;
+  age_limit_summary?: string | null;
+  selection_process?: string | null;
+  description?: string | null;
+  translations?: any[];
 }
 
 export interface JobFilterParams {

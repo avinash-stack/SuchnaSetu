@@ -4,51 +4,82 @@ import * as React from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { usePathname } from "next/navigation";
-import { SITE_CONFIG, PUBLIC_NAV_ITEMS } from "@/lib/constants";
+import { SITE_CONFIG } from "@/lib/constants";
+import { useLanguage } from "@/lib/i18n/context";
+import { TranslationKey } from "@/lib/i18n/translations";
+import { LanguageSelector } from "@/components/shared/language-selector";
 import { Button } from "@/components/ui/button";
 import {
   ShieldCheck,
   Menu,
   X,
   Search,
-  Briefcase,
-  Calendar,
-  Newspaper,
-  Globe,
-  Home,
   ChevronRight,
-  ExternalLink,
 } from "lucide-react";
+
+interface NavConfigItem {
+  key: TranslationKey;
+  href: string;
+}
+
+const PUBLIC_NAV_CONFIG: NavConfigItem[] = [
+  { key: "nav.home", href: "/" },
+  { key: "nav.jobs", href: "/jobs" },
+  { key: "nav.exams", href: "/exams" },
+  { key: "nav.news", href: "/news" },
+  { key: "nav.directory", href: "/directory" },
+];
 
 export function PublicHeader() {
   const pathname = usePathname();
   const [mobileMenuOpen, setMobileMenuOpen] = React.useState(false);
+  const { t, language } = useLanguage();
 
   // Close mobile drawer on route change
   React.useEffect(() => {
     setMobileMenuOpen(false);
   }, [pathname]);
 
-  // Current formatted date for civic masthead
-  const todayFormatted = new Intl.DateTimeFormat("en-IN", {
-    weekday: "long",
-    day: "numeric",
-    month: "long",
-    year: "numeric",
-  }).format(new Date());
+  // Current formatted date for civic masthead based on active language
+  const todayFormatted = React.useMemo(() => {
+    const localeMap: Record<string, string> = {
+      en: "en-IN",
+      hi: "hi-IN",
+      bn: "bn-IN",
+      or: "or-IN",
+      as: "as-IN",
+      pa: "pa-IN",
+    };
+    const locale = localeMap[language] || "en-IN";
+    try {
+      return new Intl.DateTimeFormat(locale, {
+        weekday: "long",
+        day: "numeric",
+        month: "long",
+        year: "numeric",
+      }).format(new Date());
+    } catch {
+      return new Intl.DateTimeFormat("en-IN", {
+        weekday: "long",
+        day: "numeric",
+        month: "long",
+        year: "numeric",
+      }).format(new Date());
+    }
+  }, [language]);
 
   return (
     <header className="sticky top-0 z-50 w-full bg-white border-b border-slate-200 shadow-xs">
       {/* 1. Civic Top Masthead Strip */}
       <div className="bg-[#013089] px-4 py-1.5 text-xs text-white border-b border-[#01276E]">
-        <div className="mx-auto flex max-w-7xl items-center justify-between">
-          <div className="flex items-center space-x-3 text-[11px] font-medium tracking-wide">
-            <span className="font-bold text-[#FE8D01] uppercase tracking-wider">
-              Official Portal
+        <div className="mx-auto flex max-w-7xl items-center justify-between gap-2">
+          <div className="flex items-center space-x-2 sm:space-x-3 text-[11px] font-medium tracking-wide truncate">
+            <span className="font-bold text-[#FE8D01] uppercase tracking-wider shrink-0">
+              {t("masthead.official_portal")}
             </span>
             <span className="text-white/40">|</span>
-            <span className="hidden sm:inline text-slate-100">
-              Government of India &amp; State Notifications Gazette
+            <span className="hidden sm:inline text-slate-100 truncate">
+              {t("masthead.subtitle")}
             </span>
             <span className="hidden md:inline text-white/40">|</span>
             <span className="hidden md:inline text-slate-200 font-mono text-[10px]">
@@ -56,14 +87,18 @@ export function PublicHeader() {
             </span>
           </div>
 
-          <div className="flex items-center space-x-3 text-[11px]">
-            <span className="inline-flex items-center gap-1 text-slate-200">
+          <div className="flex items-center space-x-2 sm:space-x-3 text-[11px] shrink-0">
+            <span className="inline-flex items-center gap-1 text-slate-200 hidden md:inline-flex">
               <ShieldCheck className="h-3.5 w-3.5 text-[#FE8D01]" />
-              <span className="hidden sm:inline font-medium">Verified Sources Only</span>
+              <span className="font-medium">{t("masthead.verified_sources")}</span>
             </span>
-            <span className="text-white/30 hidden sm:inline">•</span>
-            <span className="text-[10px] bg-white/10 px-1.5 py-0.5 rounded-xs font-semibold text-white">
-              Citizen Access
+            <span className="text-white/30 hidden md:inline">•</span>
+            
+            {/* Language Selector in Top Masthead */}
+            <LanguageSelector variant="masthead" />
+
+            <span className="text-[10px] bg-white/10 px-1.5 py-0.5 rounded-xs font-semibold text-white hidden sm:inline-block">
+              {t("masthead.citizen_access")}
             </span>
           </div>
         </div>
@@ -86,19 +121,17 @@ export function PublicHeader() {
               {SITE_CONFIG.name}
             </span>
             <span className="text-[10px] sm:text-[11px] font-medium tracking-wide text-slate-600">
-              सूचना सेतु • राष्ट्रीय सूचना एवं भर्ती पोर्टल
+              {t("brand.subtitle")}
             </span>
           </div>
         </Link>
 
         {/* Center Desktop Navigation */}
         <nav className="hidden md:flex items-center gap-1 lg:gap-2">
-          {PUBLIC_NAV_ITEMS.map((item) => {
+          {PUBLIC_NAV_CONFIG.map((item) => {
             const isActive =
               item.href === "/"
                 ? pathname === "/"
-                : item.href.startsWith("/#")
-                ? false
                 : pathname.startsWith(item.href);
 
             return (
@@ -111,7 +144,7 @@ export function PublicHeader() {
                     : "text-slate-700 hover:text-[#013089] hover:bg-slate-50 rounded-xs"
                 }`}
               >
-                {item.title}
+                {t(item.key)}
               </Link>
             );
           })}
@@ -122,7 +155,7 @@ export function PublicHeader() {
           <Link href="/?search=" className="hidden sm:inline-flex">
             <Button variant="outline" size="sm" className="gap-1.5 text-xs font-semibold text-slate-700 border-slate-300 hover:border-[#013089]">
               <Search className="h-3.5 w-3.5 text-[#013089]" />
-              <span>Search Notices</span>
+              <span>{t("nav.search_notices")}</span>
             </Button>
           </Link>
 
@@ -144,16 +177,21 @@ export function PublicHeader() {
       {/* 3. Mobile Navigation Drawer */}
       {mobileMenuOpen && (
         <div className="md:hidden border-t border-slate-200 bg-white px-4 pt-3 pb-6 space-y-3 shadow-lg">
-          <div className="text-[11px] font-bold uppercase tracking-wider text-slate-400 px-2">
+          <div className="flex items-center justify-between px-1">
+            <span className="text-[11px] font-bold uppercase tracking-wider text-slate-400">
+              Language / भाषा
+            </span>
+            <LanguageSelector variant="navbar" />
+          </div>
+
+          <div className="text-[11px] font-bold uppercase tracking-wider text-slate-400 px-2 pt-2 border-t border-slate-100">
             Main Sections
           </div>
           <div className="space-y-1">
-            {PUBLIC_NAV_ITEMS.map((item) => {
+            {PUBLIC_NAV_CONFIG.map((item) => {
               const isActive =
                 item.href === "/"
                   ? pathname === "/"
-                  : item.href.startsWith("/#")
-                  ? false
                   : pathname.startsWith(item.href);
 
               return (
@@ -166,7 +204,7 @@ export function PublicHeader() {
                       : "text-slate-800 hover:bg-slate-50"
                   }`}
                 >
-                  <span>{item.title}</span>
+                  <span>{t(item.key)}</span>
                   <ChevronRight className="h-4 w-4 text-slate-400" />
                 </Link>
               );
@@ -177,7 +215,7 @@ export function PublicHeader() {
             <Link href="/?search=" className="block w-full">
               <Button variant="primary" size="sm" className="w-full justify-center text-xs">
                 <Search className="h-3.5 w-3.5 mr-1.5" />
-                <span>Search All Government Notices</span>
+                <span>{t("nav.search_notices")}</span>
               </Button>
             </Link>
           </div>

@@ -1,5 +1,9 @@
+"use client";
+
 import Link from "next/link";
 import { PublicBulletinDetailed } from "../types";
+import { useLanguage } from "@/lib/i18n/context";
+import { resolveLocalizedBulletin } from "@/lib/i18n/localize";
 import { Card, CardHeader, CardTitle, CardContent, CardFooter } from "@/components/ui/card";
 import { formatDate } from "@/lib/utils";
 import {
@@ -31,7 +35,9 @@ const categoryMeta: Record<string, { label: string; icon: any }> = {
   press_release: { label: "Press Release", icon: FileText },
 };
 
-export function BulletinCard({ bulletin }: BulletinCardProps) {
+export function BulletinCard({ bulletin: rawBulletin }: BulletinCardProps) {
+  const { language, t } = useLanguage();
+  const bulletin = resolveLocalizedBulletin(rawBulletin, language);
   const meta = categoryMeta[bulletin.category] || categoryMeta.employment_news;
 
   return (
@@ -56,7 +62,7 @@ export function BulletinCard({ bulletin }: BulletinCardProps) {
           </span>
         </div>
 
-        {/* Title */}
+        {/* Localized Title */}
         <Link href={`/news/${bulletin.slug}`} className="block">
           <CardTitle className="text-sm sm:text-base font-bold text-slate-900 leading-snug group-hover:text-[#013089] transition-colors line-clamp-2">
             {bulletin.title}
@@ -65,6 +71,7 @@ export function BulletinCard({ bulletin }: BulletinCardProps) {
       </CardHeader>
 
       <CardContent className="p-4 pt-1 pb-3 text-xs text-slate-600 space-y-2">
+        {/* Localized Summary */}
         <p className="line-clamp-3 leading-relaxed">
           {bulletin.summary}
         </p>
@@ -84,7 +91,7 @@ export function BulletinCard({ bulletin }: BulletinCardProps) {
 
         <Link href={`/news/${bulletin.slug}`}>
           <span className="inline-flex items-center gap-1 text-xs font-bold text-[#013089] hover:underline">
-            <span>Read Summary</span>
+            <span>{t("card.view_details")}</span>
             <ArrowRight className="h-3 w-3" />
           </span>
         </Link>

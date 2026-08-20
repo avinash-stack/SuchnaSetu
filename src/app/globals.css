@@ -9,6 +9,10 @@
   --brand-saffron: #FE8D01;
   --font-inter: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
   --font-outfit: "Outfit", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  --font-noto-devanagari: "Noto Sans Devanagari", "Inter", sans-serif;
+  --font-noto-bengali: "Noto Sans Bengali", "Inter", sans-serif;
+  --font-noto-oriya: "Noto Sans Oriya", "Inter", sans-serif;
+  --font-noto-gurmukhi: "Noto Sans Gurmukhi", "Inter", sans-serif;
 }
 
 body {
@@ -17,6 +21,50 @@ body {
   font-family: var(--font-inter);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+}
+
+/* Regional Script Typography Adaptation */
+[data-lang="hi"] {
+  font-family: var(--font-noto-devanagari);
+}
+
+[data-lang="bn"],
+[data-lang="as"] {
+  font-family: var(--font-noto-bengali);
+}
+
+[data-lang="or"] {
+  font-family: var(--font-noto-oriya);
+}
+
+[data-lang="pa"] {
+  font-family: var(--font-noto-gurmukhi);
+}
+
+/* Headings font overrides */
+.font-heading {
+  font-family: var(--font-outfit);
+}
+
+[data-lang="hi"] .font-heading {
+  font-family: var(--font-noto-devanagari);
+  font-weight: 700;
+}
+
+[data-lang="bn"] .font-heading,
+[data-lang="as"] .font-heading {
+  font-family: var(--font-noto-bengali);
+  font-weight: 700;
+}
+
+[data-lang="or"] .font-heading {
+  font-family: var(--font-noto-oriya);
+  font-weight: 700;
+}
+
+[data-lang="pa"] .font-heading {
+  font-family: var(--font-noto-gurmukhi);
+  font-weight: 700;
 }
 
 /* Civic Editorial Scrollbar */
