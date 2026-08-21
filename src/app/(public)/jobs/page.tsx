@@ -1,7 +1,7 @@
 import { Metadata } from "next";
 import Link from "next/link";
 import { getPublicJobs, getJobTaxonomies } from "@/modules/jobs/service";
-import { JobCard } from "@/modules/jobs/components/job-card";
+import { JobsListingContainer } from "@/modules/jobs/components/jobs-listing-container";
 import { JobsFilterSidebar } from "@/modules/jobs/components/jobs-filter-sidebar";
 import { SearchBar } from "@/components/shared/search-bar";
 import { EmptyState } from "@/components/shared/empty-state";
@@ -131,15 +131,11 @@ export default async function PublicJobsPage({ searchParams }: JobsPageProps) {
           />
         </div>
 
-        {/* Notice Grid / Empty State */}
+        {/* Notice Grid / List / Empty State */}
         <div className="lg:col-span-3 space-y-6">
           {jobs.length > 0 ? (
             <>
-              <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3">
-                {jobs.map((job) => (
-                  <JobCard key={job.id} job={job} />
-                ))}
-              </div>
+              <JobsListingContainer jobs={jobs} total={total} />
 
               {/* Pagination with parameter preservation */}
               {totalPages > 1 && (

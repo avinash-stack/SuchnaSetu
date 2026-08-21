@@ -924,7 +924,7 @@ export const GOV_EXAM_SOURCES_CONFIG: GovExamSourceConfig[] = [
     stateCode: "MH",
     baseUrl: "https://ibps.in",
     examinationPath: "/examinations",
-    applyUrl: "https://ibps.in",
+    applyUrl: "https://ibpsonline.ibps.in",
     defaultCategory: "banking",
     canonicalExams: [
           {
@@ -941,7 +941,7 @@ export const GOV_EXAM_SOURCES_CONFIG: GovExamSourceConfig[] = [
                 "pattern_description": "3-Tier Selection: Preliminary Online Examination (100 marks), Main Online Examination + Descriptive Writing (225 marks), and Common Interview (100 marks).",
                 "application_process_guide": "Register and fill application on ibps.in with scanned photograph, signature, left thumb impression, and handwritten declaration.",
                 "official_notification_url": "https://ibps.in/notices/CRP_PO_MT_XVI_Detailed_Notification.pdf",
-                "official_website_url": "https://ibps.in",
+                "official_website_url": "https://ibpsonline.ibps.in",
                 "date_of_notification": "2026-08-01",
                 "application_start_date": "2026-08-01",
                 "application_closing_date": "2026-08-28",
@@ -1039,7 +1039,7 @@ export const GOV_EXAM_SOURCES_CONFIG: GovExamSourceConfig[] = [
                 "pattern_description": "Two-tier selection: Preliminary CBT (100 marks) followed by Main CBT (200 marks). No interview for clerical cadre.",
                 "application_process_guide": "Apply online on ibps.in indicating State/UT preference and bank order.",
                 "official_notification_url": "https://ibps.in/notices/CRP_Clerks_XVI_Notice.pdf",
-                "official_website_url": "https://ibps.in",
+                "official_website_url": "https://ibpsonline.ibps.in",
                 "date_of_notification": "2026-06-30",
                 "application_start_date": "2026-06-30",
                 "application_closing_date": "2026-07-28",
@@ -1125,7 +1125,7 @@ export const GOV_EXAM_SOURCES_CONFIG: GovExamSourceConfig[] = [
                 "pattern_description": "Prelims CBT, Mains Professional Knowledge Test, and Interview.",
                 "application_process_guide": "Apply online at ibps.in.",
                 "official_notification_url": "https://ibps.in/notices/CRP_SPL_XVI_Notice.pdf",
-                "official_website_url": "https://ibps.in",
+                "official_website_url": "https://ibpsonline.ibps.in",
                 "date_of_notification": "2026-08-01",
                 "application_start_date": "2026-08-01",
                 "application_closing_date": "2026-08-28",
@@ -1222,7 +1222,7 @@ export const GOV_EXAM_SOURCES_CONFIG: GovExamSourceConfig[] = [
                 "pattern_description": "Prelims CBT, Mains CBT, and Interview (for Officer posts only).",
                 "application_process_guide": "Apply online at ibps.in selecting state RRB preferences and local language proficiency.",
                 "official_notification_url": "https://ibps.in/notices/CRP_RRB_XIII_Notice.pdf",
-                "official_website_url": "https://ibps.in",
+                "official_website_url": "https://ibpsonline.ibps.in",
                 "date_of_notification": "2026-06-07",
                 "application_start_date": "2026-06-07",
                 "application_closing_date": "2026-06-30",
@@ -2772,7 +2772,7 @@ export const GOV_EXAM_SOURCES_CONFIG: GovExamSourceConfig[] = [
     stateCode: "UP",
     baseUrl: "https://uppsc.up.nic.in",
     examinationPath: "/exams",
-    applyUrl: "https://uppsc.up.nic.in",
+    applyUrl: "https://uppsc.up.nic.in/CandidatePages/Notifications.aspx",
     defaultCategory: "state-govt",
     canonicalExams: [
           {
@@ -2789,7 +2789,7 @@ export const GOV_EXAM_SOURCES_CONFIG: GovExamSourceConfig[] = [
                 "pattern_description": "Stage-I Objective Prelims (400 marks), Stage-II Descriptive Written Mains (1500 marks), Stage-III Interview (100 marks).",
                 "application_process_guide": "Apply online at uppsc.up.nic.in using UPPSC OTR registration.",
                 "official_notification_url": "https://uppsc.up.nic.in/notices/PCS_2026_Notification.pdf",
-                "official_website_url": "https://uppsc.up.nic.in",
+                "official_website_url": "https://uppsc.up.nic.in/CandidatePages/Notifications.aspx",
                 "date_of_notification": "2026-01-01",
                 "application_start_date": "2026-01-01",
                 "application_closing_date": "2026-02-02",
@@ -3050,7 +3050,7 @@ export const GOV_EXAM_SOURCES_CONFIG: GovExamSourceConfig[] = [
     stateCode: "MP",
     baseUrl: "https://mppsc.mp.gov.in",
     examinationPath: "/exams",
-    applyUrl: "https://mppsc.mp.gov.in",
+    applyUrl: "https://mponline.gov.in",
     defaultCategory: "state-govt",
     canonicalExams: [
           {
@@ -3067,7 +3067,7 @@ export const GOV_EXAM_SOURCES_CONFIG: GovExamSourceConfig[] = [
                 "pattern_description": "Prelims OMR Exam (400 marks), Mains Written Exam (1500 marks), and Personality Test (175 marks).",
                 "application_process_guide": "Apply online at mppsc.mp.gov.in / mponline.gov.in.",
                 "official_notification_url": "https://mppsc.mp.gov.in/notices/SSE_2026_Advt.pdf",
-                "official_website_url": "https://mppsc.mp.gov.in",
+                "official_website_url": "https://mponline.gov.in",
                 "date_of_notification": "2026-01-19",
                 "application_start_date": "2026-01-19",
                 "application_closing_date": "2026-02-18",
@@ -3610,7 +3610,7 @@ export const GOV_EXAM_SOURCES_CONFIG: GovExamSourceConfig[] = [
     stateCode: "HR",
     baseUrl: "https://hpsc.gov.in",
     examinationPath: "/exams",
-    applyUrl: "https://hpsc.gov.in",
+    applyUrl: "https://hpsc.gov.in/en-us/Online-Application-Form",
     defaultCategory: "state-govt",
     canonicalExams: [
           {
@@ -3627,7 +3627,7 @@ export const GOV_EXAM_SOURCES_CONFIG: GovExamSourceConfig[] = [
                 "pattern_description": "Prelims OMR Exam (200 marks), Mains Written Conventional Exam (600 marks), and Personality Test (75 marks).",
                 "application_process_guide": "Apply online at hpsc.gov.in using Haryana Parivar Pehchan Patra (PPP) / Aadhaar.",
                 "official_notification_url": "https://hpsc.gov.in/notices/HCS_2026_Advt.pdf",
-                "official_website_url": "https://hpsc.gov.in",
+                "official_website_url": "https://hpsc.gov.in/en-us/Online-Application-Form",
                 "date_of_notification": "2026-11-17",
                 "application_start_date": "2026-11-17",
                 "application_closing_date": "2026-12-25",
@@ -3800,7 +3800,7 @@ export const GOV_EXAM_SOURCES_CONFIG: GovExamSourceConfig[] = [
     stateCode: "JH",
     baseUrl: "https://jpsc.gov.in",
     examinationPath: "/exams",
-    applyUrl: "https://jpsc.gov.in",
+    applyUrl: "https://jpsc.gov.in/online_application",
     defaultCategory: "state-govt",
     canonicalExams: [
           {
@@ -3817,7 +3817,7 @@ export const GOV_EXAM_SOURCES_CONFIG: GovExamSourceConfig[] = [
                 "pattern_description": "Prelims OMR Exam (400 marks), Mains Written Descriptive Exam (1050 marks), and Interview (100 marks).",
                 "application_process_guide": "Apply online at jpsc.gov.in.",
                 "official_notification_url": "https://jpsc.gov.in/notices/CCE_2026_Advt.pdf",
-                "official_website_url": "https://jpsc.gov.in",
+                "official_website_url": "https://jpsc.gov.in/online_application",
                 "date_of_notification": "2026-01-27",
                 "application_start_date": "2026-01-27",
                 "application_closing_date": "2026-02-29",
@@ -3990,7 +3990,7 @@ export const GOV_EXAM_SOURCES_CONFIG: GovExamSourceConfig[] = [
     stateCode: "UK",
     baseUrl: "https://psc.uk.gov.in",
     examinationPath: "/exams",
-    applyUrl: "https://ukpsc.net.in",
+    applyUrl: "https://ukpscnet.in",
     defaultCategory: "state-govt",
     canonicalExams: [
           {
@@ -4318,7 +4318,7 @@ export const GOV_EXAM_SOURCES_CONFIG: GovExamSourceConfig[] = [
     stateCode: "OD",
     baseUrl: "https://opsc.gov.in",
     examinationPath: "/exams",
-    applyUrl: "https://opsc.gov.in",
+    applyUrl: "https://opsconline.gov.in",
     defaultCategory: "state-govt",
     canonicalExams: [
           {
@@ -4335,7 +4335,7 @@ export const GOV_EXAM_SOURCES_CONFIG: GovExamSourceConfig[] = [
                 "pattern_description": "Prelims OMR Exam (400 marks), Mains Written Conventional Exam (2000 marks), and Personality Test (250 marks).",
                 "application_process_guide": "Apply online at opsc.gov.in using OPSC candidate portal.",
                 "official_notification_url": "https://opsc.gov.in/notices/OCS_2026_Advt.pdf",
-                "official_website_url": "https://opsc.gov.in",
+                "official_website_url": "https://opsconline.gov.in",
                 "date_of_notification": "2026-01-01",
                 "application_start_date": "2026-01-01",
                 "application_closing_date": "2026-02-16",

@@ -64,9 +64,11 @@ export const bn: Record<TranslationKey, string> = {
   "card.stage": "বর্তমান পর্যায়",
   "card.posts": "টি পদ",
   "card.closes": "শেষ হবে",
-  "card.official_pdf": "বিজ্ঞপ্তি PDF",
+  "card.official_pdf": "অফিসিয়াল বিজ্ঞপ্তি",
+  "card.official_notification": "অফিসিয়াল বিজ্ঞপ্তি",
   "card.view_details": "বিস্তারিত দেখুন",
-  "card.apply_online": "অনলাইনে আবেদন করুন",
+  "card.apply_online": "আবেদন করুন (Apply Now)",
+  "card.apply_now": "আবেদন করুন (Apply Now)",
 
   // Directory Page
   "directory.title": "নিয়োগকারী সংস্থা, কমিশন ও আদালত ডিরেক্টরি",

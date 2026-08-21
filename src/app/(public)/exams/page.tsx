@@ -1,7 +1,7 @@
 import { Metadata } from "next";
 import Link from "next/link";
 import { getPublicExams, getExamTaxonomies } from "@/modules/exams/service";
-import { ExamCard } from "@/modules/exams/components/exam-card";
+import { ExamsListingContainer } from "@/modules/exams/components/exams-listing-container";
 import { ExamFilterSidebar } from "@/modules/exams/components/exam-filter-sidebar";
 import { SearchBar } from "@/components/shared/search-bar";
 import { EmptyState } from "@/components/shared/empty-state";
@@ -129,15 +129,11 @@ export default async function PublicExamsPage({ searchParams }: ExamsPageProps) 
           />
         </div>
 
-        {/* Exam Grid / Empty State */}
+        {/* Notice Grid / List / Empty State */}
         <div className="lg:col-span-3 space-y-6">
           {exams.length > 0 ? (
             <>
-              <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3">
-                {exams.map((exam) => (
-                  <ExamCard key={exam.id} exam={exam} />
-                ))}
-              </div>
+              <ExamsListingContainer exams={exams} total={total} />
 
               {/* Pagination with parameter preservation */}
               {totalPages > 1 && (

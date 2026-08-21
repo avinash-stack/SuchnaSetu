@@ -118,18 +118,10 @@ export function JobCard({ job: rawJob }: JobCardProps) {
             target="_blank"
             rel="noopener noreferrer"
             className="inline-flex items-center gap-1 text-[11px] font-semibold text-slate-600 hover:text-[#013089] transition-colors"
+            title="Open official notification in new tab"
           >
-            {isPdfUrl(job.official_notification_url) ? (
-              <>
-                <FileText className="h-3.5 w-3.5 text-slate-400" />
-                <span>{t("card.official_pdf")}</span>
-              </>
-            ) : (
-              <>
-                <Globe className="h-3.5 w-3.5 text-slate-400" />
-                <span>Official Notice</span>
-              </>
-            )}
+            <FileText className="h-3.5 w-3.5 text-slate-400" />
+            <span>{t("card.official_notification")}</span>
           </a>
         ) : (
           <span className="text-[10px] text-slate-400 font-mono">Gazette Verified</span>

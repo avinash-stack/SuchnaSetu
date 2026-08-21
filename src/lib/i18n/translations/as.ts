@@ -64,9 +64,11 @@ export const as: Record<TranslationKey, string> = {
   "card.stage": "বৰ্তমান পৰ্যায়",
   "card.posts": "টা পদ",
   "card.closes": "শেষ হ'ব",
-  "card.official_pdf": "অধিসূচনা PDF",
-  "card.view_details": "বিস্তাৰিত চাওক",
-  "card.apply_online": "অনলাইন আবেদন কৰক",
+  "card.official_pdf": "অফিচিয়েল জাননী",
+  "card.official_notification": "অফিচিয়েল জাননী",
+  "card.view_details": "বিৱৰণ চাওক",
+  "card.apply_online": "আবেদন কৰক (Apply Now)",
+  "card.apply_now": "আবেদন কৰক (Apply Now)",
 
   // Directory Page
   "directory.title": "নিয়োগ সংস্থা, আয়োগ আৰু ন্যায়ালয় ডাইৰেক্টৰি",

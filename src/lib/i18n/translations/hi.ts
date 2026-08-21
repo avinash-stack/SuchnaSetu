@@ -64,9 +64,11 @@ export const hi: Record<TranslationKey, string> = {
   "card.stage": "वर्तमान चरण",
   "card.posts": "पद",
   "card.closes": "समाप्ति",
-  "card.official_pdf": "अधिसूचना PDF",
-  "card.view_details": "विस्तृत सूचना",
-  "card.apply_online": "ऑनलाइन आवेदन करें",
+  "card.official_pdf": "आधिकारिक अधिसूचना",
+  "card.official_notification": "आधिकारिक अधिसूचना",
+  "card.view_details": "विवरण देखें",
+  "card.apply_online": "आवेदन करें (Apply Now)",
+  "card.apply_now": "आवेदन करें (Apply Now)",
 
   // Directory Page
   "directory.title": "भर्ती संगठन, आयोग एवं न्यायालय निर्देशिका",

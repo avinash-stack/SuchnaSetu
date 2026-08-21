@@ -265,16 +265,80 @@ export class StandardGovJobDataNormalizer
       // 3. Resolve category slug
       const categorySlug = this.resolveCategory(raw.category_code, raw.title);
 
-      // 4. Calculate reservation breakdown if vacancies > 0
-      const totalPosts = Math.max(1, raw.total_vacancies || 1);
-      const urPosts = Math.max(1, Math.floor(totalPosts * 0.4));
-      const obcPosts = Math.floor(totalPosts * 0.27);
-      const scPosts = Math.floor(totalPosts * 0.15);
-      const stPosts = Math.floor(totalPosts * 0.075);
-      const ewsPosts = Math.floor(totalPosts * 0.1);
-      const pwdPosts = Math.floor(totalPosts * 0.04);
+      // 4. Build vacancy entries from source data — NEVER fabricate category breakdowns
+      const totalPosts = raw.total_vacancies || 0;
+      let vacancies: NormalizedJobNotice["vacancies"] = undefined;
 
-      // 5. Construct canonical NormalizedJobNotice
+      if (raw.post_wise_vacancies && raw.post_wise_vacancies.length > 0) {
+        // Use verified post-wise breakdown from source config
+        vacancies = raw.post_wise_vacancies.map((v) => ({
+          postName: v.post_name,
+          totalPosts: v.total,
+          urPosts: v.ur,
+          obcPosts: v.obc,
+          scPosts: v.sc,
+          stPosts: v.st,
+          ewsPosts: v.ews,
+          pwdPosts: v.pwd,
+          payLevel: v.pay_level || undefined,
+        }));
+      } else if (totalPosts > 0) {
+        // Single entry with total only — no fabricated category split
+        vacancies = [
+          {
+            postName: raw.post_name || raw.title,
+            postCode: raw.advertisement_number,
+            totalPosts,
+            payLevel: raw.pay_scale?.match(/Level-?\s*\d+/i)?.[0] || undefined,
+          },
+        ];
+      }
+
+      const officialApplyUrl = this.sanitizeApplyUrl(raw.apply_url || this.config.applyUrl);
+      const officialNotificationUrl = this.sanitizeNotificationUrl(raw.pdf_url);
+
+      // 5. Parse age limits — prefer structured fields, fall back to regex extraction from text
+      const { minAge, maxAge } = this.parseAgeLimits(raw);
+
+      // 6. Build important dates (only from actual data)
+      const importantDates: NormalizedJobNotice["importantDates"] = [];
+      if (startDate) {
+        importantDates.push({
+          eventName: "Notification Released / Application Window Opens",
+          eventDate: startDate,
+          eventDateText: raw.date_of_notification,
+          isTentative: false,
+          displayOrder: 1,
+        });
+      }
+      if (endDate) {
+        importantDates.push({
+          eventName: "Online Application Closing Date",
+          eventDate: endDate,
+          eventDateText: raw.closing_date,
+          isTentative: false,
+          displayOrder: 2,
+        });
+      }
+      if (raw.exam_date) {
+        const examDate = this.parseDate(raw.exam_date);
+        if (examDate) {
+          importantDates.push({
+            eventName: "Examination Date",
+            eventDate: examDate,
+            eventDateText: raw.exam_date,
+            isTentative: true,
+            displayOrder: 3,
+          });
+        }
+      }
+
+      // 7. Build selection process from structured stages or raw text — never fabricate
+      const selectionProcess = raw.selection_stages
+        ? raw.selection_stages.join(" → ")
+        : raw.selection_process || undefined;
+
+      // 8. Construct canonical NormalizedJobNotice — only verified data, no fabrication
       const normalizedNotice: NormalizedJobNotice = {
         title: raw.title,
         slug: cleanSlug,
@@ -284,63 +348,27 @@ export class StandardGovJobDataNormalizer
         stateCode: this.config.stateCode,
         employmentType: "permanent",
         totalVacancies: totalPosts,
-        payScaleDetails: raw.pay_scale || "Pay Scale as per applicable government rules",
-        officialNotificationUrl: raw.pdf_url,
-        officialApplyUrl: raw.apply_url || this.config.applyUrl,
-        summary: `Official recruitment notification by ${this.config.organizationName} (Advt No. ${raw.advertisement_number}) for ${totalPosts} vacancies across ${raw.ministry_or_department || this.config.organizationName}.`,
+        payScaleDetails: raw.pay_scale || undefined,
+        officialNotificationUrl,
+        officialApplyUrl,
+        summary: `Official recruitment notification by ${this.config.organizationName} (Advt No. ${raw.advertisement_number})${totalPosts > 0 ? ` for ${totalPosts} vacancies` : ""}.`,
         applicationStartDate: startDate,
         applicationEndDate: endDate,
-        vacancies: [
-          {
-            postName: raw.post_name || raw.title,
-            postCode: raw.advertisement_number,
-            totalPosts,
-            urPosts,
-            obcPosts,
-            scPosts,
-            stPosts,
-            ewsPosts,
-            pwdPosts,
-            payLevel: raw.pay_scale?.match(/Level-?\s*\d+/i)?.[0] || "Level-7",
-          },
-        ],
-        importantDates: [
-          {
-            eventName: "Notification Released / Application Window Opens",
-            eventDate: startDate,
-            eventDateText: raw.date_of_notification || "Active",
-            isTentative: false,
-            displayOrder: 1,
-          },
-          {
-            eventName: "Online Application Closing Date",
-            eventDate: endDate,
-            eventDateText: raw.closing_date || "Refer to Official Notification",
-            isTentative: false,
-            displayOrder: 2,
-          },
-        ],
+        vacancies,
+        importantDates: importantDates.length > 0 ? importantDates : undefined,
         eligibility: {
-          educationQualification:
-            raw.qualification_summary ||
-            "Graduate degree from a recognized University or equivalent (Refer to official notice for details).",
-          ageRelaxationDetails:
-            raw.age_limit_summary ||
-            "Age relaxations applicable as per government norms for SC/ST/OBC/PwD/Ex-Servicemen.",
-          selectionProcess:
-            raw.selection_process ||
-            "Written Examination / Computer-based Test followed by Document Verification.",
-          applicationFeeDetails: raw.fee_details || {
-            general_obc_ews: 100,
-            sc_st_pwd_women: 0,
-            payment_mode: "Online Payment Gateway / Net Banking",
-          },
+          minAge: minAge || undefined,
+          maxAge: maxAge || undefined,
+          educationQualification: raw.qualification_summary,
+          ageRelaxationDetails: raw.age_limit_summary || undefined,
+          selectionProcess,
+          applicationFeeDetails: raw.fee_details || undefined,
         },
         officialDocuments: [
           {
             documentType: "full_notification",
             title: `Official ${this.config.organizationSlug.toUpperCase()} Notification (${raw.advertisement_number})`,
-            fileUrl: raw.pdf_url,
+            fileUrl: officialNotificationUrl,
             publishedDate: raw.date_of_notification ? this.formatIsoDateOnly(startDate) : undefined,
           },
         ],
@@ -361,6 +389,32 @@ export class StandardGovJobDataNormalizer
         errors: [`Normalization error: ${err?.message || "Unknown error"}`],
       };
     }
+  }
+
+  /**
+   * Helper: Extracts min/max age from structured fields or parses from age_limit_summary text.
+   * Returns null for both if extraction fails — never fabricates.
+   */
+  private parseAgeLimits(raw: CanonicalJobNoticeTemplate): { minAge: number | null; maxAge: number | null } {
+    // Prefer structured fields
+    if (raw.min_age && raw.max_age) {
+      return { minAge: raw.min_age, maxAge: raw.max_age };
+    }
+
+    // Try to parse from age_limit_summary text (e.g., "18 to 32 years", "Not exceeding 28 years")
+    if (raw.age_limit_summary) {
+      const rangeMatch = raw.age_limit_summary.match(/(\d{1,2})\s*(?:to|-)\s*(\d{1,2})\s*years?/i);
+      if (rangeMatch) {
+        return { minAge: parseInt(rangeMatch[1], 10), maxAge: parseInt(rangeMatch[2], 10) };
+      }
+
+      const maxOnlyMatch = raw.age_limit_summary.match(/(?:not exceeding|maximum|max|up to)\s*(\d{1,2})\s*years?/i);
+      if (maxOnlyMatch) {
+        return { minAge: null, maxAge: parseInt(maxOnlyMatch[1], 10) };
+      }
+    }
+
+    return { minAge: null, maxAge: null };
   }
 
   /**
@@ -422,5 +476,75 @@ export class StandardGovJobDataNormalizer
     }
 
     return this.config.defaultCategory || "central-govt";
+  }
+
+  /**
+   * Helper: Validates candidate application gateways and rejects root homepages
+   */
+  private sanitizeApplyUrl(applyUrl?: string | null): string | null {
+    if (!applyUrl || typeof applyUrl !== "string") return null;
+    const trimmed = applyUrl.trim();
+    if (!trimmed.startsWith("http://") && !trimmed.startsWith("https://")) return null;
+
+    try {
+      const parsed = new URL(trimmed);
+      const host = parsed.hostname.toLowerCase();
+
+      // Check if URL is equal to organization root baseUrl
+      if (this.config.baseUrl) {
+        const baseParsed = new URL(this.config.baseUrl);
+        if (
+          parsed.origin === baseParsed.origin &&
+          (parsed.pathname === "" ||
+            parsed.pathname === "/" ||
+            parsed.pathname === "/index.html" ||
+            parsed.pathname === "/index.php" ||
+            parsed.pathname === "/Default.aspx")
+        ) {
+          return null;
+        }
+      }
+
+      // If path is root '/', only allow if hostname is an explicit known candidate gateway
+      if (parsed.pathname === "" || parsed.pathname === "/") {
+        const isGatewayHost =
+          host.includes("online") ||
+          host.includes("apply") ||
+          host.includes("otr") ||
+          host.includes("sso") ||
+          host.includes("cdac.in") ||
+          host.includes("mponline") ||
+          host.includes("pariksha") ||
+          host.includes("ncs.gov.in") ||
+          host.includes("rac.gov.in") ||
+          host.includes("aiimsexams") ||
+          host.includes("bank.sbi") ||
+          host.includes("rectt") ||
+          host.includes("recruitment");
+
+        if (!isGatewayHost) {
+          return null;
+        }
+      }
+
+      return trimmed;
+    } catch {
+      return null;
+    }
+  }
+
+  /**
+   * Helper: Sanitizes official notification URL and resolves relative paths
+   */
+  private sanitizeNotificationUrl(pdfUrl?: string | null): string {
+    if (!pdfUrl || typeof pdfUrl !== "string") {
+      return `${this.config.baseUrl}${this.config.recruitmentPath || ""}`;
+    }
+    const trimmed = pdfUrl.trim();
+    if (trimmed.startsWith("http://") || trimmed.startsWith("https://")) {
+      return trimmed;
+    }
+    const cleanPath = trimmed.startsWith("/") ? trimmed : `/${trimmed}`;
+    return `${this.config.baseUrl}${cleanPath}`;
   }
 }

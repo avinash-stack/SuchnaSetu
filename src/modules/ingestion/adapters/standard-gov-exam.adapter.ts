@@ -114,7 +114,21 @@ export class StandardGovExamDataNormalizer implements DataNormalizer<CanonicalEx
 
     try {
       const startDate = raw.application_start_date ? new Date(raw.application_start_date) : new Date(raw.date_of_notification);
-      const endDate = raw.application_closing_date ? new Date(raw.application_closing_date) : new Date(startDate.getTime() + 30 * 86400000);
+      const endDate = raw.application_closing_date ? new Date(raw.application_closing_date) : null;
+
+      const officialApplyUrl = this.sanitizeApplyUrl(raw.official_website_url || this.config.applyUrl);
+      const officialNotificationUrl = this.sanitizeNotificationUrl(raw.official_notification_url);
+
+      // Build important dates from source data — never fabricate
+      const importantDates = raw.important_dates && raw.important_dates.length > 0
+        ? raw.important_dates.map((d) => ({
+            eventName: d.title,
+            eventDate: new Date(d.event_date),
+            eventDateText: d.event_date,
+            isTentative: d.is_tentative,
+            displayOrder: d.display_order,
+          }))
+        : undefined;
 
       const normalizedNotice: any = {
         title: raw.title,
@@ -125,10 +139,10 @@ export class StandardGovExamDataNormalizer implements DataNormalizer<CanonicalEx
         categorySlug: raw.category_slug || this.config.defaultCategory,
         stateCode: this.config.stateCode,
         employmentType: "permanent",
-        totalVacancies: 100,
-        payScaleDetails: "As per official examination gazette",
-        officialNotificationUrl: raw.official_notification_url,
-        officialApplyUrl: raw.official_website_url || this.config.applyUrl,
+        totalVacancies: 0, // Exams are selection processes, not vacancy postings
+        payScaleDetails: undefined,
+        officialNotificationUrl,
+        officialApplyUrl,
         summary: raw.description,
         applicationStartDate: startDate,
         applicationEndDate: endDate,
@@ -139,48 +153,22 @@ export class StandardGovExamDataNormalizer implements DataNormalizer<CanonicalEx
         patternDescription: raw.pattern_description,
         applicationProcessGuide: raw.application_process_guide,
         isFeatured: raw.is_featured || false,
-        vacancies: [
-          {
-            postName: raw.title,
-            postCode: raw.exam_code,
-            totalPosts: 100,
-            urPosts: 40,
-            obcPosts: 27,
-            scPosts: 15,
-            stPosts: 8,
-            ewsPosts: 10,
-            pwdPosts: 4,
-            payLevel: "Level-10 to Level-12",
-          },
-        ],
-        importantDates: raw.important_dates ? raw.important_dates.map((d) => ({
-          eventName: d.title,
-          eventDate: new Date(d.event_date),
-          eventDateText: d.event_date,
-          isTentative: d.is_tentative,
-          displayOrder: d.display_order,
-        })) : [
-          {
-            eventName: "Online Application Closing Date",
-            eventDate: endDate,
-            eventDateText: endDate.toISOString().split("T")[0],
-            isTentative: false,
-            displayOrder: 1,
-          },
-        ],
+        // No fabricated vacancy breakdown for exams
+        vacancies: undefined,
+        importantDates,
         eligibility: {
-          minAge: raw.min_age,
-          maxAge: raw.max_age,
+          minAge: raw.min_age || undefined,
+          maxAge: raw.max_age || undefined,
           educationQualification: raw.educational_qualification,
-          ageRelaxationDetails: raw.age_relaxation_rules || "Standard relaxation for SC/ST/OBC/PwD as per government rules.",
-          selectionProcess: raw.pattern_description,
-          applicationFeeDetails: raw.fee_details,
+          ageRelaxationDetails: raw.age_relaxation_rules || undefined,
+          selectionProcess: raw.pattern_description || undefined,
+          applicationFeeDetails: raw.fee_details || undefined,
         },
         officialDocuments: [
           {
             documentType: "full_notification",
-            title: "Official Notification Gazette",
-            fileUrl: raw.official_notification_url,
+            title: `Official ${this.config.organizationName} Examination Notification`,
+            fileUrl: officialNotificationUrl,
             publishedDate: raw.date_of_notification,
           },
         ],
@@ -199,5 +187,75 @@ export class StandardGovExamDataNormalizer implements DataNormalizer<CanonicalEx
         errors: [err?.message || "Unknown normalization error"],
       };
     }
+  }
+
+  /**
+   * Helper: Validates candidate application gateways and rejects root homepages
+   */
+  private sanitizeApplyUrl(applyUrl?: string | null): string | null {
+    if (!applyUrl || typeof applyUrl !== "string") return null;
+    const trimmed = applyUrl.trim();
+    if (!trimmed.startsWith("http://") && !trimmed.startsWith("https://")) return null;
+
+    try {
+      const parsed = new URL(trimmed);
+      const host = parsed.hostname.toLowerCase();
+
+      // Check if URL is equal to organization root baseUrl
+      if (this.config.baseUrl) {
+        const baseParsed = new URL(this.config.baseUrl);
+        if (
+          parsed.origin === baseParsed.origin &&
+          (parsed.pathname === "" ||
+            parsed.pathname === "/" ||
+            parsed.pathname === "/index.html" ||
+            parsed.pathname === "/index.php" ||
+            parsed.pathname === "/Default.aspx")
+        ) {
+          return null;
+        }
+      }
+
+      // If path is root '/', only allow if hostname is an explicit known candidate gateway
+      if (parsed.pathname === "" || parsed.pathname === "/") {
+        const isGatewayHost =
+          host.includes("online") ||
+          host.includes("apply") ||
+          host.includes("otr") ||
+          host.includes("sso") ||
+          host.includes("cdac.in") ||
+          host.includes("mponline") ||
+          host.includes("pariksha") ||
+          host.includes("ncs.gov.in") ||
+          host.includes("rac.gov.in") ||
+          host.includes("aiimsexams") ||
+          host.includes("bank.sbi") ||
+          host.includes("rectt") ||
+          host.includes("recruitment");
+
+        if (!isGatewayHost) {
+          return null;
+        }
+      }
+
+      return trimmed;
+    } catch {
+      return null;
+    }
+  }
+
+  /**
+   * Helper: Sanitizes official notification URL and resolves relative paths
+   */
+  private sanitizeNotificationUrl(notifUrl?: string | null): string {
+    if (!notifUrl || typeof notifUrl !== "string") {
+      return `${this.config.baseUrl}${this.config.examinationPath || ""}`;
+    }
+    const trimmed = notifUrl.trim();
+    if (trimmed.startsWith("http://") || trimmed.startsWith("https://")) {
+      return trimmed;
+    }
+    const cleanPath = trimmed.startsWith("/") ? trimmed : `/${trimmed}`;
+    return `${this.config.baseUrl}${cleanPath}`;
   }
 }

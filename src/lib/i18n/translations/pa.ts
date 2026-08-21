@@ -64,9 +64,11 @@ export const pa: Record<TranslationKey, string> = {
   "card.stage": "ਮੌਜੂਦਾ ਪੜਾਅ",
   "card.posts": "ਅਸਾਮੀਆਂ",
   "card.closes": "ਸਮਾਪਤ ਹੋਵੇਗੀ",
-  "card.official_pdf": "ਨੋਟੀਫਿਕੇਸ਼ਨ PDF",
+  "card.official_pdf": "ਅਧਿਕਾਰਤ ਨੋਟੀਫਿਕੇਸ਼ਨ",
+  "card.official_notification": "ਅਧਿਕਾਰਤ ਨੋਟੀਫਿਕੇਸ਼ਨ",
   "card.view_details": "ਵੇਰਵੇ ਦੇਖੋ",
-  "card.apply_online": "ਆਨਲਾਈਨ ਅਪਲਾਈ ਕਰੋ",
+  "card.apply_online": "ਅਰਜ਼ੀ ਦਿਓ (Apply Now)",
+  "card.apply_now": "ਅਰਜ਼ੀ ਦਿਓ (Apply Now)",
 
   // Directory Page
   "directory.title": "ਭਰਤੀ ਸੰਸਥਾਵਾਂ, ਕਮਿਸ਼ਨ ਅਤੇ ਅਦਾਲਤ ਡਾਇਰੈਕਟਰੀ",

@@ -64,9 +64,11 @@ export const or: Record<TranslationKey, string> = {
   "card.stage": "ବର୍ତ୍ତମାନର ପର୍ଯ୍ୟାୟ",
   "card.posts": "ପଦ",
   "card.closes": "ସମାପ୍ତି",
-  "card.official_pdf": "ବିଜ୍ଞପ୍ତି PDF",
-  "card.view_details": "ବିସ୍ତୃତ ସୂଚନା",
-  "card.apply_online": "ଅନଲାଇନ୍ ଆବେଦନ କରନ୍ତୁ",
+  "card.official_pdf": "ଅଫିସିଆଲ୍ ବିଜ୍ଞପ୍ତି",
+  "card.official_notification": "ଅଫିସିଆଲ୍ ବିଜ୍ଞପ୍ତି",
+  "card.view_details": "ବିବରଣୀ ଦେଖନ୍ତୁ",
+  "card.apply_online": "ଆବେଦନ କରନ୍ତୁ (Apply Now)",
+  "card.apply_now": "ଆବେଦନ କରନ୍ତୁ (Apply Now)",
 
   // Directory Page
   "directory.title": "ନିଯୁକ୍ତି ସଂସ୍ଥା, ଆୟୋଗ ଏବଂ ନ୍ୟାୟାଳୟ ଡିରେକ୍ଟୋରୀ",

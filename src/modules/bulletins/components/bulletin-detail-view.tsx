@@ -113,7 +113,7 @@ export function BulletinDetailView({ bulletin: rawBulletin, relatedBulletins = [
               rel="noopener noreferrer"
               className="inline-flex items-center gap-1 text-xs font-bold text-emerald-700 hover:text-emerald-900 transition-colors"
             >
-              <span>{t("card.official_pdf")}</span>
+              <span>{t("card.official_notification")}</span>
               <ExternalLink className="h-3.5 w-3.5" />
             </a>
           )}

@@ -547,8 +547,8 @@ export class IngestionPipelineEngine {
       application_process_guide:
         notice.applicationProcessGuide ||
         `Submit application on the official commission portal (${notice.officialApplyUrl || notice.officialNotificationUrl}).`,
-      official_notification_url: notice.officialNotificationUrl,
-      official_website_url: notice.officialApplyUrl || notice.officialNotificationUrl,
+      official_notification_url: notice.officialNotificationUrl || null,
+      official_website_url: notice.officialApplyUrl || null,
       application_fee_details: notice.eligibility?.applicationFeeDetails || {
         general: 100,
         obc: 100,
@@ -586,37 +586,8 @@ export class IngestionPipelineEngine {
 
     if (!targetId) throw new Error("Failed to resolve target exam ID");
 
-    // Insert Examination Stages if none exist
-    const { count: stageCount } = await (supabase.from("exam_stages") as any)
-      .select("id", { count: "exact", head: true })
-      .eq("exam_id", targetId);
-
-    if (!stageCount || stageCount === 0) {
-      await (supabase.from("exam_stages") as any).insert([
-        {
-          exam_id: targetId,
-          stage_name: "Stage I: Preliminary Screening / CBT",
-          stage_order: 1,
-          stage_type: "prelims",
-          mode: mode === "online_cbt" ? "online_cbt" : "offline_omr",
-          duration_minutes: 120,
-          total_marks: 200,
-          qualifying_marks: 66,
-          status: "scheduled",
-        },
-        {
-          exam_id: targetId,
-          stage_name: "Stage II: Main Examination / Skill Test",
-          stage_order: 2,
-          stage_type: "mains",
-          mode: "pen_paper",
-          duration_minutes: 180,
-          total_marks: 300,
-          qualifying_marks: 100,
-          status: "upcoming",
-        },
-      ]);
-    }
+    // Only insert examination stages when source data provides actual stage information.
+    // Never fabricate generic stages — this ensures the UI shows real data or nothing.
 
     // Insert Important Dates
     if (notice.importantDates && notice.importantDates.length > 0) {
@@ -668,18 +639,15 @@ export class IngestionPipelineEngine {
       }
     }
 
-    // Insert Eligibility
+    // Insert Eligibility — only from verified source data, never fabricate defaults
     if (notice.eligibility) {
       await (supabase.from("exam_eligibility") as any).delete().eq("exam_id", targetId);
       await (supabase.from("exam_eligibility") as any).insert({
         exam_id: targetId,
-        min_age: notice.eligibility.minAge || 18,
-        max_age: notice.eligibility.maxAge || 32,
-        age_relaxation_rules:
-          notice.eligibility.ageRelaxationDetails ||
-          "Standard relaxation for SC/ST/OBC/PwD as per government rules.",
-        educational_qualification_description:
-          notice.eligibility.educationQualification || "Bachelor's Degree or minimum prescribed qualification.",
+        min_age: notice.eligibility.minAge || null,
+        max_age: notice.eligibility.maxAge || null,
+        age_relaxation_rules: notice.eligibility.ageRelaxationDetails || null,
+        educational_qualification_description: notice.eligibility.educationQualification || null,
         nationality_criteria: "Citizen of India",
       });
     }

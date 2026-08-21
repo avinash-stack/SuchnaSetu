@@ -5,13 +5,10 @@ import Link from "next/link";
 import { GovJobDetailed } from "../types";
 import { useLanguage } from "@/lib/i18n/context";
 import { resolveLocalizedJob } from "@/lib/i18n/localize";
-import { getLocalizedDateLabel } from "@/lib/i18n/config";
-import { formatDate, formatINR, formatNumber, isPdfUrl } from "@/lib/utils";
+import { formatDate, formatINR, formatNumber } from "@/lib/utils";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Table, TableHeader, TableBody, TableHead, TableRow, TableCell } from "@/components/ui/table";
-import { InlinePdfViewer } from "./inline-pdf-viewer";
 import {
   Building2,
   Calendar,
@@ -27,7 +24,10 @@ import {
   Layers,
   FileSpreadsheet,
   Globe,
-  X,
+  Clock,
+  ChevronRight,
+  FileCheck2,
+  CreditCard,
 } from "lucide-react";
 
 interface JobDetailViewProps {
@@ -37,10 +37,6 @@ interface JobDetailViewProps {
 export function JobDetailView({ job: rawJob }: JobDetailViewProps) {
   const { language, t } = useLanguage();
   const job = resolveLocalizedJob(rawJob, language);
-  const [isPdfViewerOpen, setIsPdfViewerOpen] = React.useState(false);
-  const [activePdfUrl, setActivePdfUrl] = React.useState<string | null>(
-    job.official_notification_url || null
-  );
 
   const org = job.organization;
   const dept = job.department;
@@ -51,43 +47,68 @@ export function JobDetailView({ job: rawJob }: JobDetailViewProps) {
   const eligibility = job.eligibility;
   const documents = job.official_documents || [];
 
-  const handleTogglePdf = () => {
-    if (!isPdfViewerOpen && (activePdfUrl || job.official_notification_url)) {
-      if (!activePdfUrl && job.official_notification_url) {
-        setActivePdfUrl(job.official_notification_url);
-      }
-      setIsPdfViewerOpen(true);
-    } else {
-      setIsPdfViewerOpen(false);
-    }
-  };
+  const isClosingSoon = job.application_end_date
+    ? new Date(job.application_end_date).getTime() - Date.now() < 5 * 86400000 &&
+      new Date(job.application_end_date).getTime() > Date.now()
+    : false;
+
+  const salaryDisplay =
+    job.salary_min || job.salary_max
+      ? `${formatINR(job.salary_min)} - ${formatINR(job.salary_max)}`
+      : job.pay_scale_details || null;
+
+  const educationalQualification =
+    job.qualification_summary ||
+    qual?.name ||
+    eligibility?.education_qualification ||
+    null;
+
+  const ageLimits =
+    job.age_limit_summary ||
+    (eligibility?.min_age && eligibility?.max_age
+      ? `Min: ${eligibility.min_age} Yrs | Max: ${eligibility.max_age} Yrs`
+      : eligibility?.max_age
+        ? `Max: ${eligibility.max_age} Yrs`
+        : null);
+
+  const selectionProcess =
+    job.selection_process ||
+    eligibility?.selection_process ||
+    null;
+
+  const applicationFee =
+    eligibility?.application_fee_details
+      ? typeof eligibility.application_fee_details === "string"
+        ? eligibility.application_fee_details
+        : JSON.stringify(eligibility.application_fee_details, null, 2)
+      : null;
 
   return (
-    <div className="mx-auto max-w-5xl px-4 py-8 sm:px-6 lg:px-8 space-y-8">
+    <div className="mx-auto max-w-5xl px-4 py-8 sm:px-6 lg:px-8 space-y-6">
       {/* Breadcrumb Navigation */}
       <nav className="flex items-center space-x-2 text-xs text-slate-500">
         <Link href="/" className="hover:text-slate-800 transition-colors">
           {t("nav.home")}
         </Link>
-        <span>/</span>
+        <ChevronRight className="h-3 w-3 text-slate-400" />
         <Link href="/jobs" className="hover:text-slate-800 transition-colors">
           {t("nav.jobs")}
         </Link>
-        <span>/</span>
-        <span className="font-semibold text-slate-800 truncate max-w-[200px] sm:max-w-xs">
-          {org?.acronym || org?.name || "Notice"}
+        <ChevronRight className="h-3 w-3 text-slate-400" />
+        <span className="font-semibold text-slate-800 truncate max-w-[220px] sm:max-w-md">
+          {org?.acronym || org?.name || "Job Notice"}
         </span>
       </nav>
 
-      {/* Hero Header Card */}
-      <div className="rounded-2xl border border-slate-200 bg-white p-6 sm:p-8 shadow-xs">
-        <div className="flex flex-wrap items-center justify-between gap-3 mb-4">
+      {/* SECTION 1: HEADER & KEY SUMMARY */}
+      <div className="rounded-xl border border-slate-200 bg-white p-5 sm:p-7 shadow-xs">
+        <div className="flex flex-wrap items-center justify-between gap-3 mb-3">
           <div className="flex flex-wrap items-center gap-2">
             <Badge variant="brand" className="text-xs font-bold py-0.5 px-2.5 bg-[#013089] text-white">
-              {org?.acronym || org?.name || "Government"}
+              {org?.acronym || org?.name || "Government Authority"}
             </Badge>
             {dept && (
-              <Badge variant="outline" className="text-xs font-medium">
+              <Badge variant="outline" className="text-xs font-medium text-slate-700">
                 {dept.name}
               </Badge>
             )}
@@ -96,12 +117,8 @@ export function JobDetailView({ job: rawJob }: JobDetailViewProps) {
                 {job.category.name}
               </Badge>
             )}
-            {qual && (
-              <Badge variant="secondary" className="text-xs font-semibold">
-                {qual.name}
-              </Badge>
-            )}
             <Badge variant="success" className="text-xs bg-emerald-100 text-emerald-800 border-emerald-200">
+              <ShieldCheck className="h-3 w-3 mr-1" />
               Verified Official Notice
             </Badge>
           </div>
@@ -113,109 +130,57 @@ export function JobDetailView({ job: rawJob }: JobDetailViewProps) {
         </div>
 
         {/* Localized Title */}
-        <h1 className="text-2xl font-extrabold tracking-tight text-slate-900 sm:text-3xl font-heading leading-tight">
+        <h1 className="text-xl sm:text-2xl lg:text-3xl font-extrabold text-slate-900 font-heading leading-snug">
           {job.title}
         </h1>
 
         {job.notification_number && (
-          <div className="mt-2 text-xs font-mono text-slate-500">
-            {t("card.advt_no")}: <span className="font-semibold text-slate-800">{job.notification_number}</span>
+          <div className="mt-2 text-xs font-mono text-slate-600">
+            {t("card.advt_no")}: <span className="font-semibold text-slate-900">{job.notification_number}</span>
           </div>
         )}
 
-        {/* Quick Metrics Bar */}
-        <div className="grid grid-cols-2 gap-4 sm:grid-cols-4 rounded-xl bg-slate-50 p-4 border border-slate-100 mt-6">
-          <div>
-            <div className="text-[10px] uppercase font-bold text-slate-400">{t("card.vacancies")}</div>
-            <div className="text-lg font-extrabold text-emerald-700 mt-0.5">
-              {formatNumber(job.total_vacancies)} {t("card.posts")}
-            </div>
-          </div>
+        {(job.summary || job.description) && (
+          <p className="mt-3 text-xs sm:text-sm text-slate-600 leading-relaxed max-w-4xl border-t border-slate-100 pt-3">
+            {job.summary || job.description}
+          </p>
+        )}
 
-          <div>
-            <div className="text-[10px] uppercase font-bold text-slate-400">{t("card.salary")}</div>
-            <div className="text-sm font-bold text-slate-800 mt-0.5 truncate">
-              {job.salary_min || job.salary_max
-                ? `${formatINR(job.salary_min)} - ${formatINR(job.salary_max)}`
-                : job.pay_scale_details || "As per 7th CPC"}
-            </div>
-          </div>
-
-          <div>
-            <div className="text-[10px] uppercase font-bold text-slate-400">
-              {getLocalizedDateLabel("application_start", language, "Application Start")}
-            </div>
-            <div className="text-sm font-semibold text-slate-800 mt-0.5">
-              {formatDate(job.application_start_date)}
-            </div>
-          </div>
-
-          <div>
-            <div className="text-[10px] uppercase font-bold text-slate-400">{t("card.last_date")}</div>
-            <div className="text-sm font-bold text-amber-700 mt-0.5">
-              {formatDate(job.application_end_date)}
-            </div>
-          </div>
-        </div>
-
-        {/* Direct Provenance Action Strip (Preserving Official URLs) */}
-        <div className="flex flex-wrap items-center gap-3 mt-6 pt-6 border-t border-slate-100">
+        {/* Primary Action Button Bar */}
+        <div className="flex flex-wrap items-center gap-3 mt-5 pt-4 border-t border-slate-100">
           {job.official_apply_url && (
             <a
               href={job.official_apply_url}
               target="_blank"
               rel="noopener noreferrer"
-              className="flex-1 sm:flex-none"
             >
-              <Button variant="primary" size="lg" className="w-full gap-2 font-bold shadow-xs bg-[#013089] hover:bg-[#01276E] text-white">
-                <span>{t("card.apply_online")}</span>
+              <Button
+                variant="primary"
+                size="md"
+                className="gap-2 font-bold bg-[#013089] hover:bg-[#01276E] text-white shadow-xs"
+              >
+                <span>{t("card.apply_now")}</span>
                 <ExternalLink className="h-4 w-4" />
               </Button>
             </a>
           )}
 
           {job.official_notification_url && (
-            isPdfUrl(job.official_notification_url) ? (
+            <a
+              href={job.official_notification_url}
+              target="_blank"
+              rel="noopener noreferrer"
+            >
               <Button
-                variant={isPdfViewerOpen ? "primary" : "outline"}
-                size="lg"
-                onClick={handleTogglePdf}
-                className={`flex-1 sm:flex-none gap-2 font-semibold transition-all ${
-                  isPdfViewerOpen
-                    ? "bg-slate-800 hover:bg-slate-900 text-white border-slate-700 shadow-xs"
-                    : "border-slate-300 hover:border-brand-500 hover:text-brand-700"
-                }`}
+                variant="outline"
+                size="md"
+                className="gap-2 font-bold text-[#013089] border-[#013089]/40 hover:bg-brand-50 hover:border-[#013089]"
               >
-                {isPdfViewerOpen ? (
-                  <>
-                    <X className="h-4 w-4" />
-                    <span>Hide PDF</span>
-                  </>
-                ) : (
-                  <>
-                    <FileText className="h-4 w-4 text-brand-600" />
-                    <span>{t("card.official_pdf")}</span>
-                  </>
-                )}
+                <FileText className="h-4 w-4 text-[#013089]" />
+                <span>{t("card.official_notification")}</span>
+                <ExternalLink className="h-3.5 w-3.5 ml-0.5 text-slate-400" />
               </Button>
-            ) : (
-              <a
-                href={job.official_notification_url}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="flex-1 sm:flex-none"
-              >
-                <Button
-                  variant="outline"
-                  size="lg"
-                  className="w-full gap-2 font-semibold text-slate-700 hover:text-[#013089] hover:border-brand-500"
-                >
-                  <Globe className="h-4 w-4 text-slate-500" />
-                  <span>Official Notification Page</span>
-                  <ExternalLink className="h-3.5 w-3.5 text-slate-400" />
-                </Button>
-              </a>
-            )
+            </a>
           )}
 
           {org?.website_url && (
@@ -225,219 +190,347 @@ export function JobDetailView({ job: rawJob }: JobDetailViewProps) {
               rel="noopener noreferrer"
               className="hidden sm:inline-block"
             >
-              <Button variant="ghost" size="lg" className="gap-1.5 text-xs text-slate-600">
-                <Building2 className="h-4 w-4" />
-                <span>{org.acronym || org.name} Official Portal</span>
+              <Button
+                variant="ghost"
+                size="md"
+                className="gap-1.5 text-xs text-slate-600 hover:text-slate-900"
+              >
+                <Building2 className="h-3.5 w-3.5" />
+                <span>Official Website</span>
+                <ExternalLink className="h-3 w-3 ml-0.5 text-slate-400" />
               </Button>
             </a>
           )}
         </div>
-
-        {/* Inline PDF Viewer (Directly below Notification PDF button) */}
-        {isPdfViewerOpen && activePdfUrl && (
-          <InlinePdfViewer
-            url={activePdfUrl}
-            title={`${job.title} - Official Notification`}
-            organizationName={org?.name || "Government Authority"}
-            onClose={() => setIsPdfViewerOpen(false)}
-          />
-        )}
       </div>
 
-      {/* Summary / Description if present */}
-      {(job.description || job.summary) && (
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-base font-bold text-slate-900">
-              Notice Summary &amp; Scope
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <p className="text-sm text-slate-700 leading-relaxed whitespace-pre-line">
-              {job.description || job.summary}
-            </p>
-          </CardContent>
-        </Card>
+      {/* SECTION 2: QUICK INFORMATION TABLE */}
+      <div className="rounded-xl border border-slate-200 bg-white shadow-xs overflow-hidden">
+        <div className="bg-slate-50/80 px-4 py-3 border-b border-slate-200 flex items-center justify-between">
+          <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-[#013089]">
+            <Briefcase className="h-4 w-4" />
+            <span>Quick Information Overview</span>
+          </div>
+          {job.total_vacancies && job.total_vacancies > 0 ? (
+            <span className="text-xs font-bold text-emerald-800 bg-emerald-50 px-2 py-0.5 rounded font-mono border border-emerald-200">
+              {formatNumber(job.total_vacancies)} Posts
+            </span>
+          ) : null}
+        </div>
+
+        <div className="p-4 sm:p-5">
+          <table className="w-full text-xs text-slate-800 border-collapse">
+            <tbody className="divide-y divide-slate-100">
+              <tr className="hover:bg-slate-50/50">
+                <td className="py-2.5 px-3 font-semibold text-slate-600 w-1/3 sm:w-1/4">Recruiting Authority</td>
+                <td className="py-2.5 px-3 font-bold text-slate-900">{org?.name || "Official Government Authority"}</td>
+              </tr>
+              {job.post_name && (
+                <tr className="hover:bg-slate-50/50">
+                  <td className="py-2.5 px-3 font-semibold text-slate-600">Post Designation</td>
+                  <td className="py-2.5 px-3 font-bold text-slate-900">{job.post_name}</td>
+                </tr>
+              )}
+              {job.total_vacancies && job.total_vacancies > 0 ? (
+                <tr className="hover:bg-slate-50/50">
+                  <td className="py-2.5 px-3 font-semibold text-slate-600">{t("card.vacancies")}</td>
+                  <td className="py-2.5 px-3 font-bold text-emerald-700 font-mono text-sm">
+                    {formatNumber(job.total_vacancies)} {t("card.posts")}
+                  </td>
+                </tr>
+              ) : null}
+              {salaryDisplay && (
+                <tr className="hover:bg-slate-50/50">
+                  <td className="py-2.5 px-3 font-semibold text-slate-600">Pay Scale / Remuneration</td>
+                  <td className="py-2.5 px-3 font-bold text-slate-900">{salaryDisplay}</td>
+                </tr>
+              )}
+              {job.employment_type && (
+                <tr className="hover:bg-slate-50/50">
+                  <td className="py-2.5 px-3 font-semibold text-slate-600">Employment Type</td>
+                  <td className="py-2.5 px-3 capitalize text-slate-900">{job.employment_type.replace("_", " ")}</td>
+                </tr>
+              )}
+              <tr className="hover:bg-slate-50/50">
+                <td className="py-2.5 px-3 font-semibold text-slate-600">Jurisdiction / Location</td>
+                <td className="py-2.5 px-3 text-slate-900">{state ? state.name : "All India / Central"}</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      {/* SECTION 3: IMPORTANT DATES */}
+      <div className="rounded-xl border border-slate-200 bg-white shadow-xs overflow-hidden">
+        <div className="bg-slate-50/80 px-4 py-3 border-b border-slate-200 flex items-center justify-between">
+          <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-[#013089]">
+            <Calendar className="h-4 w-4" />
+            <span>Important Dates &amp; Deadlines</span>
+          </div>
+          {isClosingSoon && (
+            <span className="text-[11px] font-bold text-amber-700 bg-amber-50 px-2 py-0.5 rounded border border-amber-200 flex items-center gap-1">
+              <Clock className="h-3 w-3" />
+              <span>Application Closing Soon</span>
+            </span>
+          )}
+        </div>
+
+        <div className="p-4 sm:p-5">
+          <table className="w-full text-xs text-slate-800 border-collapse">
+            <tbody className="divide-y divide-slate-100">
+              {job.application_start_date && (
+                <tr className="hover:bg-slate-50/50">
+                  <td className="py-2.5 px-3 font-semibold text-slate-600 w-1/2 sm:w-1/3">Application Start Date</td>
+                  <td className="py-2.5 px-3 font-mono font-semibold text-slate-900">
+                    {formatDate(job.application_start_date)}
+                  </td>
+                </tr>
+              )}
+              {job.application_end_date && (
+                <tr className="hover:bg-slate-50/50">
+                  <td className="py-2.5 px-3 font-semibold text-slate-600">Last Date to Apply</td>
+                  <td className={`py-2.5 px-3 font-mono ${isClosingSoon ? "font-bold text-amber-700" : "font-bold text-slate-900"}`}>
+                    {formatDate(job.application_end_date)}
+                  </td>
+                </tr>
+              )}
+              {dates.map((d, idx) => (
+                <tr key={idx} className="hover:bg-slate-50/50">
+                  <td className="py-2.5 px-3 font-semibold text-slate-600">{d.event_name}</td>
+                  <td className="py-2.5 px-3 font-mono font-semibold text-slate-900">
+                    {formatDate(d.event_date)} {d.is_tentative ? "(Tentative)" : ""}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      {/* SECTION 4: ELIGIBILITY & VACANCY BREAKDOWN */}
+      <div className="rounded-xl border border-slate-200 bg-white shadow-xs overflow-hidden">
+        <div className="bg-slate-50/80 px-4 py-3 border-b border-slate-200">
+          <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-[#013089]">
+            <GraduationCap className="h-4 w-4" />
+            <span>Eligibility Criteria &amp; Qualification</span>
+          </div>
+        </div>
+
+        <div className="p-4 sm:p-5 space-y-4 text-xs text-slate-800">
+          {educationalQualification && (
+            <div className="p-3 rounded-lg bg-slate-50 border border-slate-100 space-y-1">
+              <div className="font-bold text-slate-900 text-xs uppercase tracking-wide">Educational Qualification</div>
+              <p className="text-slate-700 leading-relaxed">{educationalQualification}</p>
+            </div>
+          )}
+
+          {ageLimits && (
+            <div className="p-3 rounded-lg bg-slate-50 border border-slate-100 space-y-1">
+              <div className="font-bold text-slate-900 text-xs uppercase tracking-wide">Age Limit &amp; Relaxations</div>
+              <p className="text-slate-700 leading-relaxed font-mono">{ageLimits}</p>
+              {eligibility?.age_relaxation_details && (
+                <p className="text-slate-600 text-[11px] mt-1">{eligibility.age_relaxation_details}</p>
+              )}
+            </div>
+          )}
+
+          {applicationFee && (
+            <div className="p-3 rounded-lg bg-slate-50 border border-slate-100 space-y-1">
+              <div className="font-bold text-slate-900 text-xs uppercase tracking-wide flex items-center gap-1.5">
+                <CreditCard className="h-3.5 w-3.5 text-[#013089]" />
+                <span>Application Fee Details</span>
+              </div>
+              <p className="text-slate-700 leading-relaxed whitespace-pre-line">{applicationFee}</p>
+            </div>
+          )}
+
+          {/* Category-wise Vacancy Breakdown Table */}
+          {vacancies.length > 0 && (() => {
+            // Only show category columns if at least one vacancy has actual category data
+            const hasCategoryData = vacancies.some(
+              (v) => v.ur_posts || v.ews_posts || v.obc_posts || v.sc_posts || v.st_posts
+            );
+            return (
+              <div className="space-y-2 pt-2">
+                <div className="font-bold text-slate-900 text-xs uppercase tracking-wide flex items-center justify-between">
+                  <span>{hasCategoryData ? "Category-wise Vacancy Distribution" : "Vacancy Details"}</span>
+                  {job.total_vacancies && job.total_vacancies > 0 ? (
+                    <span className="font-mono text-[11px] text-slate-500 font-normal">
+                      Total: {formatNumber(job.total_vacancies)} Posts
+                    </span>
+                  ) : null}
+                </div>
+                <div className="overflow-x-auto rounded-lg border border-slate-200">
+                  <Table>
+                    <TableHeader className="bg-slate-50">
+                      <TableRow className="text-[11px] uppercase">
+                        <TableHead className="font-bold text-slate-700">Post Name</TableHead>
+                        {hasCategoryData && (
+                          <>
+                            <TableHead className="font-bold text-slate-700 text-center">UR</TableHead>
+                            <TableHead className="font-bold text-slate-700 text-center">EWS</TableHead>
+                            <TableHead className="font-bold text-slate-700 text-center">OBC</TableHead>
+                            <TableHead className="font-bold text-slate-700 text-center">SC</TableHead>
+                            <TableHead className="font-bold text-slate-700 text-center">ST</TableHead>
+                          </>
+                        )}
+                        <TableHead className="font-bold text-slate-900 text-right">Total</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody className="text-xs">
+                      {vacancies.map((v, idx) => (
+                        <TableRow key={idx} className="hover:bg-slate-50/50">
+                          <TableCell className="font-medium text-slate-900">{v.post_name}</TableCell>
+                          {hasCategoryData && (
+                            <>
+                              <TableCell className="text-center font-mono">{v.ur_posts ? formatNumber(v.ur_posts) : "-"}</TableCell>
+                              <TableCell className="text-center font-mono">{v.ews_posts ? formatNumber(v.ews_posts) : "-"}</TableCell>
+                              <TableCell className="text-center font-mono">{v.obc_posts ? formatNumber(v.obc_posts) : "-"}</TableCell>
+                              <TableCell className="text-center font-mono">{v.sc_posts ? formatNumber(v.sc_posts) : "-"}</TableCell>
+                              <TableCell className="text-center font-mono">{v.st_posts ? formatNumber(v.st_posts) : "-"}</TableCell>
+                            </>
+                          )}
+                          <TableCell className="text-right font-bold font-mono text-slate-900">
+                            {formatNumber(v.total_posts)}
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </div>
+              </div>
+            );
+          })()}
+        </div>
+      </div>
+
+      {/* SECTION 5: SELECTION PROCESS (If present) */}
+      {selectionProcess && (
+        <div className="rounded-xl border border-slate-200 bg-white shadow-xs overflow-hidden">
+          <div className="bg-slate-50/80 px-4 py-3 border-b border-slate-200">
+            <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-[#013089]">
+              <Layers className="h-4 w-4" />
+              <span>Selection Process &amp; Scheme</span>
+            </div>
+          </div>
+          <div className="p-4 sm:p-5 text-xs text-slate-700 leading-relaxed whitespace-pre-line">
+            {selectionProcess}
+          </div>
+        </div>
       )}
 
-      {/* Important Dates Timeline Card */}
-      {dates.length > 0 && (
-        <Card>
-          <CardHeader className="pb-4">
-            <div className="flex items-center gap-2">
-              <Calendar className="h-5 w-5 text-[#013089]" />
-              <CardTitle className="text-base font-bold text-slate-900">
-                Important Dates &amp; Timelines
-              </CardTitle>
+      {/* SECTION 6: IMPORTANT OFFICIAL LINKS */}
+      <div className="rounded-xl border border-[#013089]/20 bg-[#013089]/5 p-5 sm:p-6 shadow-xs space-y-4">
+        <div className="flex items-center gap-2 text-sm font-bold uppercase tracking-wider text-[#013089]">
+          <FileCheck2 className="h-5 w-5 text-[#013089]" />
+          <span>Important Official Links</span>
+        </div>
+
+        <div className="overflow-x-auto rounded-lg border border-slate-200 bg-white">
+          <table className="w-full text-xs text-slate-800 border-collapse">
+            <tbody className="divide-y divide-slate-100">
+              {/* Apply Now Gateway */}
+              {job.official_apply_url && (
+                <tr className="hover:bg-slate-50/80">
+                  <td className="py-3 px-4 font-bold text-slate-900 w-1/3">Apply Online (Candidate Portal)</td>
+                  <td className="py-3 px-4">
+                    <a
+                      href={job.official_apply_url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center gap-1.5 font-bold text-white bg-[#013089] hover:bg-[#01276E] px-3.5 py-1.5 rounded-md shadow-xs transition-colors text-xs"
+                    >
+                      <span>{t("card.apply_now")}</span>
+                      <ExternalLink className="h-3.5 w-3.5" />
+                    </a>
+                  </td>
+                </tr>
+              )}
+
+              {/* Official Notification Document */}
+              {job.official_notification_url && (
+                <tr className="hover:bg-slate-50/80">
+                  <td className="py-3 px-4 font-bold text-slate-900">Official Notification Gazette</td>
+                  <td className="py-3 px-4">
+                    <a
+                      href={job.official_notification_url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center gap-1.5 font-bold text-[#013089] bg-brand-50 hover:bg-brand-100 px-3.5 py-1.5 rounded-md border border-brand-200 transition-colors text-xs"
+                    >
+                      <FileText className="h-3.5 w-3.5 text-[#013089]" />
+                      <span>{t("card.official_notification")}</span>
+                      <ExternalLink className="h-3.5 w-3.5 ml-0.5 text-slate-400" />
+                    </a>
+                  </td>
+                </tr>
+              )}
+
+              {/* Official Authority Website */}
+              {org?.website_url && (
+                <tr className="hover:bg-slate-50/80">
+                  <td className="py-3 px-4 font-bold text-slate-900">Official Organization Website</td>
+                  <td className="py-3 px-4">
+                    <a
+                      href={org.website_url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center gap-1 text-xs font-semibold text-slate-700 hover:text-[#013089] hover:underline"
+                    >
+                      <Building2 className="h-3.5 w-3.5 text-slate-500" />
+                      <span>{org.name} Official Portal</span>
+                      <ExternalLink className="h-3 w-3 ml-1 text-slate-400" />
+                    </a>
+                  </td>
+                </tr>
+              )}
+            </tbody>
+          </table>
+        </div>
+
+        {/* Attached Gazette Documents if present */}
+        {documents.length > 0 && (
+          <div className="pt-2 space-y-2">
+            <div className="text-xs font-bold text-slate-800 uppercase tracking-wider">
+              Attached Gazette Circulars &amp; Annexures
             </div>
-          </CardHeader>
-          <CardContent>
-            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
-              {dates.map((item, idx) => (
+            <div className="space-y-1.5">
+              {documents.map((doc, idx) => (
                 <div
                   key={idx}
-                  className="rounded-lg border border-slate-100 bg-slate-50/50 p-3.5 flex flex-col justify-between"
+                  className="flex items-center justify-between p-2.5 rounded-lg border border-slate-200 bg-white hover:bg-slate-50 text-xs"
                 >
-                  <div className="text-xs font-semibold text-slate-600">
-                    {item.event_name}
-                  </div>
-                  <div className="mt-2 text-sm font-bold text-slate-900">
-                    {formatDate(item.event_date)}
-                  </div>
+                  <span className="font-semibold text-slate-900 truncate max-w-sm">{doc.title}</span>
+                  {doc.file_url && (
+                    <a
+                      href={doc.file_url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center gap-1 text-xs font-bold text-[#013089] hover:underline bg-brand-50 px-2.5 py-1 rounded"
+                    >
+                      <FileText className="h-3 w-3" />
+                      <span>Open Document</span>
+                      <ExternalLink className="h-2.5 w-2.5 text-slate-400" />
+                    </a>
+                  )}
                 </div>
               ))}
             </div>
-          </CardContent>
-        </Card>
-      )}
-
-      {/* Vacancy Breakdown Table */}
-      {vacancies.length > 0 && (
-        <Card>
-          <CardHeader className="pb-4">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <FileSpreadsheet className="h-5 w-5 text-[#013089]" />
-                <CardTitle className="text-base font-bold text-slate-900">
-                  Vacancy &amp; Reservation Breakdown
-                </CardTitle>
-              </div>
-              <Badge variant="outline" className="text-xs font-bold font-mono">
-                Total: {formatNumber(job.total_vacancies)} Posts
-              </Badge>
-            </div>
-          </CardHeader>
-          <CardContent>
-            <div className="overflow-x-auto rounded-lg border border-slate-200">
-              <Table>
-                <TableHeader className="bg-slate-50">
-                  <TableRow>
-                    <TableHead className="font-bold text-slate-700">Post / Designation</TableHead>
-                    <TableHead className="font-bold text-slate-700 text-center">UR</TableHead>
-                    <TableHead className="font-bold text-slate-700 text-center">EWS</TableHead>
-                    <TableHead className="font-bold text-slate-700 text-center">OBC</TableHead>
-                    <TableHead className="font-bold text-slate-700 text-center">SC</TableHead>
-                    <TableHead className="font-bold text-slate-700 text-center">ST</TableHead>
-                    <TableHead className="font-bold text-slate-900 text-right">Total Posts</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {vacancies.map((v, idx) => (
-                    <TableRow key={idx} className="hover:bg-slate-50/50">
-                      <TableCell className="font-medium text-slate-900">
-                        {v.post_name}
-                      </TableCell>
-                      <TableCell className="text-center font-mono text-xs">{v.ur_posts ?? "-"}</TableCell>
-                      <TableCell className="text-center font-mono text-xs">{v.ews_posts ?? "-"}</TableCell>
-                      <TableCell className="text-center font-mono text-xs">{v.obc_posts ?? "-"}</TableCell>
-                      <TableCell className="text-center font-mono text-xs">{v.sc_posts ?? "-"}</TableCell>
-                      <TableCell className="text-center font-mono text-xs">{v.st_posts ?? "-"}</TableCell>
-                      <TableCell className="text-right font-bold font-mono text-slate-900">
-                        {formatNumber(v.total_posts)}
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            </div>
-          </CardContent>
-        </Card>
-      )}
-
-      {/* Eligibility & Qualifications */}
-      <Card>
-        <CardHeader className="pb-4">
-          <div className="flex items-center gap-2">
-            <GraduationCap className="h-5 w-5 text-[#013089]" />
-            <CardTitle className="text-base font-bold text-slate-900">
-              Eligibility &amp; Qualification Requirements
-            </CardTitle>
           </div>
-        </CardHeader>
-        <CardContent className="space-y-4 text-xs text-slate-700">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div className="p-3.5 rounded-lg bg-slate-50 border border-slate-100 space-y-1">
-              <div className="font-bold text-slate-900 text-sm">Educational Qualification</div>
-              <p className="text-slate-600 leading-relaxed">
-                {job.qualification_summary || eligibility?.education_qualification || "Please check official advertisement for exact qualifications."}
-              </p>
-            </div>
+        )}
+      </div>
 
-            <div className="p-3.5 rounded-lg bg-slate-50 border border-slate-100 space-y-1">
-              <div className="font-bold text-slate-900 text-sm">Age Limits &amp; Criteria</div>
-              <p className="text-slate-600 leading-relaxed">
-                {job.age_limit_summary ||
-                  (eligibility?.min_age || eligibility?.max_age
-                    ? `Min Age: ${eligibility?.min_age || "18"} Years, Max Age: ${eligibility?.max_age || "37"} Years (Relaxation as per Govt Rules)`
-                    : "As per official recruitment notification rules.")}
-              </p>
-            </div>
-          </div>
-
-          {(job.selection_process || eligibility?.selection_process) && (
-            <div className="p-3.5 rounded-lg bg-slate-50 border border-slate-100 space-y-1">
-              <div className="font-bold text-slate-900 text-sm">Selection Process</div>
-              <p className="text-slate-600 leading-relaxed whitespace-pre-line">
-                {job.selection_process || eligibility?.selection_process}
-              </p>
-            </div>
-          )}
-        </CardContent>
-      </Card>
-
-      {/* Official Documents Catalog */}
-      {documents.length > 0 && (
-        <Card>
-          <CardHeader className="pb-4">
-            <div className="flex items-center gap-2">
-              <FileText className="h-5 w-5 text-[#013089]" />
-              <CardTitle className="text-base font-bold text-slate-900">
-                Official Gazette Documents &amp; Circulars
-              </CardTitle>
-            </div>
-          </CardHeader>
-          <CardContent className="space-y-2">
-            {documents.map((doc, idx) => (
-              <div
-                key={idx}
-                className="flex items-center justify-between p-3 rounded-lg border border-slate-200 bg-white hover:bg-slate-50 transition-colors"
-              >
-                <div className="flex items-center gap-3">
-                  <FileText className="h-5 w-5 text-slate-500 shrink-0" />
-                  <div>
-                    <div className="text-xs font-bold text-slate-900">{doc.title}</div>
-                    <div className="text-[10px] text-slate-500 font-mono">
-                      {doc.document_type.toUpperCase()} • Official Source File
-                    </div>
-                  </div>
-                </div>
-
-                {doc.file_url && (
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setActivePdfUrl(doc.file_url);
-                      setIsPdfViewerOpen(true);
-                      window.scrollTo({ top: 300, behavior: "smooth" });
-                    }}
-                    className="inline-flex items-center gap-1 text-xs font-bold text-[#013089] hover:underline cursor-pointer bg-brand-50 px-2.5 py-1 rounded-md hover:bg-brand-100 transition-colors"
-                  >
-                    <FileText className="h-3.5 w-3.5" />
-                    <span>{t("card.official_pdf")}</span>
-                  </button>
-                )}
-              </div>
-            ))}
-          </CardContent>
-        </Card>
-      )}
-
-      {/* Transparency Disclaimer */}
-      <div className="rounded-xl border border-amber-200 bg-amber-50/50 p-4 text-xs text-amber-950 flex items-start gap-3">
-        <ShieldAlert className="h-5 w-5 text-[#FE8D01] shrink-0 mt-0.5" />
-        <p className="leading-relaxed">
-          <strong>Official Gazette Disclaimer:</strong> All candidates are advised to verify details from the original official advertisement before applying. SuchnaSetu does not charge any fee for access to official recruitment notices.
-        </p>
+      {/* SECTION 7: OFFICIAL AUTHORITY PROVENANCE & VERIFICATION */}
+      <div className="rounded-xl border border-slate-200 bg-slate-50 p-4 text-xs text-slate-700 flex items-start gap-3">
+        <ShieldCheck className="h-5 w-5 text-emerald-600 shrink-0 mt-0.5" />
+        <div className="space-y-1">
+          <div className="font-bold text-slate-900">Official Government Provenance &amp; Verification</div>
+          <p className="leading-relaxed text-slate-600">
+            This notice is sourced directly from the official gazette portal of <strong>{org?.name}</strong>.
+            Candidates are encouraged to verify all terms and conditions on the official commission website.
+            SuchnaSetu does not charge any application or recruitment fees.
+          </p>
+        </div>
       </div>
     </div>
   );

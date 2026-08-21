@@ -83,8 +83,8 @@ export interface NormalizedJobNotice {
   salaryMin?: number | null;
   salaryMax?: number | null;
   payScaleDetails?: string;
-  officialNotificationUrl: string;
-  officialApplyUrl?: string;
+  officialNotificationUrl?: string | null;
+  officialApplyUrl?: string | null;
   summary?: string;
   applicationStartDate?: Date | null;
   applicationEndDate?: Date | null;

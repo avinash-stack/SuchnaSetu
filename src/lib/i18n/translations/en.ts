@@ -62,9 +62,11 @@ export const en = {
   "card.stage": "Current Stage",
   "card.posts": "posts",
   "card.closes": "Closes",
-  "card.official_pdf": "Notification PDF",
+  "card.official_pdf": "Official Notification",
+  "card.official_notification": "Official Notification",
   "card.view_details": "View Notice",
-  "card.apply_online": "Apply Online",
+  "card.apply_online": "Apply Now",
+  "card.apply_now": "Apply Now",
 
   // Directory Page
   "directory.title": "Recruiting Organizations, Commissions & Courts",

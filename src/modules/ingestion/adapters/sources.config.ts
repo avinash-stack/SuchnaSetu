@@ -1,3 +1,15 @@
+export interface PostWiseVacancy {
+  post_name: string;
+  total: number;
+  ur?: number;
+  obc?: number;
+  sc?: number;
+  st?: number;
+  ews?: number;
+  pwd?: number;
+  pay_level?: string;
+}
+
 export interface CanonicalJobNoticeTemplate {
   advertisement_number: string;
   title: string;
@@ -18,6 +30,12 @@ export interface CanonicalJobNoticeTemplate {
     sc_st_pwd_women: number;
     payment_mode: string;
   };
+  // Structured fields — use these when verified data is available
+  min_age?: number;
+  max_age?: number;
+  post_wise_vacancies?: PostWiseVacancy[];
+  exam_date?: string; // "DD/MM/YYYY" or "YYYY-MM-DD"
+  selection_stages?: string[];
 }
 
 export interface GovJobSourceConfig {
@@ -68,7 +86,10 @@ export const GOV_JOB_SOURCES_CONFIG: GovJobSourceConfig[] = [
         age_limit_summary: "18 to 32 years as on 01-08-2026 (relaxations for SC/ST/OBC/PwD).",
         pay_scale: "Pay Level 4 to Level 8 (Rs. 25,500 to Rs. 1,51,100)",
         selection_process: "Tier-I Computer Based Exam (CBT) followed by Tier-II CBT & Data Entry Speed Test.",
-        fee_details: { general_obc_ews: 100, sc_st_pwd_women: 0, payment_mode: "BHIM UPI, Net Banking, Visa, Mastercard, RuPay" }
+        fee_details: { general_obc_ews: 100, sc_st_pwd_women: 0, payment_mode: "BHIM UPI, Net Banking, Visa, Mastercard, RuPay" },
+        min_age: 18,
+        max_age: 32,
+        selection_stages: ["Tier-I CBT (100 marks)", "Tier-II CBT (Paper I, II, III)", "Data Entry Speed Test / Computer Proficiency Test", "Document Verification"]
       },
       {
         advertisement_number: "SSC-CHSL-2026/02",
@@ -85,7 +106,10 @@ export const GOV_JOB_SOURCES_CONFIG: GovJobSourceConfig[] = [
         age_limit_summary: "18 to 27 years as on 01-08-2026.",
         pay_scale: "Pay Level 2 to Level 5 (Rs. 19,900 to Rs. 92,300)",
         selection_process: "Tier-I (CBT) followed by Tier-II (CBT & Skill Test/Typing Test).",
-        fee_details: { general_obc_ews: 100, sc_st_pwd_women: 0, payment_mode: "Online Payment Gateway" }
+        fee_details: { general_obc_ews: 100, sc_st_pwd_women: 0, payment_mode: "Online Payment Gateway" },
+        min_age: 18,
+        max_age: 27,
+        selection_stages: ["Tier-I CBT (200 marks)", "Tier-II CBT (Objective + Descriptive Module)", "Skill Test / Typing Test", "Document Verification"]
       }
     ]
   },
@@ -115,7 +139,10 @@ export const GOV_JOB_SOURCES_CONFIG: GovJobSourceConfig[] = [
         age_limit_summary: "18 to 33 years as on 01-07-2026.",
         pay_scale: "Level-2 of 7th CPC Pay Matrix (Initial Pay Rs. 19,900)",
         selection_process: "CBT-1, CBT-2, Computer Based Aptitude Test (CBAT), and Document Verification with Medical Exam (A-1 standard).",
-        fee_details: { general_obc_ews: 500, sc_st_pwd_women: 250, payment_mode: "Online Netbanking/Debit/Credit/UPI" }
+        fee_details: { general_obc_ews: 500, sc_st_pwd_women: 250, payment_mode: "Online Netbanking/Debit/Credit/UPI" },
+        min_age: 18,
+        max_age: 33,
+        selection_stages: ["CBT-1 (75 marks)", "CBT-2 (100 marks)", "Computer Based Aptitude Test (CBAT)", "Document Verification", "Medical Examination (A-1 standard)"]
       }
     ]
   },
@@ -145,7 +172,10 @@ export const GOV_JOB_SOURCES_CONFIG: GovJobSourceConfig[] = [
         age_limit_summary: "20 to 30 years as on 01-08-2026.",
         pay_scale: "Basic Pay Rs. 36,000 in scale of Rs. 36,000-63,840 plus DA, HRA, CCA.",
         selection_process: "Online Preliminary Exam, Online Main Exam, and Common Interview.",
-        fee_details: { general_obc_ews: 850, sc_st_pwd_women: 175, payment_mode: "Online Master/Visa/RuPay/UPI" }
+        fee_details: { general_obc_ews: 850, sc_st_pwd_women: 175, payment_mode: "Online Master/Visa/RuPay/UPI" },
+        min_age: 20,
+        max_age: 30,
+        selection_stages: ["Online Preliminary Examination", "Online Main Examination", "Common Interview (conducted by participating banks)"]
       }
     ]
   },
@@ -205,7 +235,10 @@ export const GOV_JOB_SOURCES_CONFIG: GovJobSourceConfig[] = [
         age_limit_summary: "18 to 40 years as on closing date of application.",
         pay_scale: "TRCA Slab BPM: Rs. 12,000 - 29,380; ABPM/Dak Sevak: Rs. 10,000 - 24,470",
         selection_process: "Automated Merit List based on 10th standard board marks without any written test.",
-        fee_details: { general_obc_ews: 100, sc_st_pwd_women: 0, payment_mode: "Online Credit/Debit/UPI" }
+        fee_details: { general_obc_ews: 100, sc_st_pwd_women: 0, payment_mode: "Online Credit/Debit/UPI" },
+        min_age: 18,
+        max_age: 40,
+        selection_stages: ["Online Application & Document Upload", "Automated Merit List (based on 10th Standard marks)", "Verification of original documents at Circle level"]
       }
     ]
   },
@@ -630,7 +663,10 @@ export const GOV_JOB_SOURCES_CONFIG: GovJobSourceConfig[] = [
         age_limit_summary: "20/21/22 to 37 years for Male (40 for BC/EBC & Female; 42 for SC/ST).",
         pay_scale: "Pay Level-7 and Level-9 in Bihar State Pay Matrix (Rs. 44,900 - 1,67,800)",
         selection_process: "Preliminary Objective Exam (150 Marks), Main Written Exam (900 Marks), and Personality Test (120 Marks).",
-        fee_details: { general_obc_ews: 600, sc_st_pwd_women: 150, payment_mode: "Online Bihar Portal Gateway" }
+        fee_details: { general_obc_ews: 600, sc_st_pwd_women: 150, payment_mode: "Online Bihar Portal Gateway" },
+        min_age: 20,
+        max_age: 37,
+        selection_stages: ["Preliminary Examination (Objective, 150 Questions, 150 Marks)", "Main Written Examination (6 Papers, 900 Marks)", "Personality Test / Interview (120 Marks)"]
       }
     ]
   },
@@ -643,7 +679,7 @@ export const GOV_JOB_SOURCES_CONFIG: GovJobSourceConfig[] = [
     stateCode: "UP",
     baseUrl: "https://uppsc.up.nic.in",
     recruitmentPath: "/all-notifications",
-    applyUrl: "https://uppsc.up.nic.in/candidatepages",
+    applyUrl: "https://uppsc.up.nic.in/CandidatePages/Notifications.aspx",
     defaultCategory: "state-govt",
     canonicalNotices: [
       {
@@ -661,7 +697,10 @@ export const GOV_JOB_SOURCES_CONFIG: GovJobSourceConfig[] = [
         age_limit_summary: "21 to 40 years as on 01-07-2026 (relaxations up to 5 years for SC/ST/OBC of UP).",
         pay_scale: "Pay Matrix Level-7 to Level-10 (Rs. 44,900 - 1,77,500)",
         selection_process: "Preliminary Exam (GS-I & CSAT), Main Written Examination (6 GS Papers + Hindi + Essay), and Viva-voce.",
-        fee_details: { general_obc_ews: 125, sc_st_pwd_women: 65, payment_mode: "Online Net Banking/E-Challan" }
+        fee_details: { general_obc_ews: 125, sc_st_pwd_women: 65, payment_mode: "Online Net Banking/E-Challan" },
+        min_age: 21,
+        max_age: 40,
+        selection_stages: ["Preliminary Examination (GS-I & CSAT, 400 Marks)", "Main Written Examination (8 Papers, 1500 Marks)", "Viva-voce / Interview (100 Marks)"]
       }
     ]
   },
@@ -692,7 +731,10 @@ export const GOV_JOB_SOURCES_CONFIG: GovJobSourceConfig[] = [
         age_limit_summary: "21 to 40 years (Non-Uniformed) / 21 to 33 years (Uniformed posts).",
         pay_scale: "Rs. 15,600 - 39,100 + GP 5400 / 7th Pay Scale Level 10-12",
         selection_process: "Preliminary Examination (OMR), Main Examination (Descriptive), and Interview.",
-        fee_details: { general_obc_ews: 500, sc_st_pwd_women: 250, payment_mode: "MPOnline Kiosk / Net Banking" }
+        fee_details: { general_obc_ews: 500, sc_st_pwd_women: 250, payment_mode: "MPOnline Kiosk / Net Banking" },
+        min_age: 21,
+        max_age: 40,
+        selection_stages: ["Preliminary Examination (OMR, 200 Marks)", "Main Examination (Descriptive, 1400 Marks)", "Interview / Personality Test (175 Marks)"]
       }
     ]
   },
@@ -722,8 +764,11 @@ export const GOV_JOB_SOURCES_CONFIG: GovJobSourceConfig[] = [
         qualification_summary: "Must hold a Degree of any of the Universities incorporated by an Act of the Central or State Legislature.",
         age_limit_summary: "21 to 40 years as on 01-01-2027.",
         pay_scale: "Pay Matrix Level L-14 (State Services) & L-10/L-11 (Subordinate Services)",
-        selection_process: "Preliminary Examination (Objective 200 marks), Main Examination (4 Papers 800 marks), and Interview (100 marks).",
-        fee_details: { general_obc_ews: 600, sc_st_pwd_women: 400, payment_mode: "SSO Portal Online Gateway" }
+        selection_process: "Preliminary Examination (OMR, 200 Marks), Main Examination (4 Papers, 800 Marks), and Personality Test.",
+        fee_details: { general_obc_ews: 600, sc_st_pwd_women: 400, payment_mode: "SSO Portal Online Gateway" },
+        min_age: 21,
+        max_age: 40,
+        selection_stages: ["Preliminary Examination (OMR, 200 Marks)", "Main Written Examination (4 Papers, 800 Marks)", "Personality Test / Interview"]
       }
     ]
   },
@@ -1101,7 +1146,10 @@ export const GOV_JOB_SOURCES_CONFIG: GovJobSourceConfig[] = [
         age_limit_summary: "18 to 37 years for UR Male, 18 to 40 years for BC/EBC/UR Female, 18 to 42 years for SC/ST.",
         pay_scale: "Pay Level 2 to Level 4 (Rs. 19,900 - 81,100)",
         selection_process: "Preliminary Examination (Objective 150 Questions, 600 Marks) and Main Examination.",
-        fee_details: { general_obc_ews: 540, sc_st_pwd_women: 135, payment_mode: "SBI e-Pay Online Gateway" }
+        fee_details: { general_obc_ews: 540, sc_st_pwd_women: 135, payment_mode: "SBI e-Pay Online Gateway" },
+        min_age: 18,
+        max_age: 37,
+        selection_stages: ["Preliminary Examination (Objective, 150 Questions, 600 Marks)", "Main Examination"]
       }
     ]
   },
@@ -1114,7 +1162,7 @@ export const GOV_JOB_SOURCES_CONFIG: GovJobSourceConfig[] = [
     stateCode: "BR",
     baseUrl: "https://csbc.bihar.gov.in",
     recruitmentPath: "/notices",
-    applyUrl: "https://csbc.bihar.gov.in",
+    applyUrl: "https://csbc.bihar.gov.in/Advt/AdvtList.aspx",
     defaultCategory: "defence-police",
     canonicalNotices: [
       {
@@ -1132,7 +1180,10 @@ export const GOV_JOB_SOURCES_CONFIG: GovJobSourceConfig[] = [
         age_limit_summary: "18 to 25 years for UR Male/Female (relaxations for BC/EBC/SC/ST as per Bihar Police Act).",
         pay_scale: "Pay Matrix Level 3 (Rs. 21,700 - 69,100)",
         selection_process: "Written Examination (Qualifying 100 Marks) and Physical Efficiency Test (PET - Running, Shot Put, High Jump - 100 Marks).",
-        fee_details: { general_obc_ews: 675, sc_st_pwd_women: 180, payment_mode: "Net Banking / Credit / Debit / UPI" }
+        fee_details: { general_obc_ews: 675, sc_st_pwd_women: 180, payment_mode: "Net Banking / Credit / Debit / UPI" },
+        min_age: 18,
+        max_age: 25,
+        selection_stages: ["Written Examination (Qualifying, 100 Marks)", "Physical Efficiency Test (PET — Running, Shot Put, High Jump, 100 Marks)", "Document Verification & Medical Examination"]
       }
     ]
   },
@@ -1145,7 +1196,7 @@ export const GOV_JOB_SOURCES_CONFIG: GovJobSourceConfig[] = [
     stateCode: "BR",
     baseUrl: "https://bpssc.bihar.gov.in",
     recruitmentPath: "/notices",
-    applyUrl: "https://bpssc.bihar.gov.in",
+    applyUrl: "https://bpssc.bihar.gov.in/Advt/AdvtList.aspx",
     defaultCategory: "defence-police",
     canonicalNotices: [
       {
@@ -1163,7 +1214,10 @@ export const GOV_JOB_SOURCES_CONFIG: GovJobSourceConfig[] = [
         age_limit_summary: "20 to 37 years for Male (UR), 20 to 40 years for Female (UR/BC/EBC), 20 to 42 years for SC/ST.",
         pay_scale: "Pay Matrix Level 6 (Rs. 35,400 - 1,12,400)",
         selection_process: "Preliminary Written Exam (200 Marks), Main Written Exam (2 Papers - 400 Marks), Physical Endurance Test (PET), and Medical Verification.",
-        fee_details: { general_obc_ews: 700, sc_st_pwd_women: 400, payment_mode: "Online Payment Gateway" }
+        fee_details: { general_obc_ews: 700, sc_st_pwd_women: 400, payment_mode: "Online Payment Gateway" },
+        min_age: 20,
+        max_age: 37,
+        selection_stages: ["Preliminary Written Examination (200 Marks)", "Main Written Examination (2 Papers, 400 Marks)", "Physical Endurance Test (PET)", "Medical Verification"]
       }
     ]
   },
@@ -1176,7 +1230,7 @@ export const GOV_JOB_SOURCES_CONFIG: GovJobSourceConfig[] = [
     stateCode: "UP",
     baseUrl: "https://upsssc.gov.in",
     recruitmentPath: "/all_notifications",
-    applyUrl: "https://upsssc.gov.in",
+    applyUrl: "https://upsssc.gov.in/Default.aspx#candidate_login",
     defaultCategory: "state-govt",
     canonicalNotices: [
       {
@@ -1207,7 +1261,7 @@ export const GOV_JOB_SOURCES_CONFIG: GovJobSourceConfig[] = [
     stateCode: "UP",
     baseUrl: "https://uppbpb.gov.in",
     recruitmentPath: "/notices",
-    applyUrl: "https://uppbpb.gov.in",
+    applyUrl: "https://uppbpb.gov.in/Notices",
     defaultCategory: "defence-police",
     canonicalNotices: [
       {
@@ -1300,7 +1354,7 @@ export const GOV_JOB_SOURCES_CONFIG: GovJobSourceConfig[] = [
     stateCode: "HR",
     baseUrl: "https://hssc.gov.in",
     recruitmentPath: "/advertisements",
-    applyUrl: "https://hssc.gov.in",
+    applyUrl: "https://adv12024.hryssc.com",
     defaultCategory: "state-govt",
     canonicalNotices: [
       {
@@ -1318,7 +1372,10 @@ export const GOV_JOB_SOURCES_CONFIG: GovJobSourceConfig[] = [
         age_limit_summary: "18 to 42 years as on closing date of application.",
         pay_scale: "Level 2 to Level 6 (Rs. 19,900 to Rs. 1,12,400)",
         selection_process: "CET Score Shortlisting (4x vacancy ratio), Skill / Physical Test, Socio-economic criteria assessment.",
-        fee_details: { general_obc_ews: 0, sc_st_pwd_women: 0, payment_mode: "No Fee under Haryana One Time Registration Policy" }
+        fee_details: { general_obc_ews: 0, sc_st_pwd_women: 0, payment_mode: "No Fee under Haryana One Time Registration Policy" },
+        min_age: 18,
+        max_age: 42,
+        selection_stages: ["CET Score Shortlisting (4x vacancy ratio)", "Skill / Physical Test", "Socio-economic criteria assessment", "Document Verification"]
       }
     ]
   },
@@ -1349,7 +1406,10 @@ export const GOV_JOB_SOURCES_CONFIG: GovJobSourceConfig[] = [
         age_limit_summary: "Below 30 years for TGT/Clerk, Below 36 years for PGT (relaxations for SC/ST/OBC Delhi).",
         pay_scale: "Pay Matrix Level 2 to Level 8 (Rs. 19,900 to Rs. 1,51,100)",
         selection_process: "One Tier / Two Tier Technical Examination (CBT Online 200 Marks) and Skill Verification.",
-        fee_details: { general_obc_ews: 100, sc_st_pwd_women: 0, payment_mode: "SBI e-Pay Portal" }
+        fee_details: { general_obc_ews: 100, sc_st_pwd_women: 0, payment_mode: "SBI e-Pay Portal" },
+        min_age: 18,
+        max_age: 30,
+        selection_stages: ["One Tier / Two Tier CBT Examination (200 Marks)", "Skill Verification / Typing Test", "Document Verification"]
       }
     ]
   },
@@ -1415,7 +1475,10 @@ export const GOV_JOB_SOURCES_CONFIG: GovJobSourceConfig[] = [
         age_limit_summary: "21 to 42 years (UR Male), 21 to 45 years for BC/EBC/UR Female, 21 to 47 years for SC/ST.",
         pay_scale: "Consolidated Monthly Remuneration Rs. 40,000 (Rs. 32,000 fixed + up to Rs. 8,000 performance incentive)",
         selection_process: "Merit based on B.Sc Nursing final marks + CCH qualification and Document Verification.",
-        fee_details: { general_obc_ews: 500, sc_st_pwd_women: 250, payment_mode: "Online Payment Gateway" }
+        fee_details: { general_obc_ews: 500, sc_st_pwd_women: 250, payment_mode: "Online Payment Gateway" },
+        min_age: 21,
+        max_age: 42,
+        selection_stages: ["Merit List (B.Sc Nursing final marks + CCH qualification)", "Document Verification"]
       }
     ]
   },
