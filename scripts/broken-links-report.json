@@ -1,0 +1,618 @@
+[
+  {
+    "url": "http://ssbrectt.gov.in",
+    "status": 0,
+    "reason": "fetch failed",
+    "usages": [
+      {
+        "type": "job_apply",
+        "id": "2b9f4656-d206-4bff-9156-807cb553ee21",
+        "title": "Recruitment of Head Constable (Ministerial) in Sashastra Seema Bal",
+        "org": "SSB"
+      },
+      {
+        "type": "job_notif",
+        "id": "2b9f4656-d206-4bff-9156-807cb553ee21",
+        "title": "Recruitment of Head Constable (Ministerial) in Sashastra Seema Bal",
+        "org": "SSB"
+      }
+    ]
+  },
+  {
+    "url": "https://bpsc.bih.nic.in",
+    "status": 0,
+    "reason": "This operation was aborted",
+    "usages": [
+      {
+        "type": "job_notif",
+        "id": "9286c839-9e78-4973-bc4c-f98ec3e2d17a",
+        "title": "Important Notice: Facility to edit GENDER in OTR (One Time Registration)",
+        "org": "BPSC"
+      },
+      {
+        "type": "job_notif",
+        "id": "d6a2be4e-58c7-4559-a0ef-560332d9bad2",
+        "title": "Important Notice: Regarding postponement of 33rd Bihar Judicial Services (Preliminary) Competitive Examination in compliance of order passed by Hon’ble Supreme Court, New Delhi in Writ Petition(s) (Civil) No(s). 1110/2025. (Advt. No. 12/2026).",
+        "org": "BPSC"
+      },
+      {
+        "type": "job_notif",
+        "id": "71f85f30-c68b-477a-8e73-c995664a6971",
+        "title": "71st Combined (Preliminary) Competitive Examination 2026 (BPSC 71st CCE)",
+        "org": "BPSC"
+      },
+      {
+        "type": "job_notif",
+        "id": "192ff38e-c4f0-44b3-b936-b5a60d77ea03",
+        "title": "Important Notice: Regarding Introduction of 5th Answer Option &#8216;E&#8217; in MCQ based examinations to be conducted by BPSC.",
+        "org": "BPSC"
+      },
+      {
+        "type": "job_notif",
+        "id": "065b03ea-c36d-4621-8963-de4154312ba2",
+        "title": "Important Notices :- Regarding raising dispute for refund/chargeback of unsuccessful/pending/failed transactions .",
+        "org": "BPSC"
+      },
+      {
+        "type": "job_notif",
+        "id": "b2b921bf-983d-44b4-8e8a-735651d586e3",
+        "title": "Important Notice :-  Regarding Postponement of 72nd CCE (Preliminary) Competitive Examination.",
+        "org": "BPSC"
+      },
+      {
+        "type": "job_notif",
+        "id": "b3d8a4f2-dcb8-4fe0-965c-23bc68a653fd",
+        "title": "Important Notice-cum-Examination Program: 33rd Bihar Judicial Services (Preliminary) Competitive Examination. (Advt. No. 12/2026)",
+        "org": "BPSC"
+      },
+      {
+        "type": "job_notif",
+        "id": "4e66652e-5853-4a64-a654-dc3ce24fc681",
+        "title": "Important Notice: Date of Commencement of Examination for the Post of Stenographer in Bihar Public Service Commission, Patna. (Advt. No. 01/2026)",
+        "org": "BPSC"
+      },
+      {
+        "type": "job_notif",
+        "id": "72a076f3-4a5a-4eb8-93d5-10fb666a5f9f",
+        "title": "Important Notices :- Regarding raising dispute for refund/chargeback of unsuccessful/pending/failed transactions .",
+        "org": "BPSC"
+      },
+      {
+        "type": "job_notif",
+        "id": "3a0d60b8-0a5b-4f8c-a346-f17548da3158",
+        "title": "Important Notice :-  Regarding Postponement of 72nd CCE (Preliminary) Competitive Examination.",
+        "org": "BPSC"
+      },
+      {
+        "type": "job_notif",
+        "id": "d8663961-05d5-4e20-9702-895e082d424b",
+        "title": "Corrigendum: Integrated 72nd Combined (Preliminary) Competitive Examination – Deletion of 44 Vacancies of Sugarcane Officer.",
+        "org": "BPSC"
+      },
+      {
+        "type": "job_notif",
+        "id": "bb71cd91-599c-467b-b969-b1969a9d0699",
+        "title": "Important Notice: Date of Commencement of Examination for the Post of Stenographer in Bihar Public Service Commission, Patna. (Advt. No. 01/2026)",
+        "org": "BPSC"
+      },
+      {
+        "type": "job_notif",
+        "id": "36d722ec-6889-4021-a17c-3cfe6db896f4",
+        "title": "Important Notice-cum-Examination Program: 33rd Bihar Judicial Services (Preliminary) Competitive Examination. (Advt. No. 12/2026)",
+        "org": "BPSC"
+      },
+      {
+        "type": "job_notif",
+        "id": "a016cd91-0ab5-46d2-9e31-ae7eaa701184",
+        "title": "Important Notice: Regarding postponement of 33rd Bihar Judicial Services (Preliminary) Competitive Examination in compliance of order passed by Hon’ble Supreme Court, New Delhi in Writ Petition(s) (Civil) No(s). 1110/2025. (Advt. No. 12/2026).",
+        "org": "BPSC"
+      },
+      {
+        "type": "job_notif",
+        "id": "03805434-1b03-48ce-ab69-6b352f8d6a68",
+        "title": "Important Notice: Regarding Introduction of 5th Answer Option &#8216;E&#8217; in MCQ based examinations to be conducted by BPSC.",
+        "org": "BPSC"
+      },
+      {
+        "type": "job_notif",
+        "id": "dd585390-1559-4421-a7fa-e6b7d5f1b339",
+        "title": "Important Notice: Facility to edit GENDER in OTR (One Time Registration)",
+        "org": "BPSC"
+      },
+      {
+        "type": "job_notif",
+        "id": "5d6ee6cc-39a2-48ff-8106-bd30b00a506a",
+        "title": "Corrigendum: Integrated 72nd Combined (Preliminary) Competitive Examination – Deletion of 44 Vacancies of Sugarcane Officer.",
+        "org": "BPSC"
+      },
+      {
+        "type": "job_notif",
+        "id": "d0dfedb1-524f-4a65-9c5d-93c9d75bac57",
+        "title": "Facility to Candidates to update data in Profile Tab in Online Application System.",
+        "org": "BPSC"
+      },
+      {
+        "type": "job_notif",
+        "id": "7fd85e7d-318c-476c-bf62-888d2c36a9ed",
+        "title": "Important Notice: Date of Commencement of Examination for the Post of Stenographer in Bihar Public Service Commission, Patna. (Advt. No. 01/2026)",
+        "org": "BPSC"
+      },
+      {
+        "type": "exam_notif",
+        "id": "e2251b3b-7961-4e65-946e-dec776ab28d0",
+        "title": "Important Notices :- Regarding raising dispute for refund/chargeback of unsuccessful/pending/failed transactions .",
+        "org": "BPSC"
+      },
+      {
+        "type": "exam_notif",
+        "id": "f08a1662-cd85-4958-84fa-fea104f8882b",
+        "title": "BPSC School Teacher Recruitment Examination (TRE 4.0) 2026",
+        "org": "BPSC"
+      },
+      {
+        "type": "exam_notif",
+        "id": "887286a6-5191-4e67-a5d3-04020fff2524",
+        "title": "Important Notice: Regarding postponement of 33rd Bihar Judicial Services (Preliminary) Competitive Examination in compliance of order passed by Hon’ble Supreme Court, New Delhi in Writ Petition(s) (Civil) No(s). 1110/2025. (Advt. No. 12/2026).",
+        "org": "BPSC"
+      },
+      {
+        "type": "exam_notif",
+        "id": "6ae901d6-0eaf-4548-97b1-8eaba47021ba",
+        "title": "BPSSC Bihar Police Sub-Inspector (Daroga) & Sergeant Competitive Examination 2026",
+        "org": "BPSC"
+      },
+      {
+        "type": "exam_notif",
+        "id": "d4b85dff-47b2-4960-a324-b91f8b86bb4e",
+        "title": "Important Notice :-  Regarding Postponement of 72nd CCE (Preliminary) Competitive Examination.",
+        "org": "BPSC"
+      },
+      {
+        "type": "exam_notif",
+        "id": "b01d32e1-28be-4773-98d3-b7a8e478a804",
+        "title": "Corrigendum: Integrated 72nd Combined (Preliminary) Competitive Examination – Deletion of 44 Vacancies of Sugarcane Officer.",
+        "org": "BPSC"
+      },
+      {
+        "type": "exam_notif",
+        "id": "2103dbea-7e69-4295-b0c1-669074ba5ec5",
+        "title": "Important Notice: Date of Commencement of Examination for the Post of Stenographer in Bihar Public Service Commission, Patna. (Advt. No. 01/2026)",
+        "org": "BPSC"
+      },
+      {
+        "type": "exam_notif",
+        "id": "50975a8b-ef31-4333-9765-f8f797d29178",
+        "title": "Important Notice: Regarding Introduction of 5th Answer Option &#8216;E&#8217; in MCQ based examinations to be conducted by BPSC.",
+        "org": "BPSC"
+      },
+      {
+        "type": "exam_notif",
+        "id": "28ff1fee-fe36-400c-a8dd-fea0d3be42d9",
+        "title": "71st Combined (Preliminary) Competitive Examination 2026 (BPSC 71st CCE)",
+        "org": "BPSC"
+      },
+      {
+        "type": "exam_notif",
+        "id": "551cd402-3885-4536-90a8-5e874a0eff2f",
+        "title": "Important Notice :-  Regarding Postponement of 72nd CCE (Preliminary) Competitive Examination.",
+        "org": "BPSC"
+      },
+      {
+        "type": "exam_notif",
+        "id": "3259fac0-2464-4a56-8394-6189f8403e6a",
+        "title": "71st Combined (Preliminary) Competitive Examination 2026 (BPSC 71st CCE)",
+        "org": "BPSC"
+      },
+      {
+        "type": "exam_notif",
+        "id": "4308789b-c8ae-4c90-9f97-fa742bd6cee1",
+        "title": "BPSC 71st Combined (Preliminary & Main) Competitive Examination 2026 (BPSC 71st CCE)",
+        "org": "BPSC"
+      },
+      {
+        "type": "exam_notif",
+        "id": "67ff0096-67b6-4ccc-95a8-c120b184de16",
+        "title": "BSSC 4th Graduate Level Combined Competitive Examination (BSSC CGL-4)",
+        "org": "BPSC"
+      },
+      {
+        "type": "exam_notif",
+        "id": "f6da4872-6f51-40de-8052-1f3b37849b0f",
+        "title": "Important Notice-cum-Examination Program: 33rd Bihar Judicial Services (Preliminary) Competitive Examination. (Advt. No. 12/2026)",
+        "org": "BPSC"
+      }
+    ]
+  },
+  {
+    "url": "https://uppbpb.gov.in",
+    "status": 0,
+    "reason": "This operation was aborted",
+    "usages": [
+      {
+        "type": "job_apply",
+        "id": "5a38fffd-f47b-48b5-8272-a0364a39c1c2",
+        "title": "उत्तर प्रदेश पुलिस मोटर परिवहन शाखा में मुख्य आरक्षी मोटर परिवहन की भर्ती/चयन वर्ष 2020 से 2025 के चयन परिणाम देखने हेतु विज्ञप्ति",
+        "org": "UPPRPB"
+      },
+      {
+        "type": "job_notif",
+        "id": "5a38fffd-f47b-48b5-8272-a0364a39c1c2",
+        "title": "उत्तर प्रदेश पुलिस मोटर परिवहन शाखा में मुख्य आरक्षी मोटर परिवहन की भर्ती/चयन वर्ष 2020 से 2025 के चयन परिणाम देखने हेतु विज्ञप्ति",
+        "org": "UPPRPB"
+      },
+      {
+        "type": "job_apply",
+        "id": "e20cf409-edf9-48e8-a3d3-8c10831aa50a",
+        "title": "उत्तर प्रदेश पुलिस में आरक्षी नागरिक पुलिस एवं समकक्ष पदों पर सीधी भर्ती-2025 के अन्तर्गत अभिलेखों की संवीक्षा एवं शारीरिक मानक परीक्षण (डी०वी०/पी०एस०टी०) हेतु प्रवेश पत्र एवं आवेदन पत्र के सम्बन्ध में सूचना |",
+        "org": "UPPRPB"
+      },
+      {
+        "type": "job_notif",
+        "id": "e20cf409-edf9-48e8-a3d3-8c10831aa50a",
+        "title": "उत्तर प्रदेश पुलिस में आरक्षी नागरिक पुलिस एवं समकक्ष पदों पर सीधी भर्ती-2025 के अन्तर्गत अभिलेखों की संवीक्षा एवं शारीरिक मानक परीक्षण (डी०वी०/पी०एस०टी०) हेतु प्रवेश पत्र एवं आवेदन पत्र के सम्बन्ध में सूचना |",
+        "org": "UPPRPB"
+      },
+      {
+        "type": "job_apply",
+        "id": "94336c46-8f5a-448f-8ae8-6778622dbf98",
+        "title": "उत्तर प्रदेश पुलिस में आरक्षी नागरिक पुलिस एवं समकक्ष पदों पर सीधी भर्ती-2025 के अन्तर्गत अभिलेखों की संवीक्षा एवं शारीरिक मानक परीक्षण (डी०वी०/पी०एस०टी०) की प्रक्रिया एवं प्रवेश पत्र की तिथि के सम्बन्ध में सूचना |",
+        "org": "UPPRPB"
+      },
+      {
+        "type": "job_notif",
+        "id": "94336c46-8f5a-448f-8ae8-6778622dbf98",
+        "title": "उत्तर प्रदेश पुलिस में आरक्षी नागरिक पुलिस एवं समकक्ष पदों पर सीधी भर्ती-2025 के अन्तर्गत अभिलेखों की संवीक्षा एवं शारीरिक मानक परीक्षण (डी०वी०/पी०एस०टी०) की प्रक्रिया एवं प्रवेश पत्र की तिथि के सम्बन्ध में सूचना |",
+        "org": "UPPRPB"
+      },
+      {
+        "type": "job_apply",
+        "id": "9b1b1124-539e-4362-885e-0ed49cd21042",
+        "title": "Uttar Pradesh Police Civil Police Constable & PAC Direct Recruitment 2026",
+        "org": "UPPRPB"
+      },
+      {
+        "type": "job_notif",
+        "id": "9b1b1124-539e-4362-885e-0ed49cd21042",
+        "title": "Uttar Pradesh Police Civil Police Constable & PAC Direct Recruitment 2026",
+        "org": "UPPRPB"
+      }
+    ]
+  },
+  {
+    "url": "https://afcat.cdac.in",
+    "status": 503,
+    "usages": [
+      {
+        "type": "job_apply",
+        "id": "de08c1b6-f30a-472d-8d69-03f3afee64e7",
+        "title": "Air Force Common Admission Test (AFCAT - 02/2026) for Flying & Ground Duty Branches",
+        "org": "IAF"
+      },
+      {
+        "type": "exam_web",
+        "id": "e806f007-e784-436a-a3cf-59de7d4a3d38",
+        "title": "Air Force Common Admission Test (AFCAT - 02/2026) for Flying & Ground Duty Branches",
+        "org": "IAF"
+      },
+      {
+        "type": "exam_web",
+        "id": "89e7e2bc-da14-412e-83d1-92fc9cd12c07",
+        "title": "Air Force Common Admission Test (AFCAT - 02/2026) for Flying & Ground Duty Branches",
+        "org": "IAF"
+      }
+    ]
+  },
+  {
+    "url": "https://careerindianairforce.cdac.in",
+    "status": 0,
+    "reason": "This operation was aborted",
+    "usages": [
+      {
+        "type": "job_notif",
+        "id": "de08c1b6-f30a-472d-8d69-03f3afee64e7",
+        "title": "Air Force Common Admission Test (AFCAT - 02/2026) for Flying & Ground Duty Branches",
+        "org": "IAF"
+      },
+      {
+        "type": "exam_notif",
+        "id": "e806f007-e784-436a-a3cf-59de7d4a3d38",
+        "title": "Air Force Common Admission Test (AFCAT - 02/2026) for Flying & Ground Duty Branches",
+        "org": "IAF"
+      },
+      {
+        "type": "exam_notif",
+        "id": "89e7e2bc-da14-412e-83d1-92fc9cd12c07",
+        "title": "Air Force Common Admission Test (AFCAT - 02/2026) for Flying & Ground Duty Branches",
+        "org": "IAF"
+      }
+    ]
+  },
+  {
+    "url": "https://onlinebssc.com",
+    "status": 0,
+    "reason": "fetch failed",
+    "usages": [
+      {
+        "type": "job_apply",
+        "id": "5fdf46d9-0278-4942-bf64-f316660ce6a7",
+        "title": "2nd Inter Level Combined Competitive Examination 2026 for Panchayat Secretary & Revenue Staff",
+        "org": "BSSC"
+      },
+      {
+        "type": "exam_web",
+        "id": "6e0ea347-5e6f-40b8-bb5b-b3bb5328947a",
+        "title": "2nd Inter Level Combined Competitive Examination 2026 for Panchayat Secretary & Revenue Staff",
+        "org": "BSSC"
+      }
+    ]
+  },
+  {
+    "url": "https://bpssc.bih.nic.in",
+    "status": 0,
+    "reason": "This operation was aborted",
+    "usages": [
+      {
+        "type": "job_apply",
+        "id": "ea896667-fd06-44ad-b873-2492b18bcb39",
+        "title": "Bihar Police Police Sub-Inspector (Daroga) & Prohibition Sub-Inspector Recruitment 2026",
+        "org": "BPSSC"
+      },
+      {
+        "type": "job_notif",
+        "id": "ea896667-fd06-44ad-b873-2492b18bcb39",
+        "title": "Bihar Police Police Sub-Inspector (Daroga) & Prohibition Sub-Inspector Recruitment 2026",
+        "org": "BPSSC"
+      }
+    ]
+  },
+  {
+    "url": "https://main.sci.gov.in",
+    "status": 0,
+    "reason": "fetch failed",
+    "usages": [
+      {
+        "type": "job_apply",
+        "id": "b8ba99da-fe25-4779-828c-f0273f388e49",
+        "title": "Supreme Court of India Junior Court Assistant (JCA) Recruitment 2026",
+        "org": "SCI"
+      },
+      {
+        "type": "job_notif",
+        "id": "b8ba99da-fe25-4779-828c-f0273f388e49",
+        "title": "Supreme Court of India Junior Court Assistant (JCA) Recruitment 2026",
+        "org": "SCI"
+      },
+      {
+        "type": "job_apply",
+        "id": "b00c8add-7a41-4dc6-9a35-0017aac2c91b",
+        "title": "Listing Notices List of oral mentioning matters before Hon&#8217;ble Courts on 22.08.2026",
+        "org": "SCI"
+      },
+      {
+        "type": "job_notif",
+        "id": "b00c8add-7a41-4dc6-9a35-0017aac2c91b",
+        "title": "Listing Notices List of oral mentioning matters before Hon&#8217;ble Courts on 22.08.2026",
+        "org": "SCI"
+      },
+      {
+        "type": "job_apply",
+        "id": "39d50f5b-542f-4964-9066-33dd1f96ac49",
+        "title": "Listing Notices Advance List of Chamber Matters likely to be listed in the week commencing from 24.08.2026 to 25.08.2026",
+        "org": "SCI"
+      },
+      {
+        "type": "job_notif",
+        "id": "39d50f5b-542f-4964-9066-33dd1f96ac49",
+        "title": "Listing Notices Advance List of Chamber Matters likely to be listed in the week commencing from 24.08.2026 to 25.08.2026",
+        "org": "SCI"
+      },
+      {
+        "type": "job_apply",
+        "id": "d0675851-5e5a-4f61-9aa7-095cad1568dd",
+        "title": "Samadhan Samaroh 2026Notices &amp; CircularsLatest Updates Notice regarding revised details of learned Advocates who shall be part of Special Lok Adalat Benches for 22nd August, 2026",
+        "org": "SCI"
+      },
+      {
+        "type": "job_notif",
+        "id": "d0675851-5e5a-4f61-9aa7-095cad1568dd",
+        "title": "Samadhan Samaroh 2026Notices &amp; CircularsLatest Updates Notice regarding revised details of learned Advocates who shall be part of Special Lok Adalat Benches for 22nd August, 2026",
+        "org": "SCI"
+      },
+      {
+        "type": "job_apply",
+        "id": "1a797874-aa1e-4b0e-9fa3-9e8d29de84ee",
+        "title": "Listing Notices Notice regarding assembling of Benches in Court No. 7 and 16 on 21.08.2026(Friday).",
+        "org": "SCI"
+      },
+      {
+        "type": "job_notif",
+        "id": "1a797874-aa1e-4b0e-9fa3-9e8d29de84ee",
+        "title": "Listing Notices Notice regarding assembling of Benches in Court No. 7 and 16 on 21.08.2026(Friday).",
+        "org": "SCI"
+      },
+      {
+        "type": "job_apply",
+        "id": "652f3d34-65a0-40d5-9034-bc378c2dbe4c",
+        "title": "Practice and Procedure",
+        "org": "SCI"
+      },
+      {
+        "type": "job_notif",
+        "id": "652f3d34-65a0-40d5-9034-bc378c2dbe4c",
+        "title": "Practice and Procedure",
+        "org": "SCI"
+      },
+      {
+        "type": "job_apply",
+        "id": "8dc87f69-2569-4caf-8e16-6b220a84235d",
+        "title": "Notice regarding change in Court Nos.1, 2, 7, 15, 16 and 17 on 21.08.2026 (Friday)                     - 20 Aug, 2026",
+        "org": "SCI"
+      },
+      {
+        "type": "job_notif",
+        "id": "8dc87f69-2569-4caf-8e16-6b220a84235d",
+        "title": "Notice regarding change in Court Nos.1, 2, 7, 15, 16 and 17 on 21.08.2026 (Friday)                     - 20 Aug, 2026",
+        "org": "SCI"
+      },
+      {
+        "type": "job_apply",
+        "id": "d6dec5d8-3b8e-4cba-8b92-b63b0e91e85f",
+        "title": "List of oral mentioning matters before Hon&#8217;ble Courts on 21.08.2026.                     - 20 Aug, 2026",
+        "org": "SCI"
+      },
+      {
+        "type": "job_notif",
+        "id": "d6dec5d8-3b8e-4cba-8b92-b63b0e91e85f",
+        "title": "List of oral mentioning matters before Hon&#8217;ble Courts on 21.08.2026.                     - 20 Aug, 2026",
+        "org": "SCI"
+      },
+      {
+        "type": "job_apply",
+        "id": "9963f875-64e5-4def-b4de-91de8c5f2693",
+        "title": "Listing Notices Notice regarding sitting of Special Lok Adalat at 2.00 PM instead of 1.00 PM on 22.08.2026 (Saturday)",
+        "org": "SCI"
+      },
+      {
+        "type": "job_notif",
+        "id": "9963f875-64e5-4def-b4de-91de8c5f2693",
+        "title": "Listing Notices Notice regarding sitting of Special Lok Adalat at 2.00 PM instead of 1.00 PM on 22.08.2026 (Saturday)",
+        "org": "SCI"
+      },
+      {
+        "type": "job_apply",
+        "id": "1302facc-1dd0-4ff9-8fe5-629777038877",
+        "title": "Latest Updates Helpline numbers of Court Masters and Moderators for 21.08.2026",
+        "org": "SCI"
+      },
+      {
+        "type": "job_notif",
+        "id": "1302facc-1dd0-4ff9-8fe5-629777038877",
+        "title": "Latest Updates Helpline numbers of Court Masters and Moderators for 21.08.2026",
+        "org": "SCI"
+      },
+      {
+        "type": "job_apply",
+        "id": "e64c7093-578d-4653-9de2-dc59a7c0076e",
+        "title": "Notice regarding assembling of Benches in Court No. 7 and 16 on 21.08.2026(Friday).                     - 21 Aug, 2026",
+        "org": "SCI"
+      },
+      {
+        "type": "job_notif",
+        "id": "e64c7093-578d-4653-9de2-dc59a7c0076e",
+        "title": "Notice regarding assembling of Benches in Court No. 7 and 16 on 21.08.2026(Friday).                     - 21 Aug, 2026",
+        "org": "SCI"
+      },
+      {
+        "type": "job_apply",
+        "id": "c159eb28-f0dc-4af8-a4d8-5178c848edee",
+        "title": "Notice regarding cancellation of Bench of left-over matters in Court No. 14 on 20.08.2026 (Thursday)                     - 20 Aug, 2026",
+        "org": "SCI"
+      },
+      {
+        "type": "job_notif",
+        "id": "c159eb28-f0dc-4af8-a4d8-5178c848edee",
+        "title": "Notice regarding cancellation of Bench of left-over matters in Court No. 14 on 20.08.2026 (Thursday)                     - 20 Aug, 2026",
+        "org": "SCI"
+      },
+      {
+        "type": "job_apply",
+        "id": "36a2e2a0-a7be-4196-9def-addb92124585",
+        "title": "List of oral mentioning matters before Hon&#8217;ble Courts on 20.08.2026.                     - 19 Aug, 2026",
+        "org": "SCI"
+      },
+      {
+        "type": "job_notif",
+        "id": "36a2e2a0-a7be-4196-9def-addb92124585",
+        "title": "List of oral mentioning matters before Hon&#8217;ble Courts on 20.08.2026.                     - 19 Aug, 2026",
+        "org": "SCI"
+      },
+      {
+        "type": "exam_web",
+        "id": "a445a861-cfda-427d-a5e7-5b1df42e614c",
+        "title": "Samadhan Samaroh 2026Notices &amp; CircularsLatest Updates Notice regarding revised details of learned Advocates who shall be part of Special Lok Adalat Benches for 22nd August, 2026",
+        "org": "SCI"
+      },
+      {
+        "type": "exam_notif",
+        "id": "a445a861-cfda-427d-a5e7-5b1df42e614c",
+        "title": "Samadhan Samaroh 2026Notices &amp; CircularsLatest Updates Notice regarding revised details of learned Advocates who shall be part of Special Lok Adalat Benches for 22nd August, 2026",
+        "org": "SCI"
+      },
+      {
+        "type": "exam_web",
+        "id": "212cfb4a-fc6d-4dca-8dd9-c17780f226d0",
+        "title": "Samadhan Samaroh 2026Notices &amp; CircularsLatest Updates                                Notice regarding revised details of Bench Composition &#8211; Samadhan Samaroh for 21.08.2026, 22.08.2026 and 23.08.2026",
+        "org": "SCI"
+      },
+      {
+        "type": "exam_notif",
+        "id": "212cfb4a-fc6d-4dca-8dd9-c17780f226d0",
+        "title": "Samadhan Samaroh 2026Notices &amp; CircularsLatest Updates                                Notice regarding revised details of Bench Composition &#8211; Samadhan Samaroh for 21.08.2026, 22.08.2026 and 23.08.2026",
+        "org": "SCI"
+      },
+      {
+        "type": "exam_web",
+        "id": "2aa68956-c33e-41d2-878a-39e5dc249df5",
+        "title": "Latest Updates                                Helpline numbers of Court Masters and Moderators for 21.08.2026",
+        "org": "SCI"
+      },
+      {
+        "type": "exam_notif",
+        "id": "2aa68956-c33e-41d2-878a-39e5dc249df5",
+        "title": "Latest Updates                                Helpline numbers of Court Masters and Moderators for 21.08.2026",
+        "org": "SCI"
+      }
+    ]
+  },
+  {
+    "url": "https://rsmssb.rajasthan.gov.in",
+    "status": 0,
+    "reason": "fetch failed",
+    "usages": [
+      {
+        "type": "job_notif",
+        "id": "945b0fbf-85bd-4772-b5b1-7a19e7f30112",
+        "title": "Rajasthan CET Patwari, Village Development Officer (VDO) & Junior Assistant Combined Recruitment 2026",
+        "org": "RSMSSB"
+      }
+    ]
+  },
+  {
+    "url": "https://upsssc.gov.in",
+    "status": 0,
+    "reason": "fetch failed",
+    "usages": [
+      {
+        "type": "job_apply",
+        "id": "ae7651cb-f7f0-4766-b295-b31c202170fc",
+        "title": "UPSSSC Rajasva Lekhpal, Gram Panchayat Adhikari (VDO) & Junior Assistant Combined Recruitment 2026",
+        "org": "UPSSSC"
+      },
+      {
+        "type": "job_notif",
+        "id": "ae7651cb-f7f0-4766-b295-b31c202170fc",
+        "title": "UPSSSC Rajasva Lekhpal, Gram Panchayat Adhikari (VDO) & Junior Assistant Combined Recruitment 2026",
+        "org": "UPSSSC"
+      }
+    ]
+  },
+  {
+    "url": "https://districts.ecourts.gov.in",
+    "status": 0,
+    "reason": "This operation was aborted",
+    "usages": [
+      {
+        "type": "job_apply",
+        "id": "50f96017-a7c0-4c93-9de4-b136a72393bc",
+        "title": "All India District & Sessions Courts Stenographers, Clerks & Process Servers Recruitment 2026",
+        "org": "eCourts"
+      },
+      {
+        "type": "job_notif",
+        "id": "50f96017-a7c0-4c93-9de4-b136a72393bc",
+        "title": "All India District & Sessions Courts Stenographers, Clerks & Process Servers Recruitment 2026",
+        "org": "eCourts"
+      }
+    ]
+  }
+]

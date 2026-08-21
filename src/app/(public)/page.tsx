@@ -6,14 +6,25 @@ import { getPublicExams } from "@/modules/exams/service";
 import { getPublicAdmitCards } from "@/modules/admit-cards/service";
 import { getPublicResults } from "@/modules/results/service";
 import { searchGlobal } from "@/modules/search/service";
+import {
+  getTodaysUpdates,
+  getComingSoonItems,
+  getAnswerKeys,
+  getOfficialSyllabi,
+} from "@/modules/home/dynamic-sections";
 import { BreakingTicker } from "@/modules/bulletins/components/breaking-ticker";
 import { BulletinCard } from "@/modules/bulletins/components/bulletin-card";
-import { JobCard } from "@/modules/jobs/components/job-card";
-import { ExamCard } from "@/modules/exams/components/exam-card";
+import { JobListTable } from "@/modules/jobs/components/job-list-table";
+import { ExamListTable } from "@/modules/exams/components/exam-list-table";
 import { HomeHero } from "@/components/home/home-hero";
+import { TodaysUpdatesSection } from "@/components/home/todays-updates-section";
+import { ComingSoonSection } from "@/components/home/coming-soon-section";
+import { AnswerKeySection } from "@/components/home/answer-key-section";
+import { SyllabusSection } from "@/components/home/syllabus-section";
 import { SearchBar } from "@/components/shared/search-bar";
 import { Button } from "@/components/ui/button";
 import { formatDate } from "@/lib/utils";
+import { Badge } from "@/components/ui/badge";
 import {
   Briefcase,
   Calendar,
@@ -35,6 +46,7 @@ import {
   FileText,
   Download,
   FileCheck2,
+  CreditCard,
 } from "lucide-react";
 
 interface HomePageProps {
@@ -46,36 +58,6 @@ interface HomePageProps {
   }>;
 }
 
-const verifiedSourcesDirectory = [
-  { name: "Union Public Service Commission", acronym: "UPSC", type: "Central Commission", url: "https://upsc.gov.in" },
-  { name: "Staff Selection Commission", acronym: "SSC", type: "Central Recruitment", url: "https://ssc.gov.in" },
-  { name: "Railway Recruitment Boards", acronym: "RRB", type: "Ministry of Railways", url: "https://indianrailways.gov.in" },
-  { name: "Institute of Banking Personnel Selection", acronym: "IBPS", type: "Autonomous Banking", url: "https://ibps.in" },
-  { name: "High Court of Judicature at Patna", acronym: "PHC", type: "State Judiciary", url: "https://patnahighcourt.gov.in" },
-  { name: "High Court of Judicature at Allahabad", acronym: "AHC", type: "State Judiciary", url: "https://www.allahabadhighcourt.in" },
-  { name: "Bihar Staff Selection Commission", acronym: "BSSC", type: "State Commission", url: "https://bssc.bihar.gov.in" },
-  { name: "UP Subordinate Services Commission", acronym: "UPSSSC", type: "State Commission", url: "https://upsssc.gov.in" },
-  { name: "National Testing Agency", acronym: "NTA", type: "Autonomous Testing", url: "https://recruitment.nta.nic.in" },
-  { name: "Food Corporation of India", acronym: "FCI", type: "Central PSU", url: "https://fci.gov.in" },
-  { name: "Kendriya Vidyalaya Sangathan", acronym: "KVS", type: "Education Autonomous", url: "https://kvsangathan.nic.in" },
-  { name: "Defence Research & Development Org", acronym: "DRDO", type: "R&D Defence", url: "https://drdo.gov.in" },
-];
-
-const stateQuickFilters = [
-  { label: "All India", href: "/jobs" },
-  { label: "Bihar", href: "/jobs?state=BR" },
-  { label: "Uttar Pradesh", href: "/jobs?state=UP" },
-  { label: "Rajasthan", href: "/jobs?state=RJ" },
-  { label: "Madhya Pradesh", href: "/jobs?state=MP" },
-  { label: "Delhi", href: "/jobs?state=DL" },
-  { label: "Central Govt", href: "/jobs?type=central" },
-  { label: "Defence & Police", href: "/jobs?category=defence-police" },
-  { label: "Banking", href: "/jobs?category=banking-finance" },
-  { label: "Railways", href: "/jobs?category=railways" },
-  { label: "Teaching", href: "/jobs?category=teaching-research" },
-  { label: "Judiciary", href: "/jobs?category=judiciary-law" },
-];
-
 export default async function HomePage({ searchParams }: HomePageProps) {
   const params = await searchParams;
   const rawQuery = (params.search || params.q || params.query || "").trim();
@@ -86,7 +68,7 @@ export default async function HomePage({ searchParams }: HomePageProps) {
     ? await searchGlobal(rawQuery, { limitPerType: 12 })
     : null;
 
-  // Concurrent data fetching for homepage editorial sections
+  // Concurrent data fetching for homepage editorial and dynamic sections
   const [
     breakingBulletins,
     { bulletins: latestBulletins },
@@ -94,19 +76,27 @@ export default async function HomePage({ searchParams }: HomePageProps) {
     { exams: upcomingExams },
     { admitCards: latestAdmitCards },
     { results: latestResults },
+    todaysUpdates,
+    comingSoonItems,
+    answerKeys,
+    officialSyllabi,
   ] = await Promise.all([
     getBreakingBulletins(5),
-    getPublicBulletins({ limit: 4 }),
-    getPublicJobs({ limit: 6 }),
-    getPublicExams({ limit: 4 }),
-    getPublicAdmitCards({ limit: 4 }),
-    getPublicResults({ limit: 4 }),
+    getPublicBulletins({ limit: 7 }),
+    getPublicJobs({ limit: 8 }),
+    getPublicExams({ limit: 6 }),
+    getPublicAdmitCards({ limit: 7 }),
+    getPublicResults({ limit: 6 }),
+    getTodaysUpdates(),
+    getComingSoonItems(),
+    getAnswerKeys(),
+    getOfficialSyllabi(6),
   ]);
 
-  // Urgent closing jobs (application deadline within 10 days)
+  // Urgent closing jobs (application deadline within 10 days, max 7 items)
   const urgentClosingJobs = latestJobs
     .filter((j) => j.application_end_date && new Date(j.application_end_date).getTime() > Date.now())
-    .slice(0, 4);
+    .slice(0, 7);
 
   const buildTypeUrl = (type: string) => {
     const q = new URLSearchParams();
@@ -242,7 +232,7 @@ export default async function HomePage({ searchParams }: HomePageProps) {
             </div>
           )}
 
-          {/* Results: Jobs */}
+          {/* Results: Jobs (List View) */}
           {(currentType === "all" || currentType === "jobs") && searchResult.jobs.length > 0 && (
             <div className="space-y-3">
               <div className="section-saffron-bar flex items-center justify-between">
@@ -254,15 +244,11 @@ export default async function HomePage({ searchParams }: HomePageProps) {
                 </Link>
               </div>
 
-              <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
-                {searchResult.jobs.map((job) => (
-                  <JobCard key={job.id} job={job} />
-                ))}
-              </div>
+              <JobListTable jobs={searchResult.jobs as any} />
             </div>
           )}
 
-          {/* Results: Exams */}
+          {/* Results: Exams (List View) */}
           {(currentType === "all" || currentType === "exams") && searchResult.exams.length > 0 && (
             <div className="space-y-3 pt-4 border-t border-slate-200">
               <div className="section-saffron-bar flex items-center justify-between">
@@ -274,11 +260,7 @@ export default async function HomePage({ searchParams }: HomePageProps) {
                 </Link>
               </div>
 
-              <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
-                {searchResult.exams.map((exam) => (
-                  <ExamCard key={exam.id} exam={exam} />
-                ))}
-              </div>
+              <ExamListTable exams={searchResult.exams as any} />
             </div>
           )}
 
@@ -311,11 +293,11 @@ export default async function HomePage({ searchParams }: HomePageProps) {
         <section className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="grid grid-cols-1 gap-8 lg:grid-cols-12">
             {/* ----------------------------------------------------------------- */}
-            {/* LEFT MAIN EDITORIAL COLUMN (8 Cols) */}
+            {/* LEFT MAIN EDITORIAL COLUMN (8 Cols) - High-Density List Views */}
             {/* ----------------------------------------------------------------- */}
             <div className="lg:col-span-8 space-y-10">
-              {/* A. Latest Government Jobs Ledger */}
-              <div className="space-y-4">
+              {/* A. Latest Government Jobs Ledger (List View Table) */}
+              <div className="space-y-3">
                 <div className="section-saffron-bar flex items-center justify-between border-b border-slate-200 pb-2">
                   <div>
                     <h2 className="text-xl font-bold text-[#0F172A] font-heading">
@@ -334,15 +316,14 @@ export default async function HomePage({ searchParams }: HomePageProps) {
                   </Link>
                 </div>
 
-                <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-                  {latestJobs.map((job) => (
-                    <JobCard key={job.id} job={job} />
-                  ))}
-                </div>
+                <JobListTable jobs={latestJobs} />
               </div>
 
-              {/* B. Active Examinations & Notifications */}
-              <div className="space-y-4 pt-4 border-t border-slate-200">
+              {/* DYNAMIC SECTION: COMING SOON (List View Table) */}
+              <ComingSoonSection items={comingSoonItems} />
+
+              {/* B. Active Examinations & Schedules (List View Table) */}
+              <div className="space-y-3 pt-4 border-t border-slate-200">
                 <div className="section-navy-bar flex items-center justify-between border-b border-slate-200 pb-2">
                   <div>
                     <h2 className="text-xl font-bold text-[#0F172A] font-heading">
@@ -361,75 +342,14 @@ export default async function HomePage({ searchParams }: HomePageProps) {
                   </Link>
                 </div>
 
-                <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-                  {upcomingExams.map((exam) => (
-                    <ExamCard key={exam.id} exam={exam} />
-                  ))}
-                </div>
+                <ExamListTable exams={upcomingExams} />
               </div>
 
-              {/* C. Latest Admit Cards & Hall Tickets */}
-              <div className="space-y-4 pt-4 border-t border-slate-200">
-                <div className="section-saffron-bar flex items-center justify-between border-b border-slate-200 pb-2">
-                  <div>
-                    <h2 className="text-xl font-bold text-[#0F172A] font-heading">
-                      Latest Admit Cards &amp; Hall Tickets
-                    </h2>
-                    <p className="text-xs text-slate-500 mt-0.5">
-                      Direct official download links for examination hall tickets and call letters.
-                    </p>
-                  </div>
+              {/* DYNAMIC SECTION: ANSWER KEYS (List View Table) */}
+              <AnswerKeySection items={answerKeys} />
 
-                  <Link href="/admit-cards">
-                    <Button variant="outline" size="sm" className="h-7 text-xs font-bold text-[#013089] border-[#013089]/30">
-                      <span>View All Admit Cards</span>
-                      <ArrowRight className="h-3 w-3 ml-1" />
-                    </Button>
-                  </Link>
-                </div>
-
-                <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-                  {latestAdmitCards.map((ac) => (
-                    <div key={ac.id} className="rounded-xl border border-slate-200 bg-white p-4 shadow-xs space-y-3 flex flex-col justify-between">
-                      <div className="space-y-1.5">
-                        <div className="flex items-center justify-between gap-2">
-                          <span className="font-bold text-xs text-[#013089] bg-brand-50 px-2 py-0.5 rounded">
-                            {ac.organization?.acronym || ac.organization?.name || "Official Body"}
-                          </span>
-                          <span className="text-[10px] text-emerald-700 font-semibold bg-emerald-50 px-1.5 py-0.5 rounded border border-emerald-200">
-                            Available Now
-                          </span>
-                        </div>
-                        <Link href={`/exams/${ac.slug}`} className="block group">
-                          <h3 className="text-xs font-bold text-slate-900 group-hover:text-[#013089] line-clamp-2 leading-snug">
-                            {ac.title}
-                          </h3>
-                        </Link>
-                      </div>
-                      <div className="pt-2 border-t border-slate-100 flex items-center justify-between">
-                        <span className="text-[11px] text-slate-400">
-                          {ac.state_code || "National"}
-                        </span>
-                        {ac.admit_card_url && (
-                          <a
-                            href={ac.admit_card_url}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="inline-flex items-center gap-1 text-xs font-bold text-[#013089] hover:underline"
-                          >
-                            <Download className="h-3 w-3" />
-                            <span>Download Slip</span>
-                            <ExternalLink className="h-2.5 w-2.5" />
-                          </a>
-                        )}
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-
-              {/* D. Latest Results & Merit Lists */}
-              <div className="space-y-4 pt-4 border-t border-slate-200">
+              {/* C. Latest Results & Merit Lists (List View Table) */}
+              <div className="space-y-3 pt-4 border-t border-slate-200">
                 <div className="section-navy-bar flex items-center justify-between border-b border-slate-200 pb-2">
                   <div>
                     <h2 className="text-xl font-bold text-[#0F172A] font-heading">
@@ -448,181 +368,311 @@ export default async function HomePage({ searchParams }: HomePageProps) {
                   </Link>
                 </div>
 
-                <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-                  {latestResults.map((res) => (
-                    <div key={res.id} className="rounded-xl border border-slate-200 bg-white p-4 shadow-xs space-y-3 flex flex-col justify-between">
-                      <div className="space-y-1.5">
+                <div className="w-full rounded-xl border border-slate-200 bg-white shadow-2xs overflow-hidden">
+                  {/* Desktop & Tablet View (Fixed Width - No Horizontal Scroll) */}
+                  <div className="hidden sm:block">
+                    <table className="w-full text-left border-collapse table-fixed">
+                      <thead>
+                        <tr className="border-b border-slate-200 bg-slate-50/80 text-[11px] font-bold uppercase tracking-wider text-slate-600">
+                          <th className="py-2.5 px-3 w-[22%]">Organization</th>
+                          <th className="py-2.5 px-3 w-[46%]">Examination / Result Title</th>
+                          <th className="py-2.5 px-3 w-[14%]">Status</th>
+                          <th className="py-2.5 px-3 w-[18%] text-right">Gazette / Score</th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-slate-100 text-xs text-slate-800">
+                        {latestResults.map((res) => (
+                          <tr key={res.id} className="hover:bg-slate-50/80 transition-colors group">
+                            {/* Organization */}
+                            <td className="py-3 px-3 align-top">
+                              <div className="flex flex-col gap-0.5">
+                                <span className="font-bold text-[#013089] group-hover:underline truncate block">
+                                  {res.organization?.acronym || res.organization?.name || "Official Body"}
+                                </span>
+                                <span className="text-[10px] text-slate-500 truncate block">
+                                  {res.state_code || "National"}
+                                </span>
+                              </div>
+                            </td>
+
+                            {/* Result Title */}
+                            <td className="py-3 px-3 align-top">
+                              <Link
+                                href={`/jobs/${res.slug}`}
+                                className="font-bold text-slate-900 hover:text-[#013089] transition-colors leading-snug line-clamp-2 block"
+                                title={res.title}
+                              >
+                                {res.title}
+                              </Link>
+                            </td>
+
+                            {/* Status */}
+                            <td className="py-3 px-3 align-top">
+                              <span className="inline-flex items-center text-[10px] text-emerald-800 font-bold bg-emerald-50 px-1.5 py-0.2 rounded border border-emerald-200">
+                                Declared
+                              </span>
+                            </td>
+
+                            {/* Action */}
+                            <td className="py-3 px-3 align-top text-right whitespace-nowrap">
+                              {res.result_url ? (
+                                <a
+                                  href={res.result_url}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  className="inline-flex items-center justify-center font-bold rounded-md h-7 px-2.5 text-[11px] bg-emerald-700 hover:bg-emerald-800 text-white transition-all shadow-2xs gap-1"
+                                >
+                                  <FileCheck2 className="h-3 w-3" />
+                                  <span>Gazette</span>
+                                  <ExternalLink className="h-2.5 w-2.5" />
+                                </a>
+                              ) : (
+                                <Link
+                                  href={`/jobs/${res.slug}`}
+                                  className="inline-flex items-center gap-1 text-[11px] font-bold text-[#013089] hover:underline"
+                                >
+                                  <span>Details</span>
+                                  <ArrowRight className="h-3 w-3" />
+                                </Link>
+                              )}
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+
+                  {/* Mobile Stacked List View */}
+                  <div className="sm:hidden divide-y divide-slate-100">
+                    {latestResults.map((res) => (
+                      <div key={res.id} className="p-3 space-y-2 hover:bg-slate-50/70 transition-colors">
                         <div className="flex items-center justify-between gap-2">
-                          <span className="font-bold text-xs text-[#013089] bg-brand-50 px-2 py-0.5 rounded">
-                            {res.organization?.acronym || res.organization?.name || "Official Body"}
+                          <span className="font-bold text-[11px] text-[#013089] bg-brand-50 px-1.5 py-0.5 rounded border border-brand-100 truncate">
+                            {res.organization?.acronym || "Official"}
                           </span>
-                          <span className="text-[10px] text-emerald-700 font-semibold bg-emerald-50 px-1.5 py-0.5 rounded border border-emerald-200">
+                          <span className="text-[10px] font-bold text-emerald-700 bg-emerald-50 px-1.5 py-0.2 rounded border border-emerald-200">
                             Declared
                           </span>
                         </div>
-                        <Link href={`/jobs/${res.slug}`} className="block group">
-                          <h3 className="text-xs font-bold text-slate-900 group-hover:text-[#013089] line-clamp-2 leading-snug">
-                            {res.title}
-                          </h3>
+
+                        <Link
+                          href={`/jobs/${res.slug}`}
+                          className="block font-bold text-xs text-slate-900 hover:text-[#013089] transition-colors leading-snug line-clamp-2"
+                        >
+                          {res.title}
                         </Link>
-                      </div>
-                      <div className="pt-2 border-t border-slate-100 flex items-center justify-between">
-                        <span className="text-[11px] text-slate-400">
-                          {res.state_code || "National"}
-                        </span>
-                        {res.result_url && (
-                          <a
-                            href={res.result_url}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="inline-flex items-center gap-1 text-xs font-bold text-[#013089] hover:underline"
-                          >
-                            <FileCheck2 className="h-3 w-3" />
-                            <span>View Gazette</span>
-                            <ExternalLink className="h-2.5 w-2.5" />
-                          </a>
-                        )}
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
 
-              {/* E. Verified Official Sources Directory */}
-              <div className="space-y-3 pt-4 border-t border-slate-200">
-                <div className="flex items-center justify-between border-b border-slate-200 pb-2">
-                  <div className="flex items-center gap-2">
-                    <CheckCircle2 className="h-4 w-4 text-emerald-700" />
-                    <h3 className="text-base font-bold text-[#0F172A] font-heading">
-                      Verified Organizations &amp; Commissions
-                    </h3>
-                  </div>
-                  <Link href="/directory">
-                    <Button variant="outline" size="sm" className="h-6 px-2 text-[11px] font-bold text-[#013089]">
-                      <span>Full Directory</span>
-                      <ArrowRight className="h-3 w-3 ml-1" />
-                    </Button>
-                  </Link>
-                </div>
-
-                <div className="overflow-x-auto rounded-xs border border-slate-200 bg-white">
-                  <table className="w-full text-left text-xs gazette-table">
-                    <thead className="bg-slate-100 text-slate-700 font-bold border-b border-slate-200 text-[11px]">
-                      <tr>
-                        <th className="p-2.5 pl-3">Organization</th>
-                        <th className="p-2.5">Category</th>
-                        <th className="p-2.5">Official Portal</th>
-                      </tr>
-                    </thead>
-                    <tbody className="divide-y divide-slate-100">
-                      {verifiedSourcesDirectory.map((src, idx) => (
-                        <tr key={idx}>
-                          <td className="p-2.5 pl-3 font-semibold text-slate-900">
-                            {src.name} <span className="text-[10px] font-bold text-[#013089] font-mono">({src.acronym})</span>
-                          </td>
-                          <td className="p-2.5 text-slate-600">{src.type}</td>
-                          <td className="p-2.5">
+                        <div className="pt-1 border-t border-slate-100 flex justify-end">
+                          {res.result_url ? (
                             <a
-                              href={src.url}
+                              href={res.result_url}
                               target="_blank"
                               rel="noopener noreferrer"
-                              className="inline-flex items-center gap-1 text-[11px] font-semibold text-[#013089] hover:underline"
+                              className="inline-flex items-center gap-1 font-bold text-xs text-emerald-700 hover:underline"
                             >
-                              <span>Official Site</span>
-                              <ExternalLink className="h-3 w-3 text-slate-400" />
+                              <FileCheck2 className="h-3 w-3" />
+                              <span>View Gazette</span>
+                              <ExternalLink className="h-2.5 w-2.5" />
                             </a>
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
+                          ) : (
+                            <Link
+                              href={`/jobs/${res.slug}`}
+                              className="inline-flex items-center gap-1 font-bold text-xs text-[#013089] hover:underline"
+                            >
+                              <span>View Details</span>
+                              <ArrowRight className="h-2.5 w-2.5" />
+                            </Link>
+                          )}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
                 </div>
               </div>
+
+              {/* DYNAMIC SECTION: SYLLABUS (List View Table) */}
+              <SyllabusSection items={officialSyllabi} />
             </div>
 
             {/* ----------------------------------------------------------------- */}
-            {/* RIGHT SIDEBAR (4 Cols) */}
+            {/* RIGHT SIDEBAR (4 Cols) - All sections max 7 single-line links */}
             {/* ----------------------------------------------------------------- */}
-            <div className="lg:col-span-4 space-y-6">
-              {/* Widget 1: Urgent Deadlines / Closing Soon */}
-              <div className="rounded-xs border border-slate-200 bg-white p-4 space-y-3 shadow-xs">
+            <div className="lg:col-span-4 space-y-5">
+              {/* Widget 1: TODAY'S UPDATES (Max 7 single-line links) */}
+              <TodaysUpdatesSection items={todaysUpdates} />
+
+              {/* Widget 2: LATEST ADMIT CARDS & HALL TICKETS (Max 7 single-line links) */}
+              <div className="rounded-xl border border-slate-200 bg-white p-3.5 space-y-2.5 shadow-2xs">
                 <div className="flex items-center justify-between border-b border-slate-100 pb-2">
-                  <div className="flex items-center gap-1.5 font-bold text-sm text-slate-900">
-                    <Clock className="h-4 w-4 text-[#FE8D01]" />
-                    <span>Closing Soon (Next 10 Days)</span>
+                  <div className="flex items-center gap-1.5">
+                    <CreditCard className="h-4 w-4 text-[#013089]" />
+                    <h3 className="text-xs sm:text-sm font-bold text-slate-900 font-heading">
+                      Admit Cards &amp; Hall Tickets
+                    </h3>
                   </div>
-                  <span className="rounded-xs bg-amber-50 text-amber-900 border border-amber-200 px-1.5 py-0.2 text-[10px] font-bold">
-                    Urgent
-                  </span>
+                  <Link
+                    href="/admit-cards"
+                    className="text-[11px] font-bold text-[#013089] hover:underline inline-flex items-center gap-0.5"
+                  >
+                    <span>View All</span>
+                    <ChevronRight className="h-3 w-3" />
+                  </Link>
                 </div>
 
-                <div className="space-y-2.5 divide-y divide-slate-100">
-                  {urgentClosingJobs.length > 0 ? (
-                    urgentClosingJobs.map((job) => (
-                      <div key={job.id} className="pt-2 first:pt-0 space-y-1">
-                        <Link href={`/jobs/${job.slug}`} className="block group">
-                          <h4 className="text-xs font-bold text-slate-900 group-hover:text-[#013089] leading-snug line-clamp-2">
-                            {job.title}
-                          </h4>
-                        </Link>
-                        <div className="flex items-center justify-between text-[11px]">
-                          <span className="text-slate-500 font-medium">
-                            {job.organization?.acronym || "Govt"}
-                          </span>
-                          <span className="font-bold text-amber-700">
-                            Last Date: {formatDate(job.application_end_date)}
-                          </span>
+                <div className="space-y-1 divide-y divide-slate-100">
+                  {latestAdmitCards.length > 0 ? (
+                    latestAdmitCards.slice(0, 7).map((ac) => (
+                      <div
+                        key={ac.id}
+                        className="pt-1.5 first:pt-0 flex items-center justify-between gap-2 hover:bg-slate-50/80 rounded px-1 -mx-1 transition-colors"
+                      >
+                        <div className="flex items-center gap-1.5 min-w-0 flex-1">
+                          <Badge
+                            variant="brand"
+                            className="text-[9px] font-bold py-0 px-1.5 shrink-0 bg-[#013089] text-white"
+                          >
+                            {ac.organization?.acronym || "EXAM"}
+                          </Badge>
+                          <Link
+                            href={`/exams/${ac.slug}`}
+                            className="text-xs font-semibold text-slate-900 hover:text-[#013089] transition-colors truncate block"
+                            title={ac.title}
+                          >
+                            {ac.title}
+                          </Link>
                         </div>
+
+                        {ac.admit_card_url ? (
+                          <a
+                            href={ac.admit_card_url}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="inline-flex items-center gap-0.5 text-[10px] font-bold text-[#013089] hover:underline shrink-0 whitespace-nowrap bg-blue-50 px-1.5 py-0.5 rounded"
+                          >
+                            <span>Download</span>
+                            <Download className="h-2.5 w-2.5" />
+                          </a>
+                        ) : (
+                          <span className="text-[10px] text-slate-400 shrink-0 whitespace-nowrap">
+                            {ac.state_code || "National"}
+                          </span>
+                        )}
                       </div>
                     ))
                   ) : (
-                    <p className="text-xs text-slate-500 py-2">
+                    <p className="text-xs text-slate-500 py-1.5">
+                      No new admit cards released today.
+                    </p>
+                  )}
+                </div>
+              </div>
+
+              {/* Widget 3: Urgent Deadlines / Closing Soon (Max 7 single-line links) */}
+              <div className="rounded-xl border border-slate-200 bg-white p-3.5 space-y-2.5 shadow-2xs">
+                <div className="flex items-center justify-between border-b border-slate-100 pb-2">
+                  <div className="flex items-center gap-1.5">
+                    <Clock className="h-4 w-4 text-[#FE8D01]" />
+                    <h3 className="text-xs sm:text-sm font-bold text-slate-900 font-heading">
+                      Closing Soon (Next 10 Days)
+                    </h3>
+                  </div>
+                  <Link
+                    href="/jobs"
+                    className="text-[11px] font-bold text-[#013089] hover:underline inline-flex items-center gap-0.5"
+                  >
+                    <span>View All</span>
+                    <ChevronRight className="h-3 w-3" />
+                  </Link>
+                </div>
+
+                <div className="space-y-1 divide-y divide-slate-100">
+                  {urgentClosingJobs.length > 0 ? (
+                    urgentClosingJobs.slice(0, 7).map((job) => (
+                      <div
+                        key={job.id}
+                        className="pt-1.5 first:pt-0 flex items-center justify-between gap-2 hover:bg-slate-50/80 rounded px-1 -mx-1 transition-colors"
+                      >
+                        <div className="flex items-center gap-1.5 min-w-0 flex-1">
+                          <Badge
+                            variant="secondary"
+                            className="text-[9px] font-bold py-0 px-1.5 shrink-0 text-slate-700 bg-slate-100"
+                          >
+                            {job.organization?.acronym || "GOVT"}
+                          </Badge>
+                          <Link
+                            href={`/jobs/${job.slug}`}
+                            className="text-xs font-semibold text-slate-900 hover:text-[#013089] transition-colors truncate block"
+                            title={job.title}
+                          >
+                            {job.title}
+                          </Link>
+                        </div>
+                        <span className="text-[10px] font-bold text-amber-700 shrink-0 whitespace-nowrap">
+                          {formatDate(job.application_end_date)}
+                        </span>
+                      </div>
+                    ))
+                  ) : (
+                    <p className="text-xs text-slate-500 py-1.5">
                       No recruitment deadlines closing in the next 10 days.
                     </p>
                   )}
                 </div>
-
-                <Link href="/jobs" className="block pt-1">
-                  <Button variant="outline" size="sm" className="w-full text-xs font-bold justify-center">
-                    <span>Browse All Active Openings</span>
-                  </Button>
-                </Link>
               </div>
 
-              {/* Widget 2: Employment News & Student Advisories */}
-              <div className="rounded-xs border border-slate-200 bg-white p-4 space-y-3 shadow-xs">
+              {/* Widget 4: Rozgar Samachar & Advisories (Max 7 single-line links) */}
+              <div className="rounded-xl border border-slate-200 bg-white p-3.5 space-y-2.5 shadow-2xs">
                 <div className="flex items-center justify-between border-b border-slate-100 pb-2">
-                  <div className="flex items-center gap-1.5 font-bold text-sm text-slate-900">
+                  <div className="flex items-center gap-1.5">
                     <Newspaper className="h-4 w-4 text-[#013089]" />
-                    <span>Rozgar Samachar &amp; Advisories</span>
+                    <h3 className="text-xs sm:text-sm font-bold text-slate-900 font-heading">
+                      Rozgar Samachar &amp; Advisories
+                    </h3>
                   </div>
-                  <Link href="/news" className="text-[11px] font-bold text-[#013089] hover:underline">
-                    View All
+                  <Link
+                    href="/news"
+                    className="text-[11px] font-bold text-[#013089] hover:underline inline-flex items-center gap-0.5"
+                  >
+                    <span>View All</span>
+                    <ChevronRight className="h-3 w-3" />
                   </Link>
                 </div>
 
-                <div className="space-y-3 divide-y divide-slate-100">
-                  {latestBulletins.map((bulletin) => (
-                    <div key={bulletin.id} className="pt-2.5 first:pt-0 space-y-1">
-                      <div className="flex items-center justify-between text-[10px] text-slate-400 font-mono">
-                        <span className="font-semibold text-slate-700">{bulletin.source_name}</span>
-                        <span>{formatDate(bulletin.published_at)}</span>
-                      </div>
-                      <Link href={`/news/${bulletin.slug}`} className="block group">
-                        <h4 className="text-xs font-bold text-slate-900 group-hover:text-[#013089] leading-snug line-clamp-2">
+                <div className="space-y-1 divide-y divide-slate-100">
+                  {latestBulletins.slice(0, 7).map((bulletin) => (
+                    <div
+                      key={bulletin.id}
+                      className="pt-1.5 first:pt-0 flex items-center justify-between gap-2 hover:bg-slate-50/80 rounded px-1 -mx-1 transition-colors"
+                    >
+                      <div className="flex items-center gap-1.5 min-w-0 flex-1">
+                        <Badge
+                          variant="brand"
+                          className="text-[9px] font-bold py-0 px-1.5 shrink-0 bg-rose-600 text-white"
+                        >
+                          {bulletin.source_name
+                            ? bulletin.source_name.length > 8
+                              ? bulletin.source_name.slice(0, 8)
+                              : bulletin.source_name
+                            : "NEWS"}
+                        </Badge>
+                        <Link
+                          href={`/news/${bulletin.slug}`}
+                          className="text-xs font-semibold text-slate-900 hover:text-[#013089] transition-colors truncate block"
+                          title={bulletin.title}
+                        >
                           {bulletin.title}
-                        </h4>
-                      </Link>
-                      <p className="text-[11px] text-slate-600 line-clamp-2 leading-relaxed">
-                        {bulletin.summary}
-                      </p>
+                        </Link>
+                      </div>
+                      <span className="text-[10px] text-slate-400 font-medium shrink-0 whitespace-nowrap">
+                        {formatDate(bulletin.published_at)}
+                      </span>
                     </div>
                   ))}
                 </div>
               </div>
 
-              {/* Widget 3: Statutory Citizen Transparency Protocol */}
-              <div className="rounded-xs border border-slate-200 bg-slate-50 p-4 space-y-2 text-xs">
+              {/* Widget 5: Statutory Citizen Transparency Protocol */}
+              <div className="rounded-xl border border-slate-200 bg-slate-50 p-3.5 space-y-1.5 text-xs">
                 <div className="flex items-center gap-1.5 font-bold text-slate-800">
                   <ShieldAlert className="h-4 w-4 text-[#FE8D01]" />
                   <span>Statutory Notice &amp; Cross-Check</span>

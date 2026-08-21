@@ -57,7 +57,7 @@ async function runDeepValidation() {
   const { data: sampleBulletin } = await supabase.from('public_bulletins').select('slug, title').limit(1).single();
 
   const testRoutes = [
-    { name: 'Home Page', path: '/', assertions: ['Latest Government Job Notifications', 'Official Examination Calendar', 'Latest Admit Cards', 'Latest Examination Results'] },
+    { name: 'Home Page', path: '/', assertions: ['Latest Government Job Notifications', 'Official Examination Calendar', 'Admit Cards', 'Latest Examination Results', "Today's Updates"] },
     { name: 'Govt Jobs Default', path: '/jobs', assertions: ['Government Jobs', 'Show:'] },
     { name: 'Govt Jobs Limit 10', path: '/jobs?limit=10', assertions: ['Government Jobs', 'Show:'] },
     { name: 'Govt Jobs Limit 50', path: '/jobs?limit=50', assertions: ['Government Jobs', 'Show:'] },
