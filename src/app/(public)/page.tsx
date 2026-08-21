@@ -1,5 +1,8 @@
 import Link from "next/link";
+import { Metadata } from "next";
 import { SITE_CONFIG } from "@/lib/constants";
+import { constructMetadata, buildWebSiteJsonLd, buildSuchnaSetuOrgJsonLd } from "@/lib/seo";
+import { INDIAN_STATES } from "@/lib/constants/states";
 import { getBreakingBulletins, getPublicBulletins } from "@/modules/bulletins/service";
 import { getPublicJobs } from "@/modules/jobs/service";
 import { getPublicExams } from "@/modules/exams/service";
@@ -47,6 +50,9 @@ import {
   Download,
   FileCheck2,
   CreditCard,
+  BookOpen,
+  KeyRound,
+  Hourglass,
 } from "lucide-react";
 
 interface HomePageProps {
@@ -56,6 +62,35 @@ interface HomePageProps {
     query?: string;
     type?: string;
   }>;
+}
+
+export async function generateMetadata({ searchParams }: HomePageProps): Promise<Metadata> {
+  const params = await searchParams;
+  const rawQuery = (params.search || params.q || params.query || "").trim();
+
+  if (rawQuery) {
+    return constructMetadata({
+      title: `Search: "${rawQuery}" - Government Jobs & Exams`,
+      description: `Search results for "${rawQuery}" across verified Central, State, and PSU recruitment notifications on SuchnaSetu.`,
+      path: `/?search=${encodeURIComponent(rawQuery)}`,
+      noIndex: true, // Prevent indexing search query permutations
+    });
+  }
+
+  return constructMetadata({
+    title: "SuchnaSetu - Government Jobs, Government Exams, Notifications, Answer Keys & Syllabus 2026",
+    description: "Verified civic public information aggregator. Access authentic Central & State government job notifications, UPSC, SSC, Railways, PSC exams, syllabus, answer keys, admit cards, and official gazettes.",
+    path: "/",
+    keywords: [
+      "Government Jobs 2026",
+      "Sarkari Naukri 2026",
+      "Government Exams Notification",
+      "Official Answer Key 2026",
+      "Exam Syllabus 2026",
+      "Admit Card Download",
+      "SuchnaSetu",
+    ],
+  });
 }
 
 export default async function HomePage({ searchParams }: HomePageProps) {
@@ -106,9 +141,22 @@ export default async function HomePage({ searchParams }: HomePageProps) {
     return qs ? `/?${qs}` : "/";
   };
 
+  const webSiteJsonLd = buildWebSiteJsonLd();
+  const orgJsonLd = buildSuchnaSetuOrgJsonLd();
+
   return (
-    <div className="space-y-8 pb-16">
-      {/* 1. Breaking Bulletin Ticker */}
+    <>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(webSiteJsonLd) }}
+      />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(orgJsonLd) }}
+      />
+
+      <div className="space-y-8 pb-16">
+        {/* 1. Breaking Bulletin Ticker */}
       {breakingBulletins.length > 0 && (
         <BreakingTicker bulletins={breakingBulletins} />
       )}
@@ -685,6 +733,155 @@ export default async function HomePage({ searchParams }: HomePageProps) {
           </div>
         </section>
       )}
+
+      {/* ========================================================================= */}
+      {/* CRAWLABLE SEARCH ENGINE DIRECTORY & INTERNAL LINKING MATRIX */}
+      {/* ========================================================================= */}
+      <section className="rounded-2xl border border-slate-200 bg-white p-6 sm:p-8 shadow-2xs space-y-6" aria-label="Quick Directory">
+        <div className="border-b border-slate-100 pb-3">
+          <h2 className="text-base sm:text-lg font-bold text-slate-900 font-heading">
+            Government Recruitment &amp; Public Examinations Hub
+          </h2>
+          <p className="text-xs text-slate-500">
+            Explore state-wise recruitment portals, central commissions, and verified civic notice archives across India.
+          </p>
+        </div>
+
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 text-xs">
+          {/* Column 1: Major States */}
+          <div className="space-y-2.5">
+            <h3 className="font-bold text-slate-900 flex items-center gap-1.5 uppercase tracking-wider text-[11px]">
+              <MapPin className="h-3.5 w-3.5 text-[#013089]" />
+              <span>State Government Jobs</span>
+            </h3>
+            <ul className="space-y-1.5">
+              {INDIAN_STATES.slice(0, 8).map((st) => (
+                <li key={st.code}>
+                  <Link
+                    href={`/state/${st.code.toLowerCase()}`}
+                    className="text-slate-600 hover:text-[#013089] hover:underline flex items-center justify-between"
+                  >
+                    <span>{st.name} Govt Jobs</span>
+                    <span className="text-[10px] text-slate-400 font-mono">{st.pscAcronym}</span>
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          </div>
+
+          {/* Column 2: More States */}
+          <div className="space-y-2.5">
+            <h3 className="font-bold text-slate-900 flex items-center gap-1.5 uppercase tracking-wider text-[11px]">
+              <MapPin className="h-3.5 w-3.5 text-[#013089]" />
+              <span>Regional Recruitment</span>
+            </h3>
+            <ul className="space-y-1.5">
+              {INDIAN_STATES.slice(8, 16).map((st) => (
+                <li key={st.code}>
+                  <Link
+                    href={`/state/${st.code.toLowerCase()}`}
+                    className="text-slate-600 hover:text-[#013089] hover:underline flex items-center justify-between"
+                  >
+                    <span>{st.name} Govt Jobs</span>
+                    <span className="text-[10px] text-slate-400 font-mono">{st.pscAcronym}</span>
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          </div>
+
+          {/* Column 3: Central Authorities & Commissions */}
+          <div className="space-y-2.5">
+            <h3 className="font-bold text-slate-900 flex items-center gap-1.5 uppercase tracking-wider text-[11px]">
+              <Building className="h-3.5 w-3.5 text-[#013089]" />
+              <span>Central Commissions</span>
+            </h3>
+            <ul className="space-y-1.5">
+              {[
+                { name: "Union Public Service Commission", acronym: "UPSC" },
+                { name: "Staff Selection Commission", acronym: "SSC" },
+                { name: "Railway Recruitment Boards", acronym: "RRB" },
+                { name: "Institute of Banking Personnel", acronym: "IBPS" },
+                { name: "State Bank of India", acronym: "SBI" },
+                { name: "Defence Research & Dev (DRDO)", acronym: "DRDO" },
+                { name: "National Testing Agency", acronym: "NTA" },
+                { name: "Border Security Force", acronym: "BSF" },
+              ].map((auth) => (
+                <li key={auth.acronym}>
+                  <Link
+                    href={`/authorities/${auth.acronym.toLowerCase()}`}
+                    className="text-slate-600 hover:text-[#013089] hover:underline flex items-center justify-between"
+                  >
+                    <span className="truncate max-w-[150px]">{auth.name}</span>
+                    <span className="text-[10px] font-bold text-[#013089] bg-brand-50 px-1.5 py-0.2 rounded">
+                      {auth.acronym}
+                    </span>
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          </div>
+
+          {/* Column 4: Key Service Hubs */}
+          <div className="space-y-2.5">
+            <h3 className="font-bold text-slate-900 flex items-center gap-1.5 uppercase tracking-wider text-[11px]">
+              <Sparkles className="h-3.5 w-3.5 text-[#013089]" />
+              <span>Civic Portals</span>
+            </h3>
+            <ul className="space-y-1.5">
+              <li>
+                <Link href="/todays-updates" className="text-slate-600 hover:text-[#013089] hover:underline flex items-center gap-1.5">
+                  <Sparkles className="h-3 w-3 text-red-500" />
+                  <span>Today&apos;s Updates (Live Feed)</span>
+                </Link>
+              </li>
+              <li>
+                <Link href="/coming-soon" className="text-slate-600 hover:text-[#013089] hover:underline flex items-center gap-1.5">
+                  <Hourglass className="h-3 w-3 text-amber-500" />
+                  <span>Coming Soon / Advance Notices</span>
+                </Link>
+              </li>
+              <li>
+                <Link href="/answer-keys" className="text-slate-600 hover:text-[#013089] hover:underline flex items-center gap-1.5">
+                  <KeyRound className="h-3 w-3 text-teal-600" />
+                  <span>Official Answer Keys</span>
+                </Link>
+              </li>
+              <li>
+                <Link href="/syllabus" className="text-slate-600 hover:text-[#013089] hover:underline flex items-center gap-1.5">
+                  <BookOpen className="h-3 w-3 text-blue-600" />
+                  <span>Exam Patterns &amp; Syllabi</span>
+                </Link>
+              </li>
+              <li>
+                <Link href="/admit-cards" className="text-slate-600 hover:text-[#013089] hover:underline flex items-center gap-1.5">
+                  <Download className="h-3 w-3 text-indigo-600" />
+                  <span>Admit Cards &amp; Hall Tickets</span>
+                </Link>
+              </li>
+              <li>
+                <Link href="/results" className="text-slate-600 hover:text-[#013089] hover:underline flex items-center gap-1.5">
+                  <Award className="h-3 w-3 text-emerald-600" />
+                  <span>Results &amp; Merit Gazettes</span>
+                </Link>
+              </li>
+              <li>
+                <Link href="/news" className="text-slate-600 hover:text-[#013089] hover:underline flex items-center gap-1.5">
+                  <Newspaper className="h-3 w-3 text-rose-600" />
+                  <span>Employment News &amp; PIB</span>
+                </Link>
+              </li>
+              <li>
+                <Link href="/directory" className="text-slate-600 hover:text-[#013089] hover:underline flex items-center gap-1.5">
+                  <Building className="h-3 w-3 text-slate-600" />
+                  <span>Verified Organization Directory</span>
+                </Link>
+              </li>
+            </ul>
+          </div>
+        </div>
+      </section>
     </div>
+    </>
   );
 }

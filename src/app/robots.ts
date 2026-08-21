@@ -11,9 +11,19 @@ export default function robots(): MetadataRoute.Robots {
         allow: "/",
       },
       {
+        userAgent: "Googlebot",
+        allow: "/",
+        disallow: ["/admin/", "/api/", "/search"],
+      },
+      {
+        userAgent: "bingbot",
+        allow: "/",
+        disallow: ["/admin/", "/api/", "/search"],
+      },
+      {
         userAgent: "*",
         allow: "/",
-        disallow: ["/admin/", "/api/auth/"],
+        disallow: ["/admin/", "/api/", "/search"],
       },
     ],
     sitemap: `${baseUrl}/sitemap.xml`,

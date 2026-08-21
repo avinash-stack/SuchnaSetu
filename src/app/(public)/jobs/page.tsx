@@ -7,7 +7,7 @@ import { JobsListingContainer } from "@/modules/jobs/components/jobs-listing-con
 import { EmptyState } from "@/components/shared/empty-state";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { constructMetadata } from "@/lib/seo";
+import { constructMetadata, buildBreadcrumbJsonLd } from "@/lib/seo";
 import { Briefcase, ChevronLeft, ChevronRight, X } from "lucide-react";
 
 interface JobsPageProps {
@@ -78,8 +78,19 @@ export default async function PublicJobsPage({ searchParams }: JobsPageProps) {
     getJobTaxonomies(),
   ]);
 
+  const breadcrumbs = [
+    { name: "Home", url: "/" },
+    { name: "Government Jobs", url: "/jobs" },
+  ];
+  const breadcrumbJsonLd = buildBreadcrumbJsonLd(breadcrumbs);
+
   return (
-    <div className="min-h-screen">
+    <>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbJsonLd) }}
+      />
+      <div className="min-h-screen">
       {/* 1. Compact Sticky Top Header & Search Bar */}
       <div className="sticky top-14 z-30 bg-white/95 backdrop-blur-md border-b border-slate-200/80 shadow-2xs py-2.5 px-4 sm:px-6 lg:px-8">
         <div className="mx-auto max-w-7xl flex flex-col sm:flex-row sm:items-center justify-between gap-2.5">
@@ -182,5 +193,6 @@ export default async function PublicJobsPage({ searchParams }: JobsPageProps) {
         </div>
       </div>
     </div>
+    </>
   );
 }

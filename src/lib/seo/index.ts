@@ -7,11 +7,11 @@ interface MetadataProps {
   path?: string;
   image?: string;
   noIndex?: boolean;
+  keywords?: string[];
 }
 
 /**
  * Normalizes an AdSense identifier into standard client ID and publisher ID formats.
- * Handles inputs like "ca-pub-1234567890123456", "pub-1234567890123456", or "1234567890123456".
  */
 export function normalizeAdsenseId(rawId?: string | null): {
   numericId: string;
@@ -43,6 +43,7 @@ export function constructMetadata({
   path = "",
   image = "/og-image.png",
   noIndex = false,
+  keywords,
 }: MetadataProps = {}): Metadata {
   const baseUrl = getCanonicalSiteUrl();
   const pageTitle = title ? `${title} | ${SITE_CONFIG.name}` : `${SITE_CONFIG.name} - ${SITE_CONFIG.tagline}`;
@@ -54,6 +55,16 @@ export function constructMetadata({
   return {
     title: pageTitle,
     description,
+    keywords: keywords || [
+      "Government Jobs 2026",
+      "Sarkari Naukri",
+      "Government Exams",
+      "Admit Card",
+      "Answer Key",
+      "Exam Syllabus",
+      "Civic Notifications",
+      "SuchnaSetu",
+    ],
     metadataBase: new URL(baseUrl),
     alternates: {
       canonical: canonicalUrl,
@@ -137,6 +148,25 @@ export function buildWebSiteJsonLd() {
 }
 
 /**
+ * Builds Schema.org Organization JSON-LD for SuchnaSetu
+ */
+export function buildSuchnaSetuOrgJsonLd() {
+  const baseUrl = getCanonicalSiteUrl();
+  return {
+    "@context": "https://schema.org",
+    "@type": "Organization",
+    name: SITE_CONFIG.name,
+    url: baseUrl,
+    logo: `${baseUrl}/icon.png`,
+    description: SITE_CONFIG.description,
+    sameAs: [
+      "https://twitter.com/SuchnaSetu",
+      "https://github.com/avinash-stack/SuchnaSetu",
+    ],
+  };
+}
+
+/**
  * Builds Schema.org BreadcrumbList JSON-LD
  */
 export function buildBreadcrumbJsonLd(items: Array<{ name: string; url: string }>) {
@@ -154,7 +184,106 @@ export function buildBreadcrumbJsonLd(items: Array<{ name: string; url: string }
 }
 
 /**
- * Builds JSON-LD Structured Data for Government Information / Notice Item
+ * Builds Google Search Central compliant JobPosting JSON-LD
+ */
+export function buildJobPostingJsonLd({
+  title,
+  description,
+  url,
+  organizationName,
+  organizationUrl,
+  datePosted,
+  validThrough,
+  jobLocationState,
+  employmentType = "FULL_TIME",
+  totalVacancies,
+  educationRequirements,
+}: {
+  title: string;
+  description: string;
+  url: string;
+  organizationName: string;
+  organizationUrl?: string | null;
+  datePosted?: string | null;
+  validThrough?: string | null;
+  jobLocationState?: string | null;
+  employmentType?: string | null;
+  totalVacancies?: number | null;
+  educationRequirements?: string | null;
+}) {
+  const isNational = !jobLocationState || jobLocationState.toLowerCase() === "all india" || jobLocationState.toUpperCase() === "NATIONAL";
+
+  return {
+    "@context": "https://schema.org",
+    "@type": "JobPosting",
+    title,
+    description: description || `${title} released by ${organizationName}. Check official notification, eligibility criteria, vacancy details and online application procedures.`,
+    datePosted: datePosted || new Date().toISOString(),
+    ...(validThrough ? { validThrough: new Date(validThrough).toISOString() } : {}),
+    employmentType: employmentType || "FULL_TIME",
+    hiringOrganization: {
+      "@type": "GovernmentOrganization",
+      name: organizationName,
+      ...(organizationUrl ? { sameAs: organizationUrl } : {}),
+    },
+    jobLocation: isNational
+      ? {
+          "@type": "Place",
+          address: {
+            "@type": "PostalAddress",
+            addressCountry: "IN",
+          },
+        }
+      : {
+          "@type": "Place",
+          address: {
+            "@type": "PostalAddress",
+            addressRegion: jobLocationState,
+            addressCountry: "IN",
+          },
+        },
+    applicantLocationRequirements: {
+      "@type": "Country",
+      name: "India",
+    },
+    directApply: true,
+    ...(educationRequirements ? { educationRequirements } : {}),
+    ...(totalVacancies && totalVacancies > 0 ? { totalJobOpenings: totalVacancies } : {}),
+  };
+}
+
+/**
+ * Builds JSON-LD Structured Data for Government Authorities / Commissions
+ */
+export function buildGovOrgJsonLd({
+  name,
+  acronym,
+  url,
+  websiteUrl,
+  description,
+  category,
+}: {
+  name: string;
+  acronym?: string;
+  url: string;
+  websiteUrl?: string;
+  description?: string;
+  category?: string;
+}) {
+  return {
+    "@context": "https://schema.org",
+    "@type": "GovernmentOrganization",
+    name,
+    ...(acronym ? { alternateName: acronym } : {}),
+    url,
+    ...(websiteUrl ? { sameAs: websiteUrl } : {}),
+    description: description || `${name} (${acronym || ""}) official government recruitment authority profile, active jobs, upcoming examinations and official syllabus.`,
+    ...(category ? { organizationCategory: category } : {}),
+  };
+}
+
+/**
+ * Builds JSON-LD Structured Data for Government Notice Item
  */
 export function buildGovNoticeJsonLd({
   title,
@@ -229,6 +358,40 @@ export function buildGovExamJsonLd({
     ...(endDate ? { endDate } : {}),
     datePublished: datePublished || new Date().toISOString(),
     dateModified: dateModified || new Date().toISOString(),
+  };
+}
+
+/**
+ * Builds JSON-LD Structured Data for Examination Syllabus & Patterns
+ */
+export function buildSyllabusJsonLd({
+  title,
+  examName,
+  description,
+  url,
+  organizationName,
+  markingScheme,
+}: {
+  title: string;
+  examName: string;
+  description: string;
+  url: string;
+  organizationName: string;
+  markingScheme?: string | null;
+}) {
+  return {
+    "@context": "https://schema.org",
+    "@type": "LearningResource",
+    name: title,
+    description: description || `Official exam syllabus, exam pattern, subject-wise marking scheme and curriculum for ${examName} by ${organizationName}.`,
+    url,
+    learningResourceType: "Syllabus",
+    educationalLevel: "Competitive Examination",
+    author: {
+      "@type": "GovernmentOrganization",
+      name: organizationName,
+    },
+    ...(markingScheme ? { assesses: markingScheme } : {}),
   };
 }
 
