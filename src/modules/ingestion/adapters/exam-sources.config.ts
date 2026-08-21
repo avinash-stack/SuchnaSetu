@@ -1873,8 +1873,8 @@ export const GOV_EXAM_SOURCES_CONFIG: GovExamSourceConfig[] = [
     jurisdiction: "central",
     stateCode: "DL",
     baseUrl: "https://aiimsexams.ac.in",
-    examinationPath: "/exams",
-    applyUrl: "https://aiimsexams.ac.in",
+    examinationPath: "/",
+    applyUrl: "https://rrp.aiimsexams.ac.in",
     defaultCategory: "central-govt",
     canonicalExams: [
           {
@@ -2396,8 +2396,8 @@ export const GOV_EXAM_SOURCES_CONFIG: GovExamSourceConfig[] = [
     organizationName: "Bihar Public Service & Staff Selection Commissions",
     jurisdiction: "state",
     stateCode: "BR",
-    baseUrl: "https://bpsc.bih.nic.in",
-    examinationPath: "/exams",
+    baseUrl: "https://bpsc.bihar.gov.in",
+    examinationPath: "/",
     applyUrl: "https://onlinebpsc.bihar.gov.in",
     defaultCategory: "state-govt",
     canonicalExams: [
@@ -2771,7 +2771,7 @@ export const GOV_EXAM_SOURCES_CONFIG: GovExamSourceConfig[] = [
     jurisdiction: "state",
     stateCode: "UP",
     baseUrl: "https://uppsc.up.nic.in",
-    examinationPath: "/exams",
+    examinationPath: "/CandidatePages/Notifications.aspx",
     applyUrl: "https://uppsc.up.nic.in/CandidatePages/Notifications.aspx",
     defaultCategory: "state-govt",
     canonicalExams: [
@@ -3239,7 +3239,7 @@ export const GOV_EXAM_SOURCES_CONFIG: GovExamSourceConfig[] = [
     jurisdiction: "state",
     stateCode: "RJ",
     baseUrl: "https://rpsc.rajasthan.gov.in",
-    examinationPath: "/exams",
+    examinationPath: "/",
     applyUrl: "https://sso.rajasthan.gov.in",
     defaultCategory: "state-govt",
     canonicalExams: [
@@ -3430,7 +3430,7 @@ export const GOV_EXAM_SOURCES_CONFIG: GovExamSourceConfig[] = [
     jurisdiction: "state",
     stateCode: "DL",
     baseUrl: "https://dsssb.delhi.gov.in",
-    examinationPath: "/exams",
+    examinationPath: "/current-vacancies",
     applyUrl: "https://dsssbonline.nic.in",
     defaultCategory: "state-govt",
     canonicalExams: [
@@ -3609,7 +3609,7 @@ export const GOV_EXAM_SOURCES_CONFIG: GovExamSourceConfig[] = [
     jurisdiction: "state",
     stateCode: "HR",
     baseUrl: "https://hpsc.gov.in",
-    examinationPath: "/exams",
+    examinationPath: "/en-us/Advertisements",
     applyUrl: "https://hpsc.gov.in/en-us/Online-Application-Form",
     defaultCategory: "state-govt",
     canonicalExams: [
@@ -3798,8 +3798,8 @@ export const GOV_EXAM_SOURCES_CONFIG: GovExamSourceConfig[] = [
     organizationName: "Jharkhand Public Service & Staff Selection Commissions",
     jurisdiction: "state",
     stateCode: "JH",
-    baseUrl: "https://jpsc.gov.in",
-    examinationPath: "/exams",
+    baseUrl: "https://www.jpsc.gov.in",
+    examinationPath: "/",
     applyUrl: "https://jpsc.gov.in/online_application",
     defaultCategory: "state-govt",
     canonicalExams: [
@@ -4316,8 +4316,8 @@ export const GOV_EXAM_SOURCES_CONFIG: GovExamSourceConfig[] = [
     organizationName: "Odisha Public Service & Staff Selection Commissions",
     jurisdiction: "state",
     stateCode: "OD",
-    baseUrl: "https://opsc.gov.in",
-    examinationPath: "/exams",
+    baseUrl: "https://www.opsc.gov.in",
+    examinationPath: "/Public/Notices",
     applyUrl: "https://opsconline.gov.in",
     defaultCategory: "state-govt",
     canonicalExams: [

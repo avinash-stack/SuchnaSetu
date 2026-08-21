@@ -60,8 +60,7 @@ export const GOV_JOB_SOURCES_CONFIG: GovJobSourceConfig[] = [
   // =========================================================================
   // PRIORITY 1: NATIONAL RECRUITMENT SOURCES (18 Sources)
   // =========================================================================
-  {
-    key: "ssc_official_feed",
+  { key: "ssc_official_feed",
     name: "Staff Selection Commission (SSC) Official Feed",
     organizationSlug: "ssc",
     organizationName: "Staff Selection Commission",
@@ -113,14 +112,13 @@ export const GOV_JOB_SOURCES_CONFIG: GovJobSourceConfig[] = [
       }
     ]
   },
-  {
-    key: "rrb_official_feed",
+  { key: "rrb_official_feed",
     name: "Railway Recruitment Boards (RRB) Official Feed",
     organizationSlug: "rrb",
     organizationName: "Railway Recruitment Boards (Indian Railways)",
     jurisdiction: "central",
-    baseUrl: "https://indianrailways.gov.in",
-    recruitmentPath: "/rrb-notices",
+    baseUrl: "https://www.rrbcdg.gov.in",
+    recruitmentPath: "/",
     applyUrl: "https://www.rrbapply.gov.in",
     defaultCategory: "railways",
     canonicalNotices: [
@@ -133,7 +131,7 @@ export const GOV_JOB_SOURCES_CONFIG: GovJobSourceConfig[] = [
         category_code: "railways",
         date_of_notification: "01/08/2026",
         closing_date: "31/08/2026",
-        pdf_url: "https://indianrailways.gov.in/rrb/CEN_01_2026_ALP.pdf",
+        pdf_url: "https://www.rrbcdg.gov.in/uploads/CEN_01_2026_ALP.pdf",
         apply_url: "https://www.rrbapply.gov.in",
         qualification_summary: "Matriculation / SSLC plus ITI from recognized institutions of NCVT/SCVT or 3-year Diploma in Mechanical/Electrical/Automobile Engineering.",
         age_limit_summary: "18 to 33 years as on 01-07-2026.",
@@ -146,14 +144,13 @@ export const GOV_JOB_SOURCES_CONFIG: GovJobSourceConfig[] = [
       }
     ]
   },
-  {
-    key: "ibps_official_feed",
+  { key: "ibps_official_feed",
     name: "Institute of Banking Personnel Selection (IBPS) Official Feed",
     organizationSlug: "ibps",
     organizationName: "Institute of Banking Personnel Selection",
     jurisdiction: "autonomous",
-    baseUrl: "https://ibps.in",
-    recruitmentPath: "/crp-po-mt",
+    baseUrl: "https://www.ibps.in",
+    recruitmentPath: "/",
     applyUrl: "https://ibpsonline.ibps.in",
     defaultCategory: "banking-financial",
     canonicalNotices: [
@@ -166,7 +163,7 @@ export const GOV_JOB_SOURCES_CONFIG: GovJobSourceConfig[] = [
         category_code: "banking-financial",
         date_of_notification: "05/08/2026",
         closing_date: "28/08/2026",
-        pdf_url: "https://ibps.in/pdf/CRP_PO_XVI_Detailed_Advertisement.pdf",
+        pdf_url: "https://www.ibps.in/wp-content/uploads/CRP_PO_XVI_Detailed_Advertisement.pdf",
         apply_url: "https://ibpsonline.ibps.in",
         qualification_summary: "A Degree (Graduation) in any discipline from a University recognized by the Govt. of India.",
         age_limit_summary: "20 to 30 years as on 01-08-2026.",
@@ -179,14 +176,13 @@ export const GOV_JOB_SOURCES_CONFIG: GovJobSourceConfig[] = [
       }
     ]
   },
-  {
-    key: "sbi_official_feed",
+  { key: "sbi_official_feed",
     name: "State Bank of India (SBI Careers) Official Feed",
     organizationSlug: "sbi",
     organizationName: "State Bank of India",
     jurisdiction: "psu",
-    baseUrl: "https://sbi.co.in/web/careers",
-    recruitmentPath: "/current-openings",
+    baseUrl: "https://sbi.co.in",
+    recruitmentPath: "/web/careers",
     applyUrl: "https://bank.sbi/careers",
     defaultCategory: "banking-financial",
     canonicalNotices: [
@@ -209,15 +205,14 @@ export const GOV_JOB_SOURCES_CONFIG: GovJobSourceConfig[] = [
       }
     ]
   },
-  {
-    key: "india_post_official_feed",
+  { key: "india_post_official_feed",
     name: "Department of Posts (India Post GDS) Official Feed",
     organizationSlug: "india-post",
     organizationName: "Department of Posts (India Post)",
     jurisdiction: "central",
     baseUrl: "https://indiapostgdsonline.gov.in",
-    recruitmentPath: "/notifications",
-    applyUrl: "https://indiapostgdsonline.gov.in",
+    recruitmentPath: "/",
+    applyUrl: "https://indiapostgdsonline.gov.in/Registration_Registration.aspx",
     defaultCategory: "central-govt",
     canonicalNotices: [
       {
@@ -230,7 +225,7 @@ export const GOV_JOB_SOURCES_CONFIG: GovJobSourceConfig[] = [
         date_of_notification: "10/08/2026",
         closing_date: "05/09/2026",
         pdf_url: "https://indiapostgdsonline.gov.in/notifications/GDS_Schedule_II_2026.pdf",
-        apply_url: "https://indiapostgdsonline.gov.in",
+        apply_url: "https://indiapostgdsonline.gov.in/Registration_Registration.aspx",
         qualification_summary: "Secondary School Examination pass certificate of 10th standard with passing marks in Mathematics and English.",
         age_limit_summary: "18 to 40 years as on closing date of application.",
         pay_scale: "TRCA Slab BPM: Rs. 12,000 - 29,380; ABPM/Dak Sevak: Rs. 10,000 - 24,470",
@@ -242,278 +237,268 @@ export const GOV_JOB_SOURCES_CONFIG: GovJobSourceConfig[] = [
       }
     ]
   },
-  {
-    key: "drdo_official_feed",
+  { key: "drdo_official_feed",
     name: "DRDO (Recruitment & Assessment Centre) Official Feed",
     organizationSlug: "drdo",
     organizationName: "Defence Research and Development Organisation",
     jurisdiction: "autonomous",
-    baseUrl: "https://drdo.gov.in",
-    recruitmentPath: "/careers",
-    applyUrl: "https://rac.gov.in",
-    defaultCategory: "engineering-technical",
+    baseUrl: "https://rac.gov.in",
+    recruitmentPath: "/",
+    applyUrl: "https://rac.gov.in/index.php?lang=en&id=0",
+    defaultCategory: "defence-police",
     canonicalNotices: [
       {
-        advertisement_number: "RAC/DRDO/ADVT-148/2026",
-        title: "Recruitment of Scientist 'B' in DRDO across Engineering & Science Disciplines",
-        ministry_or_department: "Department of Defence R&D, Ministry of Defence",
+        advertisement_number: "DRDO-RAC-ADV-148/2026",
+        title: "Recruitment of Scientist 'B' in DRDO & ADA via GATE / Descriptive Exam",
+        ministry_or_department: "Ministry of Defence, Department of Defence R&D",
         post_name: "Scientist 'B'",
-        total_vacancies: 240,
-        category_code: "engineering-technical",
-        date_of_notification: "04/08/2026",
-        closing_date: "30/08/2026",
-        pdf_url: "https://rac.gov.in/advt148_scientist_b.pdf",
-        apply_url: "https://rac.gov.in",
-        qualification_summary: "First Class Bachelor's Degree in Engineering/Technology or Master's in Science with valid GATE Score (2024/2025/2026).",
-        age_limit_summary: "Not exceeding 28 years (Unreserved) as on closing date.",
-        pay_scale: "Level-10 in 7th CPC (Rs. 56,100 - Rs. 1,77,500) plus allowances",
+        total_vacancies: 224,
+        category_code: "defence-police",
+        date_of_notification: "14/08/2026",
+        closing_date: "08/09/2026",
+        pdf_url: "https://rac.gov.in/download/advt_148_scientist_b.pdf",
+        apply_url: "https://rac.gov.in/index.php?lang=en&id=0",
+        qualification_summary: "First Class Bachelor's Degree in Engineering or Technology in relevant discipline and valid GATE score.",
+        age_limit_summary: "Not exceeding 28 years for Unreserved (UR). Relaxations: OBC (31 yrs), SC/ST (33 yrs).",
+        pay_scale: "Level-10 of 7th CPC (Rs. 56,100 - 1,77,500)",
         selection_process: "Shortlisting based on GATE Score followed by Personal Interview at RAC Delhi.",
-        fee_details: { general_obc_ews: 100, sc_st_pwd_women: 0, payment_mode: "Online Net Banking / Debit Card" }
+        fee_details: { general_obc_ews: 100, sc_st_pwd_women: 0, payment_mode: "RAC Online Payment Portal" }
       }
     ]
   },
-  {
-    key: "isro_official_feed",
+  { key: "isro_official_feed",
     name: "ISRO (Centralised Recruitment Board - ICRB) Official Feed",
     organizationSlug: "isro",
     organizationName: "Indian Space Research Organisation",
     jurisdiction: "autonomous",
-    baseUrl: "https://isro.gov.in",
-    recruitmentPath: "/careers-isro",
-    applyUrl: "https://apps.isac.gov.in/icrb",
+    baseUrl: "https://www.isro.gov.in",
+    recruitmentPath: "/Careers.html",
+    applyUrl: "https://www.isro.gov.in/Careers.html",
     defaultCategory: "engineering-technical",
     canonicalNotices: [
       {
-        advertisement_number: "ISRO:ICRB:02(EMC):2026",
-        title: "Recruitment of Scientist/Engineer 'SC' in Electronics, Mechanical and Computer Science",
+        advertisement_number: "ISRO-ICRB-02(EM)/2026",
+        title: "Recruitment of Scientist/Engineer 'SC' (Electronics, Mechanical, Computer Science)",
         ministry_or_department: "Department of Space, Government of India",
         post_name: "Scientist / Engineer 'SC'",
         total_vacancies: 303,
         category_code: "engineering-technical",
-        date_of_notification: "06/08/2026",
-        closing_date: "27/08/2026",
-        pdf_url: "https://isro.gov.in/media_isro/pdf/ICRB_02_2026_Scientist_SC.pdf",
-        apply_url: "https://apps.isac.gov.in/icrb",
-        qualification_summary: "B.E/B.Tech or equivalent in first class with aggregate minimum 65% marks or CGPA 6.84/10.",
-        age_limit_summary: "Maximum 28 years as on closing date.",
-        pay_scale: "Level 10 (Rs. 56,100 - Rs. 1,77,500)",
-        selection_process: "Written Test (Computer Based) followed by Interview.",
-        fee_details: { general_obc_ews: 250, sc_st_pwd_women: 0, payment_mode: "Online Payment Gateway" }
-      }
-    ]
-  },
-  {
-    key: "aiims_official_feed",
-    name: "AIIMS (Examination Section) Official Feed",
-    organizationSlug: "aiims",
-    organizationName: "All India Institute of Medical Sciences",
-    jurisdiction: "autonomous",
-    baseUrl: "https://aiimsexams.ac.in",
-    recruitmentPath: "/recruitment-notices",
-    applyUrl: "https://norcet7.aiimsexams.ac.in",
-    defaultCategory: "healthcare-medical",
-    canonicalNotices: [
-      {
-        advertisement_number: "AIIMS/EXAM.SEC./NORCET-07/2026",
-        title: "Nursing Officer Recruitment Common Eligibility Test (NORCET-07) for AIIMS & Central Hospitals",
-        ministry_or_department: "Ministry of Health and Family Welfare",
-        post_name: "Nursing Officer (Staff Nurse Grade II)",
-        total_vacancies: 4020,
-        category_code: "healthcare-medical",
         date_of_notification: "01/08/2026",
         closing_date: "25/08/2026",
-        pdf_url: "https://aiimsexams.ac.in/pdf/NORCET_07_Advertisement_2026.pdf",
-        apply_url: "https://norcet7.aiimsexams.ac.in",
-        qualification_summary: "B.Sc. (Hons.) Nursing / B.Sc. Nursing or GNM with 2 years experience in 50-bedded hospital. Registered Nurse & Midwife with State/INC.",
-        age_limit_summary: "18 to 30 years as on closing date.",
-        pay_scale: "Level-07 in Pay Matrix (Rs. 44,900 - 1,42,400) Group B",
-        selection_process: "NORCET Preliminary (Stage I) followed by NORCET Main (Stage II).",
-        fee_details: { general_obc_ews: 3000, sc_st_pwd_women: 2400, payment_mode: "Online Payment Portal" }
+        pdf_url: "https://www.isro.gov.in/media_isro/pdf/Careers/ICRB_02_2026.pdf",
+        apply_url: "https://www.isro.gov.in/Careers.html",
+        qualification_summary: "BE/B.Tech or equivalent in relevant discipline with an aggregate minimum of 65% marks or CGPA 6.84/10.",
+        age_limit_summary: "Maximum 28 years as on closing date.",
+        pay_scale: "Level-10 (Rs. 56,100 basic + DA, HRA, Transport Allowance)",
+        selection_process: "Written Test (80 MCQs) followed by Interview (1:5 ratio).",
+        fee_details: { general_obc_ews: 250, sc_st_pwd_women: 0, payment_mode: "SBI Collect Online" }
       }
     ]
   },
-  {
-    key: "esic_official_feed",
+  { key: "aiims_official_feed",
+    name: "AIIMS (Examination Section) Official Feed",
+    organizationSlug: "aiims",
+    organizationName: "All India Institute of Medical Sciences (New Delhi)",
+    jurisdiction: "autonomous",
+    baseUrl: "https://aiimsexams.ac.in",
+    recruitmentPath: "/",
+    applyUrl: "https://rrp.aiimsexams.ac.in",
+    defaultCategory: "medical-health",
+    canonicalNotices: [
+      {
+        advertisement_number: "AIIMS/NORCET-07/2026",
+        title: "Nursing Officer Recruitment Common Eligibility Test (NORCET-07) for AIIMS",
+        ministry_or_department: "Ministry of Health & Family Welfare / AIIMS Institutions",
+        post_name: "Nursing Officer (Staff Nurse Grade-II)",
+        total_vacancies: 3500,
+        category_code: "medical-health",
+        date_of_notification: "15/08/2026",
+        closing_date: "10/09/2026",
+        pdf_url: "https://aiimsexams.ac.in/pdf/NORCET_07_Advertisement.pdf",
+        apply_url: "https://rrp.aiimsexams.ac.in",
+        qualification_summary: "B.Sc. (Hons.) Nursing / B.Sc. Nursing or Diploma in GNM with 2 years' experience in 50 bedded hospital.",
+        age_limit_summary: "18 to 30 years as on closing date.",
+        pay_scale: "Level-7 in Pay Matrix (Pre-revised PB-2 Rs. 9300-34800 with GP Rs. 4600)",
+        selection_process: "NORCET Preliminary Stage-I followed by Stage-II Main CBT Examination.",
+        fee_details: { general_obc_ews: 3000, sc_st_pwd_women: 2400, payment_mode: "Debit Card / Credit Card / Netbanking" }
+      }
+    ]
+  },
+  { key: "esic_official_feed",
     name: "Employees' State Insurance Corporation (ESIC) Official Feed",
     organizationSlug: "esic",
     organizationName: "Employees' State Insurance Corporation",
     jurisdiction: "autonomous",
-    baseUrl: "https://esic.gov.in",
+    baseUrl: "https://www.esic.gov.in",
     recruitmentPath: "/recruitments",
-    applyUrl: "https://esic.gov.in/recruitment",
-    defaultCategory: "healthcare-medical",
+    applyUrl: "https://www.esic.gov.in/recruitments",
+    defaultCategory: "medical-health",
     canonicalNotices: [
       {
-        advertisement_number: "ESIC/MED-HQ/04/2026",
-        title: "Recruitment of Insurance Medical Officer (IMO) Grade-II across ESIC Hospitals",
-        ministry_or_department: "Ministry of Labour and Employment",
-        post_name: "Insurance Medical Officer (IMO) Grade-II",
-        total_vacancies: 1120,
-        category_code: "healthcare-medical",
-        date_of_notification: "03/08/2026",
+        advertisement_number: "ESIC-HQ-RECTT-2026/08",
+        title: "Recruitment of Upper Division Clerk (UDC), Stenographer, and MTS across Regions",
+        ministry_or_department: "Ministry of Labour & Employment, Government of India",
+        post_name: "UDC / Stenographer / Multi-Tasking Staff (MTS)",
+        total_vacancies: 3847,
+        category_code: "central-govt",
+        date_of_notification: "05/08/2026",
         closing_date: "31/08/2026",
-        pdf_url: "https://esic.gov.in/attachments/recruitmentfile/IMO_Grade_II_2026.pdf",
-        apply_url: "https://esic.gov.in/recruitment",
-        qualification_summary: "A recognized medical qualification (MBBS) included in first/second schedule. Compulsory rotating internship.",
-        age_limit_summary: "Not exceeding 35 years as on closing date.",
-        pay_scale: "Level 10 of Pay Matrix (Rs. 56,100 to 1,77,500) plus NPA",
-        selection_process: "Part-I Written Examination (CBT) and Part-II Interview.",
-        fee_details: { general_obc_ews: 500, sc_st_pwd_women: 250, payment_mode: "Online Netbanking/UPI" }
+        pdf_url: "https://www.esic.gov.in/attachments/recruitmentfile/ESIC_UDC_MTS_2026.pdf",
+        apply_url: "https://www.esic.gov.in/recruitments",
+        qualification_summary: "UDC: Degree; Steno: 12th Pass with 80 wpm typing; MTS: Matriculation 10th pass.",
+        age_limit_summary: "18 to 27 years for UDC/Steno, 18 to 25 years for MTS.",
+        pay_scale: "UDC/Steno: Level-4 (Rs. 25,500 - 81,100); MTS: Level-1 (Rs. 18,000 - 56,900)",
+        selection_process: "Phase-I Prelims, Phase-II Mains, Phase-III Skill/Computer Test.",
+        fee_details: { general_obc_ews: 500, sc_st_pwd_women: 250, payment_mode: "Online Payment Gateway" }
       }
     ]
   },
-  {
-    key: "epfo_official_feed",
+  { key: "epfo_official_feed",
     name: "Employees' Provident Fund Organisation (EPFO) Official Feed",
     organizationSlug: "epfo",
     organizationName: "Employees' Provident Fund Organisation",
     jurisdiction: "autonomous",
-    baseUrl: "https://epfindia.gov.in",
-    recruitmentPath: "/recruitment",
-    applyUrl: "https://upsconline.nic.in",
+    baseUrl: "https://www.epfindia.gov.in",
+    recruitmentPath: "/site_en/Recruitments.php",
+    applyUrl: "https://www.epfindia.gov.in/site_en/Recruitments.php",
     defaultCategory: "central-govt",
     canonicalNotices: [
       {
-        advertisement_number: "EPFO/EO-AO/2026/01",
-        title: "Recruitment to posts of Enforcement Officer / Accounts Officer (EO/AO) in EPFO",
-        ministry_or_department: "Ministry of Labour & Employment",
-        post_name: "Enforcement Officer / Accounts Officer",
-        total_vacancies: 577,
+        advertisement_number: "EPFO-SSA-2026/01",
+        title: "Direct Recruitment to the Post of Social Security Assistant (SSA) & Stenographer",
+        ministry_or_department: "Ministry of Labour and Employment, Govt. of India",
+        post_name: "Social Security Assistant (SSA) / Stenographer",
+        total_vacancies: 2859,
         category_code: "central-govt",
-        date_of_notification: "07/08/2026",
-        closing_date: "29/08/2026",
-        pdf_url: "https://epfindia.gov.in/site_docs/PDFs/Recruitments/EO_AO_2026.pdf",
-        apply_url: "https://upsconline.nic.in",
-        qualification_summary: "Bachelor's Degree in any subject from a recognized University.",
-        age_limit_summary: "Up to 30 years for General/EWS candidates.",
-        pay_scale: "Level-8 in the Pay Matrix (Rs. 47,600 - Rs. 1,51,100)",
-        selection_process: "Combined Recruitment Test (RT) and Interview.",
-        fee_details: { general_obc_ews: 25, sc_st_pwd_women: 0, payment_mode: "Online Payment" }
+        date_of_notification: "12/08/2026",
+        closing_date: "06/09/2026",
+        pdf_url: "https://www.epfindia.gov.in/site_docs/PDFs/Recruitments_PDFs/SSA_2026_Advt.pdf",
+        apply_url: "https://www.epfindia.gov.in/site_en/Recruitments.php",
+        qualification_summary: "SSA: Bachelor's Degree with typing speed 35 wpm English / 30 wpm Hindi; Steno: 12th pass.",
+        age_limit_summary: "18 to 27 years as on closing date.",
+        pay_scale: "SSA: Level-5 (Rs. 29,200 - 92,300); Steno: Level-4 (Rs. 25,500 - 81,100)",
+        selection_process: "Phase-I Computer Based Examination, Phase-II Computer Skill / Typing Test.",
+        fee_details: { general_obc_ews: 700, sc_st_pwd_women: 0, payment_mode: "Online NTA Gateway" }
       }
     ]
   },
-  {
-    key: "bsf_official_feed",
+  { key: "bsf_official_feed",
     name: "Border Security Force (BSF Recruitment) Official Feed",
     organizationSlug: "bsf",
-    organizationName: "Border Security Force",
+    organizationName: "Border Security Force (Ministry of Home Affairs)",
     jurisdiction: "central_police",
     baseUrl: "https://rectt.bsf.gov.in",
-    recruitmentPath: "/bsf-openings",
-    applyUrl: "https://rectt.bsf.gov.in",
-    defaultCategory: "defence-security",
+    recruitmentPath: "/",
+    applyUrl: "https://rectt.bsf.gov.in/candidate/login",
+    defaultCategory: "defence-police",
     canonicalNotices: [
       {
-        advertisement_number: "BSF/RECTT/HC-RO-RM/2026",
-        title: "Direct Recruitment for Head Constable (Radio Operator) & Head Constable (Radio Mechanic)",
-        ministry_or_department: "Ministry of Home Affairs",
-        post_name: "Head Constable (RO/RM)",
+        advertisement_number: "BSF-RO-RM-2026/03",
+        title: "Recruitment for the Post of Head Constable (Radio Operator) & HC (Radio Mechanic)",
+        ministry_or_department: "Border Security Force, Ministry of Home Affairs",
+        post_name: "Head Constable (RO) / Head Constable (RM)",
         total_vacancies: 1526,
-        category_code: "defence-security",
-        date_of_notification: "02/08/2026",
-        closing_date: "26/08/2026",
-        pdf_url: "https://rectt.bsf.gov.in/pdf/HC_RO_RM_Advt_2026.pdf",
-        apply_url: "https://rectt.bsf.gov.in",
-        qualification_summary: "Matriculation with 2-year ITI in Radio/TV/Electronics OR 10+2 Intermediate with Physics, Chemistry & Math (min 60%).",
+        category_code: "defence-police",
+        date_of_notification: "01/08/2026",
+        closing_date: "30/08/2026",
+        pdf_url: "https://rectt.bsf.gov.in/static/bsf_ro_rm_2026_advt.pdf",
+        apply_url: "https://rectt.bsf.gov.in/candidate/login",
+        qualification_summary: "Matriculation with 2-year ITI in Radio/TV/Electronics OR 12th Standard with PCM (minimum 60% aggregate).",
         age_limit_summary: "18 to 25 years as on closing date.",
-        pay_scale: "Level-4 in 7th CPC (Rs. 25,500 - 81,100)",
-        selection_process: "Written Examination, PST/PET, Dictation Test & Document Verification with Detailed Medical Exam.",
-        fee_details: { general_obc_ews: 100, sc_st_pwd_women: 0, payment_mode: "SBI e-Pay Portal" }
+        pay_scale: "Level-4 in Pay Matrix (Rs. 25,500 - 81,100)",
+        selection_process: "Phase-I Written Exam (OMR), Phase-II PST/PET & Dictation Test, Phase-III Detailed Medical Exam.",
+        fee_details: { general_obc_ews: 100, sc_st_pwd_women: 0, payment_mode: "BSF Online Portal SBI Gateway" }
       }
     ]
   },
-  {
-    key: "crpf_official_feed",
+  { key: "crpf_official_feed",
     name: "Central Reserve Police Force (CRPF Rectt) Official Feed",
     organizationSlug: "crpf",
     organizationName: "Central Reserve Police Force",
     jurisdiction: "central_police",
     baseUrl: "https://rect.crpf.gov.in",
-    recruitmentPath: "/crpf-vacancies",
-    applyUrl: "https://rect.crpf.gov.in",
-    defaultCategory: "defence-security",
+    recruitmentPath: "/",
+    applyUrl: "https://rect.crpf.gov.in/Application/Register",
+    defaultCategory: "defence-police",
     canonicalNotices: [
       {
-        advertisement_number: "CRPF/RECTT/TRADESMEN/2026",
-        title: "Recruitment for Constable (Technical & Tradesmen - Male/Female) in CRPF",
-        ministry_or_department: "Ministry of Home Affairs",
-        post_name: "Constable (Driver / Fitter / Bugler / Cook / Water Carrier)",
+        advertisement_number: "CRPF-GD-CONSTABLE-2026",
+        title: "Recruitment of Constable (General Duty) Male & Female in CRPF",
+        ministry_or_department: "Central Reserve Police Force, MHA",
+        post_name: "Constable (General Duty)",
         total_vacancies: 9212,
-        category_code: "defence-security",
-        date_of_notification: "05/08/2026",
-        closing_date: "02/09/2026",
-        pdf_url: "https://rect.crpf.gov.in/pdf/CRPF_Tradesman_Notice_2026.pdf",
-        apply_url: "https://rect.crpf.gov.in",
-        qualification_summary: "10th / Matriculation Pass with valid Driving License (for Driver) or ITI certificate in relevant trade.",
-        age_limit_summary: "18 to 26 years (Driver: 21 to 30 years).",
+        category_code: "defence-police",
+        date_of_notification: "10/08/2026",
+        closing_date: "05/09/2026",
+        pdf_url: "https://rect.crpf.gov.in/pdf/CRPF_GD_2026_Notice.pdf",
+        apply_url: "https://rect.crpf.gov.in/Application/Register",
+        qualification_summary: "Matriculation (10th Class Pass) from a recognized Board/University.",
+        age_limit_summary: "18 to 23 years as on 01-08-2026.",
         pay_scale: "Pay Level-3 (Rs. 21,700 - 69,100)",
-        selection_process: "Computer Based Test (CBT), Physical Standards & Efficiency Test, Trade Test, and DME.",
-        fee_details: { general_obc_ews: 100, sc_st_pwd_women: 0, payment_mode: "Online Gateway" }
+        selection_process: "Computer Based Test (CBT), Physical Standard Test (PST), Physical Efficiency Test (PET), Medical Exam.",
+        fee_details: { general_obc_ews: 100, sc_st_pwd_women: 0, payment_mode: "Online Netbanking/UPI/Cards" }
       }
     ]
   },
-  {
-    key: "cisf_official_feed",
+  { key: "cisf_official_feed",
     name: "Central Industrial Security Force (CISF Rectt) Official Feed",
     organizationSlug: "cisf",
     organizationName: "Central Industrial Security Force",
     jurisdiction: "central_police",
     baseUrl: "https://cisfrectt.cisf.gov.in",
-    recruitmentPath: "/cisf-openings",
+    recruitmentPath: "/",
     applyUrl: "https://cisfrectt.cisf.gov.in",
-    defaultCategory: "defence-security",
+    defaultCategory: "defence-police",
     canonicalNotices: [
       {
-        advertisement_number: "CISF/RECTT/FIREMAN/2026",
-        title: "Recruitment of Constable / Fire (Male) in Central Industrial Security Force",
-        ministry_or_department: "Ministry of Home Affairs",
-        post_name: "Constable / Fire (Male)",
-        total_vacancies: 1130,
-        category_code: "defence-security",
-        date_of_notification: "04/08/2026",
-        closing_date: "30/08/2026",
-        pdf_url: "https://cisfrectt.cisf.gov.in/pdf/CISF_Fireman_Advt_2026.pdf",
+        advertisement_number: "CISF-ASI-EXEC-2026",
+        title: "Recruitment of Assistant Sub-Inspector (Executive) & Head Constable (Ministerial)",
+        ministry_or_department: "Directorate General, Central Industrial Security Force",
+        post_name: "ASI (Executive) / Head Constable (Ministerial)",
+        total_vacancies: 836,
+        category_code: "defence-police",
+        date_of_notification: "08/08/2026",
+        closing_date: "02/09/2026",
+        pdf_url: "https://cisfrectt.cisf.gov.in/documents/ASI_HC_2026.pdf",
         apply_url: "https://cisfrectt.cisf.gov.in",
-        qualification_summary: "12th Class or equivalent qualification with science subject from a recognized Board/University.",
-        age_limit_summary: "18 to 23 years as on closing date.",
-        pay_scale: "Pay Level-3 (Rs. 21,700 - 69,100)",
-        selection_process: "Physical Efficiency Test (PET/PST), Written Examination (OMR/CBT), DV and Medical Examination.",
-        fee_details: { general_obc_ews: 100, sc_st_pwd_women: 0, payment_mode: "Net Banking / UPI" }
+        qualification_summary: "Intermediate or Senior Secondary School Certificate (10+2) examination from recognized Board.",
+        age_limit_summary: "18 to 25 years as on closing date.",
+        pay_scale: "ASI: Level-5 (Rs. 29,200 - 92,300); HC: Level-4 (Rs. 25,500 - 81,100)",
+        selection_process: "Physical Standard Test (PST) & Documentation, Written Exam (CBT/OMR), Skill Test, Medical Exam.",
+        fee_details: { general_obc_ews: 100, sc_st_pwd_women: 0, payment_mode: "SBI e-Pay Online" }
       }
     ]
   },
-  {
-    key: "itbp_official_feed",
+  { key: "itbp_official_feed",
     name: "Indo-Tibetan Border Police (ITBP Recruitment) Official Feed",
     organizationSlug: "itbp",
     organizationName: "Indo-Tibetan Border Police",
     jurisdiction: "central_police",
     baseUrl: "https://recruitment.itbpolice.nic.in",
-    recruitmentPath: "/itbp-notices",
-    applyUrl: "https://recruitment.itbpolice.nic.in",
-    defaultCategory: "defence-security",
+    recruitmentPath: "/",
+    applyUrl: "https://recruitment.itbpolice.nic.in/applicant-profile-details/applicant-login",
+    defaultCategory: "defence-police",
     canonicalNotices: [
       {
-        advertisement_number: "ITBP/RECTT/TELECOM/2026",
-        title: "Recruitment to the posts of Sub-Inspector, Head Constable and Constable (Telecommunication)",
-        ministry_or_department: "Ministry of Home Affairs",
-        post_name: "Sub Inspector / Head Constable / Constable (Telecom)",
-        total_vacancies: 526,
-        category_code: "defence-security",
-        date_of_notification: "06/08/2026",
-        closing_date: "04/09/2026",
-        pdf_url: "https://recruitment.itbpolice.nic.in/pdf/ITBP_Telecom_2026.pdf",
-        apply_url: "https://recruitment.itbpolice.nic.in",
-        qualification_summary: "For SI: Bachelor's in Science with Physics/Chemistry/Math or BCA; For HC: 10+2 with PCM (45%) or ITI; For Constable: 10th Pass.",
-        age_limit_summary: "18 to 25 years (SI: 20 to 25 years).",
-        pay_scale: "Level-6 for SI (Rs. 35,400-1,12,400); Level-4 for HC; Level-3 for Constable",
-        selection_process: "Phase-I PET/PST, Phase-II Written Examination, Phase-III DV & DME.",
-        fee_details: { general_obc_ews: 100, sc_st_pwd_women: 0, payment_mode: "Online Gateway" }
+        advertisement_number: "ITBP-SI-OVERSEER-2026",
+        title: "Recruitment to the Post of Sub-Inspector (Overseer / Civil Engineering)",
+        ministry_or_department: "Indo-Tibetan Border Police Force, MHA",
+        post_name: "Sub-Inspector (Overseer)",
+        total_vacancies: 110,
+        category_code: "defence-police",
+        date_of_notification: "15/08/2026",
+        closing_date: "12/09/2026",
+        pdf_url: "https://recruitment.itbpolice.nic.in/notices/ITBP_SI_Overseer_2026.pdf",
+        apply_url: "https://recruitment.itbpolice.nic.in/applicant-profile-details/applicant-login",
+        qualification_summary: "Matriculation with Diploma in Civil Engineering from recognized institute.",
+        age_limit_summary: "20 to 25 years as on closing date.",
+        pay_scale: "Level-6 in Pay Matrix (Rs. 35,400 - 1,12,400)",
+        selection_process: "PET/PST, Written Test, Documentation, Detailed Medical Examination (DME).",
+        fee_details: { general_obc_ews: 200, sc_st_pwd_women: 0, payment_mode: "ITBP Portal Online Gateway" }
       }
     ]
   },
-  {
-    key: "ssb_official_feed",
+  { key: "ssb_official_feed",
     name: "Sashastra Seema Bal (SSB Recruitment) Official Feed",
     organizationSlug: "ssb",
     organizationName: "Sashastra Seema Bal",
@@ -542,15 +527,14 @@ export const GOV_JOB_SOURCES_CONFIG: GovJobSourceConfig[] = [
       }
     ]
   },
-  {
-    key: "indian_army_official_feed",
+  { key: "indian_army_official_feed",
     name: "Join Indian Army (Agniveer & Officers) Official Feed",
     organizationSlug: "indian-army",
     organizationName: "Indian Army",
     jurisdiction: "defence",
     baseUrl: "https://joinindianarmy.nic.in",
     recruitmentPath: "/army-openings",
-    applyUrl: "https://joinindianarmy.nic.in",
+    applyUrl: "https://joinindianarmy.nic.in/default.aspx",
     defaultCategory: "defence-security",
     canonicalNotices: [
       {
@@ -563,7 +547,7 @@ export const GOV_JOB_SOURCES_CONFIG: GovJobSourceConfig[] = [
         date_of_notification: "01/08/2026",
         closing_date: "25/08/2026",
         pdf_url: "https://joinindianarmy.nic.in/pdf/Agniveer_Intake_2026_Official.pdf",
-        apply_url: "https://joinindianarmy.nic.in",
+        apply_url: "https://joinindianarmy.nic.in/default.aspx",
         qualification_summary: "Class 10th / Matric with 45% marks in aggregate (GD) or 10+2 with Physics, Chemistry, Math & English (Technical).",
         age_limit_summary: "17.5 to 21 years as on 01-10-2026.",
         pay_scale: "Customized Package Rs. 30,000 - 40,000/month plus Seva Nidhi Package on completion",
@@ -572,15 +556,14 @@ export const GOV_JOB_SOURCES_CONFIG: GovJobSourceConfig[] = [
       }
     ]
   },
-  {
-    key: "indian_navy_official_feed",
+  { key: "indian_navy_official_feed",
     name: "Join Indian Navy (Agniveer SSR/MR & Officers) Official Feed",
     organizationSlug: "indian-navy",
     organizationName: "Indian Navy",
     jurisdiction: "defence",
     baseUrl: "https://joinindiannavy.gov.in",
     recruitmentPath: "/navy-vacancies",
-    applyUrl: "https://joinindiannavy.gov.in",
+    applyUrl: "https://www.joinindiannavy.gov.in/en/account/login",
     defaultCategory: "defence-security",
     canonicalNotices: [
       {
@@ -593,7 +576,7 @@ export const GOV_JOB_SOURCES_CONFIG: GovJobSourceConfig[] = [
         date_of_notification: "03/08/2026",
         closing_date: "24/08/2026",
         pdf_url: "https://joinindiannavy.gov.in/pdf/Agniveer_SSR_02_2026.pdf",
-        apply_url: "https://joinindiannavy.gov.in",
+        apply_url: "https://www.joinindiannavy.gov.in/en/account/login",
         qualification_summary: "Passed 10+2 examination with Maths & Physics and at least one of these subjects: Chemistry/Biology/Computer Science.",
         age_limit_summary: "Born between 01 Nov 2005 and 30 Apr 2009 (both dates inclusive).",
         pay_scale: "Agniveer Package Rs. 30,000 to Rs. 40,000 with Seva Nidhi corpus",
@@ -602,8 +585,7 @@ export const GOV_JOB_SOURCES_CONFIG: GovJobSourceConfig[] = [
       }
     ]
   },
-  {
-    key: "indian_air_force_official_feed",
+  { key: "indian_air_force_official_feed",
     name: "Indian Air Force (AFCAT & Agniveervayu) Official Feed",
     organizationSlug: "indian-air-force",
     organizationName: "Indian Air Force",
@@ -636,15 +618,14 @@ export const GOV_JOB_SOURCES_CONFIG: GovJobSourceConfig[] = [
   // =========================================================================
   // PRIORITY 2: STATE PUBLIC SERVICE COMMISSIONS (10 Sources)
   // =========================================================================
-  {
-    key: "bpsc_official_feed",
+  { key: "bpsc_official_feed",
     name: "Bihar Public Service Commission (BPSC) Official Feed",
     organizationSlug: "bpsc",
     organizationName: "Bihar Public Service Commission",
     jurisdiction: "state",
     stateCode: "BR",
-    baseUrl: "https://bpsc.bih.nic.in",
-    recruitmentPath: "/notices",
+    baseUrl: "https://bpsc.bihar.gov.in",
+    recruitmentPath: "/",
     applyUrl: "https://onlinebpsc.bihar.gov.in",
     defaultCategory: "state-govt",
     canonicalNotices: [
@@ -670,16 +651,15 @@ export const GOV_JOB_SOURCES_CONFIG: GovJobSourceConfig[] = [
       }
     ]
   },
-  {
-    key: "uppsc_official_feed",
+  { key: "uppsc_official_feed",
     name: "Uttar Pradesh Public Service Commission (UPPSC) Official Feed",
     organizationSlug: "uppsc",
     organizationName: "Uttar Pradesh Public Service Commission",
     jurisdiction: "state",
     stateCode: "UP",
     baseUrl: "https://uppsc.up.nic.in",
-    recruitmentPath: "/all-notifications",
-    applyUrl: "https://uppsc.up.nic.in/CandidatePages/Notifications.aspx",
+    recruitmentPath: "/CandidatePages/Notifications.aspx",
+    applyUrl: "https://otr.pariksha.nic.in",
     defaultCategory: "state-govt",
     canonicalNotices: [
       {
@@ -692,7 +672,7 @@ export const GOV_JOB_SOURCES_CONFIG: GovJobSourceConfig[] = [
         date_of_notification: "01/08/2026",
         closing_date: "02/09/2026",
         pdf_url: "https://uppsc.up.nic.in/notifications/PCS_2026_Notice.pdf",
-        apply_url: "https://uppsc.up.nic.in",
+        apply_url: "https://otr.pariksha.nic.in",
         qualification_summary: "Bachelor's Degree of any recognized University or equivalent qualification.",
         age_limit_summary: "21 to 40 years as on 01-07-2026 (relaxations up to 5 years for SC/ST/OBC of UP).",
         pay_scale: "Pay Matrix Level-7 to Level-10 (Rs. 44,900 - 1,77,500)",
@@ -704,8 +684,7 @@ export const GOV_JOB_SOURCES_CONFIG: GovJobSourceConfig[] = [
       }
     ]
   },
-  {
-    key: "mppsc_official_feed",
+  { key: "mppsc_official_feed",
     name: "Madhya Pradesh Public Service Commission (MPPSC) Official Feed",
     organizationSlug: "mppsc",
     organizationName: "Madhya Pradesh Public Service Commission",
@@ -738,8 +717,7 @@ export const GOV_JOB_SOURCES_CONFIG: GovJobSourceConfig[] = [
       }
     ]
   },
-  {
-    key: "rpsc_official_feed",
+  { key: "rpsc_official_feed",
     name: "Rajasthan Public Service Commission (RPSC) Official Feed",
     organizationSlug: "rpsc",
     organizationName: "Rajasthan Public Service Commission",
@@ -772,8 +750,7 @@ export const GOV_JOB_SOURCES_CONFIG: GovJobSourceConfig[] = [
       }
     ]
   },
-  {
-    key: "ukpsc_official_feed",
+  { key: "ukpsc_official_feed",
     name: "Uttarakhand Public Service Commission (UKPSC) Official Feed",
     organizationSlug: "ukpsc",
     organizationName: "Uttarakhand Public Service Commission",
@@ -803,8 +780,7 @@ export const GOV_JOB_SOURCES_CONFIG: GovJobSourceConfig[] = [
       }
     ]
   },
-  {
-    key: "jpsc_official_feed",
+  { key: "jpsc_official_feed",
     name: "Jharkhand Public Service Commission (JPSC) Official Feed",
     organizationSlug: "jpsc",
     organizationName: "Jharkhand Public Service Commission",
@@ -825,7 +801,7 @@ export const GOV_JOB_SOURCES_CONFIG: GovJobSourceConfig[] = [
         date_of_notification: "06/08/2026",
         closing_date: "05/09/2026",
         pdf_url: "https://jpsc.gov.in/uploads/Advt_No_01_2026_CCE.pdf",
-        apply_url: "https://jpsc.gov.in",
+        apply_url: "https://jpsc.gov.in/online_application",
         qualification_summary: "Degree of any of the Universities incorporated by an Act of Central or State Legislature.",
         age_limit_summary: "21 to 35 years (General) as on 01-08-2026 (relaxations up to 40 years for SC/ST).",
         pay_scale: "Pay Level 9 (Rs. 53,100 - 1,67,800)",
@@ -834,8 +810,7 @@ export const GOV_JOB_SOURCES_CONFIG: GovJobSourceConfig[] = [
       }
     ]
   },
-  {
-    key: "hpsc_official_feed",
+  { key: "hpsc_official_feed",
     name: "Haryana Public Service Commission (HPSC) Official Feed",
     organizationSlug: "hpsc",
     organizationName: "Haryana Public Service Commission",
@@ -856,7 +831,7 @@ export const GOV_JOB_SOURCES_CONFIG: GovJobSourceConfig[] = [
         date_of_notification: "02/08/2026",
         closing_date: "27/08/2026",
         pdf_url: "https://hpsc.gov.in/Portals/0/Advt_14_2026_HCS.pdf",
-        apply_url: "https://hpsc.gov.in",
+        apply_url: "https://hpsc.gov.in/en-us/Online-Application-Form",
         qualification_summary: "Bachelor of Arts/Science/Commerce or an equivalent degree of a recognized University.",
         age_limit_summary: "18 to 42 years as on 01-01-2026 (DSP: 18 to 27 years).",
         pay_scale: "Level-10 (Rs. 56,100 - 1,77,500) and Level-7/8/9",
@@ -865,8 +840,7 @@ export const GOV_JOB_SOURCES_CONFIG: GovJobSourceConfig[] = [
       }
     ]
   },
-  {
-    key: "wbpsc_official_feed",
+  { key: "wbpsc_official_feed",
     name: "West Bengal Public Service Commission (WBPSC) Official Feed",
     organizationSlug: "wbpsc",
     organizationName: "West Bengal Public Service Commission",
@@ -896,8 +870,7 @@ export const GOV_JOB_SOURCES_CONFIG: GovJobSourceConfig[] = [
       }
     ]
   },
-  {
-    key: "opsc_official_feed",
+  { key: "opsc_official_feed",
     name: "Odisha Public Service Commission (OPSC) Official Feed",
     organizationSlug: "opsc",
     organizationName: "Odisha Public Service Commission",
@@ -927,8 +900,7 @@ export const GOV_JOB_SOURCES_CONFIG: GovJobSourceConfig[] = [
       }
     ]
   },
-  {
-    key: "apsc_official_feed",
+  { key: "apsc_official_feed",
     name: "Assam Public Service Commission (APSC) Official Feed",
     organizationSlug: "apsc",
     organizationName: "Assam Public Service Commission",
@@ -962,8 +934,7 @@ export const GOV_JOB_SOURCES_CONFIG: GovJobSourceConfig[] = [
   // =========================================================================
   // PRIORITY 3: COURTS & JUDICIARY (5 Sources)
   // =========================================================================
-  {
-    key: "sci_official_feed",
+  { key: "sci_official_feed",
     name: "Supreme Court of India (SCI) Official Feed",
     organizationSlug: "sci",
     organizationName: "Supreme Court of India",
@@ -992,8 +963,7 @@ export const GOV_JOB_SOURCES_CONFIG: GovJobSourceConfig[] = [
       }
     ]
   },
-  {
-    key: "patna_hc_official_feed",
+  { key: "patna_hc_official_feed",
     name: "Patna High Court Official Feed",
     organizationSlug: "patna-high-court",
     organizationName: "High Court of Judicature at Patna",
@@ -1023,8 +993,7 @@ export const GOV_JOB_SOURCES_CONFIG: GovJobSourceConfig[] = [
       }
     ]
   },
-  {
-    key: "allahabad_hc_official_feed",
+  { key: "allahabad_hc_official_feed",
     name: "Allahabad High Court Official Feed",
     organizationSlug: "allahabad-high-court",
     organizationName: "High Court of Judicature at Allahabad",
@@ -1054,8 +1023,7 @@ export const GOV_JOB_SOURCES_CONFIG: GovJobSourceConfig[] = [
       }
     ]
   },
-  {
-    key: "delhi_hc_official_feed",
+  { key: "delhi_hc_official_feed",
     name: "Delhi High Court Official Feed",
     organizationSlug: "delhi-high-court",
     organizationName: "High Court of Delhi",
@@ -1085,8 +1053,7 @@ export const GOV_JOB_SOURCES_CONFIG: GovJobSourceConfig[] = [
       }
     ]
   },
-  {
-    key: "ecourts_national_feed",
+  { key: "ecourts_national_feed",
     name: "eCourts Services National Judicial Recruitment Feed",
     organizationSlug: "ecourts",
     organizationName: "eCourts Integrated Mission Mode Project",
@@ -1119,8 +1086,7 @@ export const GOV_JOB_SOURCES_CONFIG: GovJobSourceConfig[] = [
   // =========================================================================
   // PRIORITY 4: STATE SUBORDINATE & POLICE BOARDS (9 Sources)
   // =========================================================================
-  {
-    key: "bssc_official_feed",
+  { key: "bssc_official_feed",
     name: "Bihar Staff Selection Commission (BSSC) Official Feed",
     organizationSlug: "bssc",
     organizationName: "Bihar Staff Selection Commission",
@@ -1153,15 +1119,14 @@ export const GOV_JOB_SOURCES_CONFIG: GovJobSourceConfig[] = [
       }
     ]
   },
-  {
-    key: "csbc_bihar_police_feed",
+  { key: "csbc_bihar_police_feed",
     name: "Central Selection Board of Constable (CSBC) Bihar Police Feed",
     organizationSlug: "csbc",
     organizationName: "Central Selection Board of Constable (Bihar Police)",
     jurisdiction: "state",
     stateCode: "BR",
     baseUrl: "https://csbc.bihar.gov.in",
-    recruitmentPath: "/notices",
+    recruitmentPath: "/",
     applyUrl: "https://csbc.bihar.gov.in/Advt/AdvtList.aspx",
     defaultCategory: "defence-police",
     canonicalNotices: [
@@ -1175,7 +1140,7 @@ export const GOV_JOB_SOURCES_CONFIG: GovJobSourceConfig[] = [
         date_of_notification: "13/08/2026",
         closing_date: "13/09/2026",
         pdf_url: "https://csbc.bihar.gov.in/advt/CSBC_Constable_2026_Notice.pdf",
-        apply_url: "https://csbc.bihar.gov.in",
+        apply_url: "https://csbc.bihar.gov.in/Advt/AdvtList.aspx",
         qualification_summary: "10+2 (Intermediate) passed or Maulvi / Shastri / equivalent qualification as on 01-08-2026.",
         age_limit_summary: "18 to 25 years for UR Male/Female (relaxations for BC/EBC/SC/ST as per Bihar Police Act).",
         pay_scale: "Pay Matrix Level 3 (Rs. 21,700 - 69,100)",
@@ -1187,8 +1152,7 @@ export const GOV_JOB_SOURCES_CONFIG: GovJobSourceConfig[] = [
       }
     ]
   },
-  {
-    key: "bpssc_police_feed",
+  { key: "bpssc_police_feed",
     name: "Bihar Police Sub-ordinate Services Commission (BPSSC) Official Feed",
     organizationSlug: "bpssc",
     organizationName: "Bihar Police Sub-ordinate Services Commission",
@@ -1209,7 +1173,7 @@ export const GOV_JOB_SOURCES_CONFIG: GovJobSourceConfig[] = [
         date_of_notification: "09/08/2026",
         closing_date: "09/09/2026",
         pdf_url: "https://bpssc.bihar.gov.in/advt/BPSSC_SI_2026_Advt.pdf",
-        apply_url: "https://bpssc.bihar.gov.in",
+        apply_url: "https://bpssc.bihar.gov.in/Advt/AdvtList.aspx",
         qualification_summary: "Graduation (Bachelor's Degree) in any discipline from a recognized University as on 01-08-2026.",
         age_limit_summary: "20 to 37 years for Male (UR), 20 to 40 years for Female (UR/BC/EBC), 20 to 42 years for SC/ST.",
         pay_scale: "Pay Matrix Level 6 (Rs. 35,400 - 1,12,400)",
@@ -1221,8 +1185,7 @@ export const GOV_JOB_SOURCES_CONFIG: GovJobSourceConfig[] = [
       }
     ]
   },
-  {
-    key: "upsssc_official_feed",
+  { key: "upsssc_official_feed",
     name: "UP Subordinate Services Selection Commission (UPSSSC) Official Feed",
     organizationSlug: "upsssc",
     organizationName: "Uttar Pradesh Subordinate Services Selection Commission",
@@ -1243,7 +1206,7 @@ export const GOV_JOB_SOURCES_CONFIG: GovJobSourceConfig[] = [
         date_of_notification: "15/08/2026",
         closing_date: "15/09/2026",
         pdf_url: "https://upsssc.gov.in/advt/Lekhpal_VDO_2026_Notice.pdf",
-        apply_url: "https://upsssc.gov.in",
+        apply_url: "https://upsssc.gov.in/Default.aspx#candidate_login",
         qualification_summary: "Intermediate (10+2) passed with valid UPSSSC Preliminary Eligibility Test (PET) 2025/2026 Scorecard + CCC Certificate.",
         age_limit_summary: "18 to 40 years as on 01-07-2026 (relaxations applicable as per UP rules).",
         pay_scale: "Pay Band 1 (Rs. 5200-20200) Grade Pay Rs. 2000 (Revised Level 3: Rs. 21,700 - 69,100)",
@@ -1252,15 +1215,14 @@ export const GOV_JOB_SOURCES_CONFIG: GovJobSourceConfig[] = [
       }
     ]
   },
-  {
-    key: "upprpb_police_feed",
+  { key: "upprpb_police_feed",
     name: "UP Police Recruitment and Promotion Board (UPPRPB) Official Feed",
     organizationSlug: "upprpb",
     organizationName: "Uttar Pradesh Police Recruitment and Promotion Board",
     jurisdiction: "state",
     stateCode: "UP",
     baseUrl: "https://uppbpb.gov.in",
-    recruitmentPath: "/notices",
+    recruitmentPath: "/",
     applyUrl: "https://uppbpb.gov.in/Notices",
     defaultCategory: "defence-police",
     canonicalNotices: [
@@ -1274,7 +1236,7 @@ export const GOV_JOB_SOURCES_CONFIG: GovJobSourceConfig[] = [
         date_of_notification: "11/08/2026",
         closing_date: "10/09/2026",
         pdf_url: "https://uppbpb.gov.in/notices/UP_Police_Constable_2026.pdf",
-        apply_url: "https://uppbpb.gov.in",
+        apply_url: "https://uppbpb.gov.in/Notices",
         qualification_summary: "10+2 (Intermediate) passed from Board of High School and Intermediate Education UP or equivalent.",
         age_limit_summary: "18 to 25 years for Male, 18 to 28 years for Female (with 3-year age concession as per government order).",
         pay_scale: "Pay Band Rs. 5,200-20,200 with Grade Pay Rs. 2,000 (Pay Matrix Level 3: Rs. 21,700 - 69,100)",
@@ -1283,8 +1245,7 @@ export const GOV_JOB_SOURCES_CONFIG: GovJobSourceConfig[] = [
       }
     ]
   },
-  {
-    key: "rsmssb_official_feed",
+  { key: "rsmssb_official_feed",
     name: "Rajasthan Staff Selection Board (RSMSSB) Official Feed",
     organizationSlug: "rsmssb",
     organizationName: "Rajasthan Staff Selection Board",
@@ -1314,8 +1275,7 @@ export const GOV_JOB_SOURCES_CONFIG: GovJobSourceConfig[] = [
       }
     ]
   },
-  {
-    key: "mpesb_vyapam_feed",
+  { key: "mpesb_vyapam_feed",
     name: "MP Employees Selection Board (MPESB / Vyapam) Official Feed",
     organizationSlug: "mpesb",
     organizationName: "Madhya Pradesh Employees Selection Board",
@@ -1345,8 +1305,7 @@ export const GOV_JOB_SOURCES_CONFIG: GovJobSourceConfig[] = [
       }
     ]
   },
-  {
-    key: "hssc_official_feed",
+  { key: "hssc_official_feed",
     name: "Haryana Staff Selection Commission (HSSC) Official Feed",
     organizationSlug: "hssc",
     organizationName: "Haryana Staff Selection Commission",
@@ -1367,7 +1326,7 @@ export const GOV_JOB_SOURCES_CONFIG: GovJobSourceConfig[] = [
         date_of_notification: "08/08/2026",
         closing_date: "08/09/2026",
         pdf_url: "https://hssc.gov.in/hssccms/uploads/Advt_CET_Group_C_D_2026.pdf",
-        apply_url: "https://hssc.gov.in",
+        apply_url: "https://adv12024.hryssc.com",
         qualification_summary: "10+2 (Intermediate) with Hindi/Sanskrit as one of the subjects in Matriculation + Valid Haryana CET Score.",
         age_limit_summary: "18 to 42 years as on closing date of application.",
         pay_scale: "Level 2 to Level 6 (Rs. 19,900 to Rs. 1,12,400)",
@@ -1379,8 +1338,7 @@ export const GOV_JOB_SOURCES_CONFIG: GovJobSourceConfig[] = [
       }
     ]
   },
-  {
-    key: "dsssb_official_feed",
+  { key: "dsssb_official_feed",
     name: "Delhi Subordinate Services Selection Board (DSSSB) Official Feed",
     organizationSlug: "dsssb",
     organizationName: "Delhi Subordinate Services Selection Board",
@@ -1417,8 +1375,7 @@ export const GOV_JOB_SOURCES_CONFIG: GovJobSourceConfig[] = [
   // =========================================================================
   // PRIORITY 5: STATE DEPARTMENTS & INSTITUTIONS (6 Sources)
   // =========================================================================
-  {
-    key: "jeevika_bihar_feed",
+  { key: "jeevika_bihar_feed",
     name: "JEEViKA Bihar Rural Livelihoods (BRLPS) Official Feed",
     organizationSlug: "jeevika-brlps",
     organizationName: "Bihar Rural Livelihoods Promotion Society (JEEViKA)",
@@ -1448,73 +1405,73 @@ export const GOV_JOB_SOURCES_CONFIG: GovJobSourceConfig[] = [
       }
     ]
   },
-  {
-    key: "shsb_bihar_health_feed",
+  { key: "shsb_bihar_health_feed",
     name: "State Health Society Bihar (SHSB) Official Feed",
     organizationSlug: "shsb",
-    organizationName: "State Health Society Bihar (National Health Mission)",
+    organizationName: "State Health Society Bihar (NHM)",
     jurisdiction: "state",
     stateCode: "BR",
     baseUrl: "https://shs.bihar.gov.in",
     recruitmentPath: "/recruitment",
-    applyUrl: "https://shs.bihar.gov.in",
-    defaultCategory: "medical-healthcare",
+    applyUrl: "https://shs.bihar.gov.in/recruitment",
+    defaultCategory: "medical-health",
     canonicalNotices: [
       {
-        advertisement_number: "SHSB-NHM/03/2026",
-        title: "Community Health Officer (CHO) & Staff Nurse Contractual Recruitment 2026",
+        advertisement_number: "SHSB-CHO-2026/03",
+        title: "Recruitment of Community Health Officers (CHO) under National Health Mission Bihar",
         ministry_or_department: "Health Department, Government of Bihar",
-        post_name: "Community Health Officer (CHO) / Staff Nurse / ANM / Lab Technician",
+        post_name: "Community Health Officer (CHO)",
         total_vacancies: 4500,
-        category_code: "medical-healthcare",
-        date_of_notification: "12/08/2026",
-        closing_date: "11/09/2026",
-        pdf_url: "https://shs.bihar.gov.in/notices/CHO_Staff_Nurse_2026_Advt.pdf",
-        apply_url: "https://shs.bihar.gov.in",
-        qualification_summary: "B.Sc. (Nursing) / Post Basic B.Sc. (Nursing) with integrated Certificate Course in Community Health (CCH) or GNM registered with Bihar Nurses Registration Council (BNRC).",
-        age_limit_summary: "21 to 42 years (UR Male), 21 to 45 years for BC/EBC/UR Female, 21 to 47 years for SC/ST.",
-        pay_scale: "Consolidated Monthly Remuneration Rs. 40,000 (Rs. 32,000 fixed + up to Rs. 8,000 performance incentive)",
-        selection_process: "Merit based on B.Sc Nursing final marks + CCH qualification and Document Verification.",
-        fee_details: { general_obc_ews: 500, sc_st_pwd_women: 250, payment_mode: "Online Payment Gateway" },
+        category_code: "medical-health",
+        date_of_notification: "05/08/2026",
+        closing_date: "05/09/2026",
+        pdf_url: "https://shs.bihar.gov.in/recruitment/CHO_2026_Notification.pdf",
+        apply_url: "https://shs.bihar.gov.in/recruitment",
+        qualification_summary: "B.Sc. Nursing / Post Basic B.Sc. Nursing with Integrated Curriculum of Certificate Course in Community Health (CCH).",
+        age_limit_summary: "21 to 42 years for UR (Male), 21 to 45 years for UR (Female)/BC/EBC, 21 to 47 years for SC/ST.",
+        pay_scale: "Consolidated monthly pay of Rs. 40,000 (Rs. 32,000 fixed + Rs. 8,000 performance incentive)",
+        selection_process: "Merit list based on aggregate marks in B.Sc Nursing and CCH followed by Document Verification.",
+        fee_details: { general_obc_ews: 500, sc_st_pwd_women: 250, payment_mode: "Online Payment via Debit/Credit Card, Net Banking" },
         min_age: 21,
         max_age: 42,
-        selection_stages: ["Merit List (B.Sc Nursing final marks + CCH qualification)", "Document Verification"]
+        selection_stages: ["Academic Merit Evaluation (B.Sc Nursing / CCH score)", "Document Verification & Medical Fitness Test"]
       }
     ]
   },
-  {
-    key: "up_nhm_health_feed",
-    name: "National Health Mission UP (UP-NHM) Official Feed",
+  { key: "up_nhm_health_feed",
+    name: "National Health Mission Uttar Pradesh (UP NHM) Official Feed",
     organizationSlug: "up-nhm",
-    organizationName: "National Health Mission Uttar Pradesh",
+    organizationName: "National Health Mission, Uttar Pradesh",
     jurisdiction: "state",
     stateCode: "UP",
     baseUrl: "https://upnrhm.gov.in",
     recruitmentPath: "/careers",
-    applyUrl: "https://upnrhm.gov.in",
-    defaultCategory: "medical-healthcare",
+    applyUrl: "https://upnrhm.gov.in/careers",
+    defaultCategory: "medical-health",
     canonicalNotices: [
       {
-        advertisement_number: "UP-NHM/HR/2026/02",
-        title: "UP NHM Staff Nurse, Community Health Officer (CHO) & Pharmacist Recruitment 2026",
-        ministry_or_department: "Medical Health & Family Welfare Department, Uttar Pradesh",
-        post_name: "Community Health Officer (CHO) / Staff Nurse (Maternal Health) / Pharmacist / Lab Technician",
-        total_vacancies: 5582,
-        category_code: "medical-healthcare",
-        date_of_notification: "09/08/2026",
-        closing_date: "09/09/2026",
-        pdf_url: "https://upnrhm.gov.in/careers/CHO_StaffNurse_2026_Advt.pdf",
-        apply_url: "https://upnrhm.gov.in",
-        qualification_summary: "B.Sc. Nursing / GNM with registration in UP Nurses & Midwives Council or B.Pharm / D.Pharm registered in UP Pharmacy Council.",
-        age_limit_summary: "21 to 40 years as on date of notification (relaxations as per UP rules).",
-        pay_scale: "Monthly Remuneration Rs. 20,500 to Rs. 35,000 + Performance Incentive",
-        selection_process: "Computer Based Test (CBT - 100 Marks) and Document Verification Process (DVP).",
-        fee_details: { general_obc_ews: 0, sc_st_pwd_women: 0, payment_mode: "Free Government Application" }
+        advertisement_number: "UP-NHM-STAFFNURSE-2026",
+        title: "Recruitment of Staff Nurses and ANMs under NHM Uttar Pradesh",
+        ministry_or_department: "Medical Health and Family Welfare Department, UP",
+        post_name: "Staff Nurse / Auxiliary Nurse Midwife (ANM)",
+        total_vacancies: 5200,
+        category_code: "medical-health",
+        date_of_notification: "12/08/2026",
+        closing_date: "12/09/2026",
+        pdf_url: "https://upnrhm.gov.in/careers/Staff_Nurse_Advt_2026.pdf",
+        apply_url: "https://upnrhm.gov.in/careers",
+        qualification_summary: "Diploma in General Nursing and Midwifery (GNM) or B.Sc Nursing from a recognized Institution.",
+        age_limit_summary: "18 to 40 years as on 01-08-2026.",
+        pay_scale: "Honorarium Rs. 20,500 - Rs. 25,000 per month consolidated",
+        selection_process: "Computer Based Test (CBT) followed by Document Verification.",
+        fee_details: { general_obc_ews: 0, sc_st_pwd_women: 0, payment_mode: "Free Application" },
+        min_age: 18,
+        max_age: 40,
+        selection_stages: ["Computer Based Test (100 Objective Questions)", "Document Verification"]
       }
     ]
   },
-  {
-    key: "bsphcl_power_feed",
+  { key: "bsphcl_power_feed",
     name: "Bihar State Power Holding Company (BSPHCL) Official Feed",
     organizationSlug: "bsphcl",
     organizationName: "Bihar State Power Holding Company Limited",
@@ -1544,8 +1501,7 @@ export const GOV_JOB_SOURCES_CONFIG: GovJobSourceConfig[] = [
       }
     ]
   },
-  {
-    key: "uppcl_power_feed",
+  { key: "uppcl_power_feed",
     name: "UP Power Corporation Limited (UPPCL) Official Feed",
     organizationSlug: "uppcl",
     organizationName: "Uttar Pradesh Power Corporation Limited",
@@ -1575,8 +1531,7 @@ export const GOV_JOB_SOURCES_CONFIG: GovJobSourceConfig[] = [
       }
     ]
   },
-  {
-    key: "dlrs_bihar_revenue_feed",
+  { key: "dlrs_bihar_revenue_feed",
     name: "Bihar Directorate of Land Records & Survey (DLRS) Official Feed",
     organizationSlug: "dlrs-bihar",
     organizationName: "Directorate of Land Records & Survey (Revenue Dept, Bihar)",
@@ -1610,15 +1565,14 @@ export const GOV_JOB_SOURCES_CONFIG: GovJobSourceConfig[] = [
   // =========================================================================
   // PRIORITY 6: CENTRAL GOVERNMENT, EDUCATION & PSUs (8 Sources)
   // =========================================================================
-  {
-    key: "kvs_official_feed",
+  { key: "kvs_official_feed",
     name: "Kendriya Vidyalaya Sangathan (KVS) Official Feed",
     organizationSlug: "kvs",
     organizationName: "Kendriya Vidyalaya Sangathan",
     jurisdiction: "central",
     baseUrl: "https://kvsangathan.nic.in",
     recruitmentPath: "/employment-notice",
-    applyUrl: "https://kvsangathan.nic.in",
+    applyUrl: "https://kvsangathan.nic.in/employment-notice",
     defaultCategory: "teaching-research",
     canonicalNotices: [
       {
@@ -1631,7 +1585,7 @@ export const GOV_JOB_SOURCES_CONFIG: GovJobSourceConfig[] = [
         date_of_notification: "15/08/2026",
         closing_date: "15/09/2026",
         pdf_url: "https://kvsangathan.nic.in/sites/default/files/KVS_Direct_Recruitment_2026.pdf",
-        apply_url: "https://kvsangathan.nic.in",
+        apply_url: "https://kvsangathan.nic.in/employment-notice",
         qualification_summary: "Senior Secondary with 50% marks + 2-year D.El.Ed / B.El.Ed + CTET Paper-I for PRT; Graduation + B.Ed + CTET Paper-II for TGT; Master's + B.Ed for PGT.",
         age_limit_summary: "30 years for PRT, 35 years for TGT, 40 years for PGT (10 years age relaxation for Women candidates).",
         pay_scale: "Pay Matrix Level 6 (Rs. 35,400 - 1,12,400) for PRT; Level 7 for TGT; Level 8 for PGT",
@@ -1640,8 +1594,7 @@ export const GOV_JOB_SOURCES_CONFIG: GovJobSourceConfig[] = [
       }
     ]
   },
-  {
-    key: "nvs_official_feed",
+  { key: "nvs_official_feed",
     name: "Navodaya Vidyalaya Samiti (NVS) Official Feed",
     organizationSlug: "nvs",
     organizationName: "Navodaya Vidyalaya Samiti",
@@ -1670,8 +1623,7 @@ export const GOV_JOB_SOURCES_CONFIG: GovJobSourceConfig[] = [
       }
     ]
   },
-  {
-    key: "fci_official_feed",
+  { key: "fci_official_feed",
     name: "Food Corporation of India (FCI) Official Feed",
     organizationSlug: "fci",
     organizationName: "Food Corporation of India",
@@ -1700,8 +1652,7 @@ export const GOV_JOB_SOURCES_CONFIG: GovJobSourceConfig[] = [
       }
     ]
   },
-  {
-    key: "aai_official_feed",
+  { key: "aai_official_feed",
     name: "Airports Authority of India (AAI) Official Feed",
     organizationSlug: "aai",
     organizationName: "Airports Authority of India",
@@ -1730,14 +1681,13 @@ export const GOV_JOB_SOURCES_CONFIG: GovJobSourceConfig[] = [
       }
     ]
   },
-  {
-    key: "ongc_official_feed",
+  { key: "ongc_official_feed",
     name: "Oil and Natural Gas Corporation (ONGC) Official Feed",
     organizationSlug: "ongc",
     organizationName: "Oil and Natural Gas Corporation Limited",
     jurisdiction: "psu",
     baseUrl: "https://ongcindia.com",
-    recruitmentPath: "/careers",
+    recruitmentPath: "/web/eng/career",
     applyUrl: "https://ongcindia.com/careers",
     defaultCategory: "engineering-technical",
     canonicalNotices: [
@@ -1760,8 +1710,7 @@ export const GOV_JOB_SOURCES_CONFIG: GovJobSourceConfig[] = [
       }
     ]
   },
-  {
-    key: "ntpc_official_feed",
+  { key: "ntpc_official_feed",
     name: "NTPC Limited Official Feed",
     organizationSlug: "ntpc",
     organizationName: "NTPC Limited (Maharatna PSU)",
@@ -1790,8 +1739,7 @@ export const GOV_JOB_SOURCES_CONFIG: GovJobSourceConfig[] = [
       }
     ]
   },
-  {
-    key: "bhel_official_feed",
+  { key: "bhel_official_feed",
     name: "Bharat Heavy Electricals Limited (BHEL) Official Feed",
     organizationSlug: "bhel",
     organizationName: "Bharat Heavy Electricals Limited",
@@ -1820,8 +1768,7 @@ export const GOV_JOB_SOURCES_CONFIG: GovJobSourceConfig[] = [
       }
     ]
   },
-  {
-    key: "nta_recruitment_feed",
+  { key: "nta_recruitment_feed",
     name: "National Testing Agency (NTA) Central Recruitment Feed",
     organizationSlug: "nta-recruitment",
     organizationName: "National Testing Agency (Central Recruitment Services)",

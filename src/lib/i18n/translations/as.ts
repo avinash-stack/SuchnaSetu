@@ -15,6 +15,8 @@ export const as: Record<TranslationKey, string> = {
   "nav.home": "মুখ্যপৃষ্ঠা",
   "nav.jobs": "চৰকাৰী চাকৰি",
   "nav.exams": "পৰীক্ষা আৰু জাননী",
+  "nav.admit_cards": "এডমিট কাৰ্ড",
+  "nav.results": "পৰীক্ষাৰ ফলাফল",
   "nav.news": "নিয়োগ বাৰ্তা",
   "nav.directory": "কর্তৃপক্ষ ডাইৰেক্টৰি",
   "nav.search_notices": "জাননী সন্ধান কৰক",

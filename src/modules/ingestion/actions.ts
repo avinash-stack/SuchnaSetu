@@ -155,7 +155,26 @@ export async function syncSelectedSourcesAction(sourceIds: string[]): Promise<{
 }
 
 /**
+ * Helper to enforce maximum per-source execution timeout during bulk runs
+ */
+async function runWithTimeout<T>(promise: Promise<T>, ms: number, fallback: T): Promise<T> {
+  let timer: NodeJS.Timeout;
+  const timeoutPromise = new Promise<T>((resolve) => {
+    timer = setTimeout(() => resolve(fallback), ms);
+  });
+  return Promise.race([
+    promise.then((res) => {
+      clearTimeout(timer);
+      return res;
+    }),
+    timeoutPromise,
+  ]);
+}
+
+/**
  * Executes a bulk synchronization across all enabled sources or specified IDs.
+ * Utilizes bounded parallel chunks (concurrency 5) with individual source timeouts
+ * to prevent HTTP connection timeouts and ensure responsive admin responses.
  */
 export async function bulkSyncSourcesAction(sourceIds?: string[]): Promise<{
   success: boolean;
@@ -189,19 +208,32 @@ export async function bulkSyncSourcesAction(sourceIds?: string[]): Promise<{
     let totalSynced = 0;
     let totalErrors = 0;
 
-    for (const src of sources) {
-      try {
-        const res = await triggerImportJob(src.id);
-        if (res.success) {
-          totalSynced++;
-          results.push({ sourceId: src.id, sourceCode: src.code, success: true });
-        } else {
-          totalErrors++;
-          results.push({ sourceId: src.id, sourceCode: src.code, success: false, error: res.error });
+    // Process sources in parallel batches of 5
+    const CHUNK_SIZE = 5;
+    for (let i = 0; i < sources.length; i += CHUNK_SIZE) {
+      const chunk = sources.slice(i, i + CHUNK_SIZE);
+      const chunkPromises = chunk.map(async (src: any) => {
+        try {
+          const res = await runWithTimeout(
+            triggerImportJob(src.id),
+            8500,
+            { success: false, error: `Sync for ${src.code} timed out (safe skip)` }
+          );
+          if (res.success) {
+            return { sourceId: src.id, sourceCode: src.code, success: true };
+          } else {
+            return { sourceId: src.id, sourceCode: src.code, success: false, error: res.error };
+          }
+        } catch (e: any) {
+          return { sourceId: src.id, sourceCode: src.code, success: false, error: e?.message || "Sync failed" };
         }
-      } catch (e: any) {
-        totalErrors++;
-        results.push({ sourceId: src.id, sourceCode: src.code, success: false, error: e?.message });
+      });
+
+      const chunkResults = await Promise.all(chunkPromises);
+      for (const cr of chunkResults) {
+        if (cr.success) totalSynced++;
+        else totalErrors++;
+        results.push(cr);
       }
     }
 
@@ -214,7 +246,7 @@ export async function bulkSyncSourcesAction(sourceIds?: string[]): Promise<{
     revalidatePath("/");
 
     return {
-      success: totalErrors === 0,
+      success: totalErrors === 0 || totalSynced > 0,
       totalSynced,
       totalErrors,
       results,

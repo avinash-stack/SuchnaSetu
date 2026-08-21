@@ -1,7 +1,7 @@
 import fs from 'fs';
 import { createClient } from '@supabase/supabase-js';
-import { GOV_JOB_SOURCES_CONFIG } from '../src/modules/ingestion/adapters/sources.config.js';
-import { GOV_EXAM_SOURCES_CONFIG } from '../src/modules/ingestion/adapters/exam-sources.config.js';
+import { GOV_JOB_SOURCES_CONFIG } from '../src/modules/ingestion/adapters/sources.config.ts';
+import { GOV_EXAM_SOURCES_CONFIG } from '../src/modules/ingestion/adapters/exam-sources.config.ts';
 
 // Parse .env.local
 const envContent = fs.readFileSync('.env.local', 'utf-8');

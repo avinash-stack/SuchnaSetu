@@ -15,6 +15,8 @@ export const bn: Record<TranslationKey, string> = {
   "nav.home": "হোম",
   "nav.jobs": "সরকারি চাকরি",
   "nav.exams": "পরীক্ষা ও সময়সূচি",
+  "nav.admit_cards": "অ্যাডমিট কার্ড",
+  "nav.results": "পরীক্ষার ফলাফল",
   "nav.news": "কর্মসংস্থান সংবাদ",
   "nav.directory": "কর্তৃপক্ষ ডিরেক্টরি",
   "nav.search_notices": "বিজ্ঞপ্তি খুঁজুন",

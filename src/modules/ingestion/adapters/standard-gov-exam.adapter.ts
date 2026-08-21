@@ -73,6 +73,60 @@ export class StandardGovExamSourceAdapter extends BaseSourceAdapter<any, Canonic
 
     const items: RawItem<CanonicalExamNoticeTemplate>[] = [];
     const canonicalList = this.config.canonicalExams || [];
+    let liveDiscoveredCount = 0;
+
+    try {
+      const endpoint = `${this.config.baseUrl}${this.config.examinationPath}`;
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 8000);
+
+      const response = await fetch(endpoint, {
+        method: "GET",
+        signal: controller.signal,
+        headers: {
+          "User-Agent":
+            "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/128.0.0.0 Safari/537.36",
+          Accept: "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
+        },
+      });
+
+      clearTimeout(timeoutId);
+
+      if (response.ok) {
+        const html = await response.text();
+        const landedUrl = response.url || endpoint;
+        const baseUri = landedUrl.substring(0, landedUrl.lastIndexOf("/") + 1) || this.config.baseUrl;
+
+        const resolveUrl = (href: string): string => {
+          if (!href) return landedUrl;
+          if (href.startsWith("http://") || href.startsWith("https://")) return href;
+          if (href.startsWith("/")) return `${new URL(landedUrl).origin}${href}`;
+          return `${baseUri}${href}`;
+        };
+
+        const pdfRegex = /<a\s+[^>]*href=["']([^"']+\.pdf[^"']*)["'][^>]*>([\s\S]*?)<\/a>/gi;
+        let pMatch;
+
+        while ((pMatch = pdfRegex.exec(html)) !== null) {
+          const rawHref = pMatch[1];
+          const rawTitle = pMatch[2].replace(/<[^>]*>/g, "").replace(/\s+/g, " ").trim();
+
+          if (rawTitle && rawTitle.length > 15 && !/rti|caution|tender|disclaimer/i.test(rawTitle)) {
+            const matchedCanonical = canonicalList.find((c) =>
+              c.title.toLowerCase().includes(rawTitle.toLowerCase().slice(0, 20))
+            );
+
+            if (matchedCanonical) {
+              // Update live URL on matched canonical
+              matchedCanonical.official_notification_url = resolveUrl(rawHref);
+              liveDiscoveredCount++;
+            }
+          }
+        }
+      }
+    } catch {
+      // Graceful fallback to verified structured canonical calendar
+    }
 
     for (let idx = 0; idx < canonicalList.length; idx++) {
       const exam = canonicalList[idx];
@@ -83,6 +137,14 @@ export class StandardGovExamSourceAdapter extends BaseSourceAdapter<any, Canonic
         rawPayload: exam,
         extractedAt: new Date(),
       });
+    }
+
+    if (liveDiscoveredCount > 0) {
+      await context.log(
+        "info",
+        "extract",
+        `Enriched ${liveDiscoveredCount} examination schedules with live official notice URLs from ${this.config.organizationSlug.toUpperCase()}`
+      );
     }
 
     return {

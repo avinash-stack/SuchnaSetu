@@ -127,11 +127,12 @@ export function JobCard({ job: rawJob }: JobCardProps) {
           <span className="text-[10px] text-slate-400 font-mono">Gazette Verified</span>
         )}
 
-        <Link href={`/jobs/${job.slug}`}>
-          <Button variant="outline" size="sm" className="h-7 px-2.5 text-[11px] font-bold text-[#013089] hover:bg-[#013089] hover:text-white border-[#013089]/40 hover:border-[#013089]">
-            <span>{t("card.view_details")}</span>
-            <ArrowRight className="h-3 w-3 ml-1" />
-          </Button>
+        <Link
+          href={`/jobs/${job.slug}`}
+          className="inline-flex items-center justify-center font-semibold rounded-md h-7 px-2.5 text-[11px] font-bold text-[#013089] hover:bg-[#013089] hover:text-white border border-[#013089]/40 hover:border-[#013089] transition-all select-none"
+        >
+          <span>{t("card.view_details")}</span>
+          <ArrowRight className="h-3 w-3 ml-1" />
         </Link>
       </CardFooter>
     </Card>

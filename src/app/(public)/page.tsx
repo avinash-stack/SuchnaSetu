@@ -3,6 +3,8 @@ import { SITE_CONFIG } from "@/lib/constants";
 import { getBreakingBulletins, getPublicBulletins } from "@/modules/bulletins/service";
 import { getPublicJobs } from "@/modules/jobs/service";
 import { getPublicExams } from "@/modules/exams/service";
+import { getPublicAdmitCards } from "@/modules/admit-cards/service";
+import { getPublicResults } from "@/modules/results/service";
 import { searchGlobal } from "@/modules/search/service";
 import { BreakingTicker } from "@/modules/bulletins/components/breaking-ticker";
 import { BulletinCard } from "@/modules/bulletins/components/bulletin-card";
@@ -29,6 +31,10 @@ import {
   ChevronRight,
   MapPin,
   Sparkles,
+  Award,
+  FileText,
+  Download,
+  FileCheck2,
 } from "lucide-react";
 
 interface HomePageProps {
@@ -86,11 +92,15 @@ export default async function HomePage({ searchParams }: HomePageProps) {
     { bulletins: latestBulletins },
     { jobs: latestJobs },
     { exams: upcomingExams },
+    { admitCards: latestAdmitCards },
+    { results: latestResults },
   ] = await Promise.all([
     getBreakingBulletins(5),
     getPublicBulletins({ limit: 4 }),
     getPublicJobs({ limit: 6 }),
     getPublicExams({ limit: 4 }),
+    getPublicAdmitCards({ limit: 4 }),
+    getPublicResults({ limit: 4 }),
   ]);
 
   // Urgent closing jobs (application deadline within 10 days)
@@ -358,7 +368,127 @@ export default async function HomePage({ searchParams }: HomePageProps) {
                 </div>
               </div>
 
-              {/* C. Verified Official Sources Directory */}
+              {/* C. Latest Admit Cards & Hall Tickets */}
+              <div className="space-y-4 pt-4 border-t border-slate-200">
+                <div className="section-saffron-bar flex items-center justify-between border-b border-slate-200 pb-2">
+                  <div>
+                    <h2 className="text-xl font-bold text-[#0F172A] font-heading">
+                      Latest Admit Cards &amp; Hall Tickets
+                    </h2>
+                    <p className="text-xs text-slate-500 mt-0.5">
+                      Direct official download links for examination hall tickets and call letters.
+                    </p>
+                  </div>
+
+                  <Link href="/admit-cards">
+                    <Button variant="outline" size="sm" className="h-7 text-xs font-bold text-[#013089] border-[#013089]/30">
+                      <span>View All Admit Cards</span>
+                      <ArrowRight className="h-3 w-3 ml-1" />
+                    </Button>
+                  </Link>
+                </div>
+
+                <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                  {latestAdmitCards.map((ac) => (
+                    <div key={ac.id} className="rounded-xl border border-slate-200 bg-white p-4 shadow-xs space-y-3 flex flex-col justify-between">
+                      <div className="space-y-1.5">
+                        <div className="flex items-center justify-between gap-2">
+                          <span className="font-bold text-xs text-[#013089] bg-brand-50 px-2 py-0.5 rounded">
+                            {ac.organization?.acronym || ac.organization?.name || "Official Body"}
+                          </span>
+                          <span className="text-[10px] text-emerald-700 font-semibold bg-emerald-50 px-1.5 py-0.5 rounded border border-emerald-200">
+                            Available Now
+                          </span>
+                        </div>
+                        <Link href={`/exams/${ac.slug}`} className="block group">
+                          <h3 className="text-xs font-bold text-slate-900 group-hover:text-[#013089] line-clamp-2 leading-snug">
+                            {ac.title}
+                          </h3>
+                        </Link>
+                      </div>
+                      <div className="pt-2 border-t border-slate-100 flex items-center justify-between">
+                        <span className="text-[11px] text-slate-400">
+                          {ac.state_code || "National"}
+                        </span>
+                        {ac.admit_card_url && (
+                          <a
+                            href={ac.admit_card_url}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="inline-flex items-center gap-1 text-xs font-bold text-[#013089] hover:underline"
+                          >
+                            <Download className="h-3 w-3" />
+                            <span>Download Slip</span>
+                            <ExternalLink className="h-2.5 w-2.5" />
+                          </a>
+                        )}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* D. Latest Results & Merit Lists */}
+              <div className="space-y-4 pt-4 border-t border-slate-200">
+                <div className="section-navy-bar flex items-center justify-between border-b border-slate-200 pb-2">
+                  <div>
+                    <h2 className="text-xl font-bold text-[#0F172A] font-heading">
+                      Latest Examination Results &amp; Merit Lists
+                    </h2>
+                    <p className="text-xs text-slate-500 mt-0.5">
+                      Scorecards, cutoffs, and selection recommendations from official commission gazettes.
+                    </p>
+                  </div>
+
+                  <Link href="/results">
+                    <Button variant="outline" size="sm" className="h-7 text-xs font-bold text-[#013089] border-[#013089]/30">
+                      <span>View All Results</span>
+                      <ArrowRight className="h-3 w-3 ml-1" />
+                    </Button>
+                  </Link>
+                </div>
+
+                <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                  {latestResults.map((res) => (
+                    <div key={res.id} className="rounded-xl border border-slate-200 bg-white p-4 shadow-xs space-y-3 flex flex-col justify-between">
+                      <div className="space-y-1.5">
+                        <div className="flex items-center justify-between gap-2">
+                          <span className="font-bold text-xs text-[#013089] bg-brand-50 px-2 py-0.5 rounded">
+                            {res.organization?.acronym || res.organization?.name || "Official Body"}
+                          </span>
+                          <span className="text-[10px] text-emerald-700 font-semibold bg-emerald-50 px-1.5 py-0.5 rounded border border-emerald-200">
+                            Declared
+                          </span>
+                        </div>
+                        <Link href={`/jobs/${res.slug}`} className="block group">
+                          <h3 className="text-xs font-bold text-slate-900 group-hover:text-[#013089] line-clamp-2 leading-snug">
+                            {res.title}
+                          </h3>
+                        </Link>
+                      </div>
+                      <div className="pt-2 border-t border-slate-100 flex items-center justify-between">
+                        <span className="text-[11px] text-slate-400">
+                          {res.state_code || "National"}
+                        </span>
+                        {res.result_url && (
+                          <a
+                            href={res.result_url}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="inline-flex items-center gap-1 text-xs font-bold text-[#013089] hover:underline"
+                          >
+                            <FileCheck2 className="h-3 w-3" />
+                            <span>View Gazette</span>
+                            <ExternalLink className="h-2.5 w-2.5" />
+                          </a>
+                        )}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* E. Verified Official Sources Directory */}
               <div className="space-y-3 pt-4 border-t border-slate-200">
                 <div className="flex items-center justify-between border-b border-slate-200 pb-2">
                   <div className="flex items-center gap-2">

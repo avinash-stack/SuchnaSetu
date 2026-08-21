@@ -13,9 +13,7 @@ import {
   MapPin,
   Briefcase,
   Calendar,
-  CheckCircle2,
   X,
-  Search,
   Layers,
 } from "lucide-react";
 
@@ -29,13 +27,14 @@ interface DirectoryPageProps {
 
 export async function generateMetadata({ searchParams }: DirectoryPageProps): Promise<Metadata> {
   const params = await searchParams;
-  let title = "Public Directory - Recruiting Organizations, Commissions & Courts";
+  let title = "Recruiting Organizations, Commissions & Courts Directory";
   if (params.search) {
     title = `Search: "${params.search}" - Directory | SuchnaSetu`;
   }
   return constructMetadata({
     title,
-    description: "Official public directory of government recruiting authorities, UPSC, SSC, State PSCs, High Courts, Central PSUs, and ministries across India.",
+    description:
+      "Official public directory of government recruiting authorities, UPSC, SSC, State PSCs, High Courts, Central PSUs, and ministries across India.",
     path: "/directory",
   });
 }
@@ -122,196 +121,149 @@ export default async function PublicDirectoryPage({ searchParams }: DirectoryPag
     return true;
   });
 
-  // Calculate statistics
-  const totalCount = allOrgs.length;
-  const centralCount = allOrgs.filter((o) => (o.jurisdiction || "").toLowerCase() === "central" || (o.jurisdiction || "").toLowerCase() === "national").length;
-  const stateCount = allOrgs.filter((o) => (o.jurisdiction || "").toLowerCase() === "state").length;
-  const courtsCount = allOrgs.filter((o) => (o.name || "").toLowerCase().includes("court") || (o.jurisdiction || "").toLowerCase().includes("court")).length;
-
   return (
-    <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8 space-y-8">
-      {/* 1. Header Masthead */}
-      <div className="section-saffron-bar flex flex-col md:flex-row md:items-end justify-between border-b border-slate-200 pb-6 gap-4">
-        <div>
-          <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-[#013089]">
-            <Building2 className="h-4 w-4" />
-            <span>Master Public Authority Directory</span>
+    <div className="min-h-screen">
+      {/* 1. Compact Sticky Top Header & Search Bar */}
+      <div className="sticky top-14 z-30 bg-white/95 backdrop-blur-md border-b border-slate-200/80 shadow-2xs py-2.5 px-4 sm:px-6 lg:px-8">
+        <div className="mx-auto max-w-7xl flex flex-col sm:flex-row sm:items-center justify-between gap-2.5">
+          <div className="flex items-center gap-2 shrink-0">
+            <Building2 className="h-4 w-4 text-[#013089]" />
+            <h1 className="text-base sm:text-lg font-bold tracking-tight text-slate-900 font-heading whitespace-nowrap">
+              Recruiting Organizations
+            </h1>
+            <Badge variant="navy" className="text-[10px] py-0.5 px-2">
+              {filteredOrgs.length} Authorities
+            </Badge>
           </div>
-          <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-[#0F172A] font-heading mt-1">
-            Recruiting Organizations, Commissions &amp; Courts
-          </h1>
-          <p className="text-xs sm:text-sm text-slate-600 mt-1 max-w-2xl leading-relaxed">
-            Public directory of constitutional commissions, High Courts, Central Ministries, State PSCs, and public enterprises monitored for notices.
-          </p>
-        </div>
 
-        <div className="flex items-center gap-2">
-          <Badge variant="navy" className="text-xs py-1 px-2.5">
-            {totalCount} Verified Authorities
-          </Badge>
-        </div>
-      </div>
-
-      {/* 2. Search & Jurisdiction Filters */}
-      <div className="space-y-4">
-        <div className="max-w-3xl space-y-3">
-          <SearchBar
-            targetPath="/directory"
-            placeholder="Search organizations by name (UPSC, SSC, BSSC), court (Patna, Allahabad), or state..."
-          />
-
-          {/* Active Search Pill */}
-          {params.search && (
-            <div className="flex items-center gap-2 text-xs text-slate-700 bg-slate-100 border border-slate-200 px-3 py-1 rounded-xs w-fit">
-              <span>
-                Showing results for: <strong>&ldquo;{params.search}&rdquo;</strong> ({filteredOrgs.length} matches)
-              </span>
+          <div className="w-full sm:max-w-lg flex items-center gap-2">
+            <div className="flex-1">
+              <SearchBar placeholder="Search commission name, acronym (UPSC, BPSC), or state..." />
+            </div>
+            {params.search && (
               <Link
                 href={buildClearSearchUrl(params)}
-                className="text-slate-500 hover:text-slate-900 p-0.5 rounded-xs transition-colors"
-                title="Clear search query"
+                className="text-xs text-slate-500 hover:text-slate-900 flex items-center gap-1 bg-slate-100 border border-slate-200 px-2 py-1.5 rounded-md shrink-0"
+                title="Clear search"
               >
                 <X className="h-3.5 w-3.5" />
+                <span className="hidden sm:inline text-[11px]">Clear</span>
               </Link>
-            </div>
-          )}
-        </div>
-
-        {/* Filter Pills */}
-        <div className="flex items-center gap-1.5 overflow-x-auto pb-1 no-scrollbar text-xs">
-          <Link
-            href={buildJurisdictionUrl(params, "all")}
-            className={`rounded-xs px-3 py-1.5 font-semibold transition-colors shrink-0 ${
-              currentJurisdiction === "all"
-                ? "bg-[#013089] text-white font-bold"
-                : "bg-slate-100 text-slate-700 hover:bg-slate-200 border border-slate-200"
-            }`}
-          >
-            All Authorities ({totalCount})
-          </Link>
-          <Link
-            href={buildJurisdictionUrl(params, "central")}
-            className={`rounded-xs px-3 py-1.5 font-semibold transition-colors shrink-0 ${
-              currentJurisdiction === "central"
-                ? "bg-[#013089] text-white font-bold"
-                : "bg-slate-100 text-slate-700 hover:bg-slate-200 border border-slate-200"
-            }`}
-          >
-            Central &amp; National ({centralCount})
-          </Link>
-          <Link
-            href={buildJurisdictionUrl(params, "state")}
-            className={`rounded-xs px-3 py-1.5 font-semibold transition-colors shrink-0 ${
-              currentJurisdiction === "state"
-                ? "bg-[#013089] text-white font-bold"
-                : "bg-slate-100 text-slate-700 hover:bg-slate-200 border border-slate-200"
-            }`}
-          >
-            State Commissions ({stateCount})
-          </Link>
-          <Link
-            href={buildJurisdictionUrl(params, "judiciary")}
-            className={`rounded-xs px-3 py-1.5 font-semibold transition-colors shrink-0 ${
-              currentJurisdiction === "judiciary"
-                ? "bg-[#013089] text-white font-bold"
-                : "bg-slate-100 text-slate-700 hover:bg-slate-200 border border-slate-200"
-            }`}
-          >
-            Courts &amp; Judiciary ({courtsCount})
-          </Link>
-          <Link
-            href={buildJurisdictionUrl(params, "psu")}
-            className={`rounded-xs px-3 py-1.5 font-semibold transition-colors shrink-0 ${
-              currentJurisdiction === "psu"
-                ? "bg-[#013089] text-white font-bold"
-                : "bg-slate-100 text-slate-700 hover:bg-slate-200 border border-slate-200"
-            }`}
-          >
-            PSUs &amp; Corporations
-          </Link>
+            )}
+          </div>
         </div>
       </div>
 
-      {/* 3. Organizations Directory Table / Grid */}
-      <div className="space-y-4">
+      {/* 2. Main Content */}
+      <div className="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8 space-y-6">
+        {/* Jurisdiction Filters */}
+        <div className="flex items-center gap-1.5 overflow-x-auto pb-1 scrollbar-none">
+          {[
+            { key: "all", label: "All Authorities" },
+            { key: "central", label: "Central & National" },
+            { key: "state", label: "State PSCs & Boards" },
+            { key: "judiciary", label: "High Courts & Judiciary" },
+            { key: "psu", label: "Public Sector & PSUs" },
+            { key: "autonomous", label: "Autonomous & Testing" },
+          ].map((jur) => {
+            const isActive = currentJurisdiction === jur.key;
+            return (
+              <Link
+                key={jur.key}
+                href={buildJurisdictionUrl(params, jur.key)}
+                className={`whitespace-nowrap rounded-md px-3 py-1 text-xs font-bold transition-all ${
+                  isActive
+                    ? "bg-[#013089] text-white shadow-xs"
+                    : "bg-slate-100 text-slate-700 hover:bg-slate-200"
+                }`}
+              >
+                {jur.label}
+              </Link>
+            );
+          })}
+        </div>
+
+        {/* Directory Grid */}
         {filteredOrgs.length > 0 ? (
-          <div className="overflow-x-auto rounded-xs border border-slate-200 bg-white shadow-xs">
-            <table className="w-full text-left text-xs gazette-table">
-              <thead className="bg-slate-100 text-slate-800 font-bold border-b border-slate-200 text-[11px] uppercase tracking-wider">
-                <tr>
-                  <th className="p-3 pl-4">Authority &amp; Acronym</th>
-                  <th className="p-3">Jurisdiction</th>
-                  <th className="p-3">State / Location</th>
-                  <th className="p-3">Official Website</th>
-                  <th className="p-3 pr-4 text-right">Notices on SuchnaSetu</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-slate-100">
-                {filteredOrgs.map((org) => (
-                  <tr key={org.id} className="transition-colors">
-                    <td className="p-3 pl-4">
-                      <div className="flex items-center gap-2">
-                        <span className="inline-flex items-center rounded-xs bg-[#013089] px-1.5 py-0.5 text-[10px] font-bold text-white uppercase font-mono">
-                          {org.acronym || "GOVT"}
-                        </span>
-                        <span className="font-bold text-slate-900 text-sm">
-                          {org.name}
-                        </span>
-                      </div>
-                    </td>
-                    <td className="p-3 text-slate-700 capitalize font-medium">
-                      {org.jurisdiction || "Autonomous / Public Body"}
-                    </td>
-                    <td className="p-3 text-slate-600">
-                      <span className="inline-flex items-center gap-1">
-                        <MapPin className="h-3 w-3 text-slate-400" />
-                        <span>{org.states_uts?.name || "All India"}</span>
-                      </span>
-                    </td>
-                    <td className="p-3">
-                      {org.website_url ? (
-                        <a
-                          href={org.website_url}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="inline-flex items-center gap-1 text-[11px] font-semibold text-[#013089] hover:underline"
-                        >
-                          <Globe className="h-3.5 w-3.5 text-slate-400" />
-                          <span>Official Portal</span>
-                          <ExternalLink className="h-3 w-3 text-slate-400" />
-                        </a>
-                      ) : (
-                        <span className="text-slate-400 text-[11px]">Gazette Registry</span>
-                      )}
-                    </td>
-                    <td className="p-3 pr-4 text-right">
-                      <Link
-                        href={`/jobs?organization=${org.slug}`}
-                        className="inline-flex items-center gap-1 font-bold text-xs text-[#013089] hover:underline"
-                      >
-                        <Briefcase className="h-3 w-3" />
-                        <span>View Jobs &rarr;</span>
-                      </Link>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            {filteredOrgs.map((org) => (
+              <div
+                key={org.id}
+                className="rounded-xl border border-slate-200 bg-white p-4 shadow-xs hover:border-[#013089]/40 hover:shadow-sm transition-all flex flex-col justify-between space-y-3"
+              >
+                <div className="space-y-1.5">
+                  <div className="flex items-center justify-between gap-2">
+                    {org.acronym && (
+                      <Badge variant="brand" className="text-[10px] font-bold py-0 px-2 bg-[#013089] text-white">
+                        {org.acronym}
+                      </Badge>
+                    )}
+                    <span className="text-[10px] text-slate-500 font-medium capitalize bg-slate-50 border border-slate-200 px-1.5 py-0.5 rounded">
+                      {org.jurisdiction || "National"}
+                    </span>
+                  </div>
+
+                  <h3 className="font-bold text-slate-900 text-sm leading-snug">
+                    {org.name}
+                  </h3>
+
+                  {org.states_uts?.name && (
+                    <div className="flex items-center gap-1 text-[11px] text-slate-500">
+                      <MapPin className="h-3 w-3 text-slate-400" />
+                      <span>{org.states_uts.name}</span>
+                    </div>
+                  )}
+                </div>
+
+                <div className="pt-2 border-t border-slate-100 flex items-center justify-between gap-2">
+                  <div className="flex items-center gap-2">
+                    <Link
+                      href={`/jobs?organization=${org.slug}`}
+                      className="inline-flex items-center gap-1 text-[11px] font-bold text-[#013089] hover:underline"
+                    >
+                      <Briefcase className="h-3 w-3" />
+                      <span>Jobs</span>
+                    </Link>
+                    <span className="text-slate-300">•</span>
+                    <Link
+                      href={`/exams?organization=${org.slug}`}
+                      className="inline-flex items-center gap-1 text-[11px] font-bold text-[#013089] hover:underline"
+                    >
+                      <Calendar className="h-3 w-3" />
+                      <span>Exams</span>
+                    </Link>
+                  </div>
+
+                  {org.website_url && (
+                    <a
+                      href={org.website_url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center gap-1 text-[11px] font-semibold text-slate-500 hover:text-slate-900"
+                    >
+                      <Globe className="h-3 w-3" />
+                      <span>Portal</span>
+                      <ExternalLink className="h-2.5 w-2.5" />
+                    </a>
+                  )}
+                </div>
+              </div>
+            ))}
           </div>
         ) : (
-          <div className="rounded-xs border border-slate-200 bg-white p-10 text-center space-y-3">
-            <Building2 className="h-10 w-10 text-slate-400 mx-auto" />
-            <h3 className="text-base font-bold text-slate-900 font-heading">
-              No organizations found matching &ldquo;{params.search}&rdquo;
-            </h3>
-            <p className="text-xs text-slate-500 max-w-md mx-auto">
-              Try searching by abbreviation (<span className="font-semibold text-slate-700">UPSC, SSC, BSSC, PHC</span>) or clearing the filters.
-            </p>
-            <Link href="/directory">
-              <Button variant="outline" size="sm" className="text-xs mt-2">
-                Clear Filters
-              </Button>
-            </Link>
+          <div className="space-y-4">
+            <div className="text-center py-12 bg-white rounded-xl border border-slate-200 p-8">
+              <Building2 className="mx-auto h-8 w-8 text-slate-400" />
+              <h3 className="mt-2 text-sm font-bold text-slate-900">No organizations found</h3>
+              <p className="mt-1 text-xs text-slate-500">Try adjusting your jurisdiction or search filters.</p>
+              <div className="mt-4">
+                <Link href="/directory">
+                  <Button variant="brand" size="sm">
+                    Reset Filters
+                  </Button>
+                </Link>
+              </div>
+            </div>
           </div>
         )}
       </div>

@@ -15,6 +15,8 @@ export const or: Record<TranslationKey, string> = {
   "nav.home": "ମୂଳପୃଷ୍ଠା",
   "nav.jobs": "ସରକାରୀ ଚାକିରି",
   "nav.exams": "ପରୀକ୍ଷା ଓ ସମୟସାରଣୀ",
+  "nav.admit_cards": "ପ୍ରବେଶ ପତ୍ର",
+  "nav.results": "ପରୀକ୍ଷା ଫଳାଫଳ",
   "nav.news": "ନିଯୁକ୍ତି ଖବର",
   "nav.directory": "ପ୍ରାଧିକରଣ ଡିରେକ୍ଟୋରୀ",
   "nav.search_notices": "ବିଜ୍ଞପ୍ତି ଖୋଜନ୍ତୁ",

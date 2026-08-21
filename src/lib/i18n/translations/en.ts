@@ -13,6 +13,8 @@ export const en = {
   "nav.home": "Home",
   "nav.jobs": "Govt Jobs",
   "nav.exams": "Exams & Notifications",
+  "nav.admit_cards": "Admit Cards",
+  "nav.results": "Results",
   "nav.news": "Employment News",
   "nav.directory": "Directory",
   "nav.search_notices": "Search Notices",

@@ -95,6 +95,8 @@ export class StandardGovJobSourceAdapter extends BaseSourceAdapter<any, Canonica
 
       if (response.ok) {
         const contentType = response.headers.get("content-type") || "";
+        const landedUrl = response.url || endpoint;
+
         if (contentType.includes("json")) {
           const jsonData = await response.json();
           if (Array.isArray(jsonData) && jsonData.length > 0) {
@@ -103,7 +105,7 @@ export class StandardGovJobSourceAdapter extends BaseSourceAdapter<any, Canonica
           }
         } else {
           const html = await response.text();
-          const parsed = this.parseHtmlNotices(html);
+          const parsed = this.parseHtmlNotices(html, landedUrl);
           if (parsed.length > 0) {
             extractedItems.push(...parsed);
             liveExtractionSucceeded = true;
@@ -153,10 +155,25 @@ export class StandardGovJobSourceAdapter extends BaseSourceAdapter<any, Canonica
   }
 
   /**
-   * Helper to parse HTML notices matching government tabular patterns
+   * Helper to parse HTML notices matching government tabular and link patterns
    */
-  private parseHtmlNotices(html: string): CanonicalJobNoticeTemplate[] {
+  private parseHtmlNotices(html: string, landedUrl: string): CanonicalJobNoticeTemplate[] {
     const notices: CanonicalJobNoticeTemplate[] = [];
+    const baseUri = landedUrl.substring(0, landedUrl.lastIndexOf("/") + 1) || this.config.baseUrl;
+
+    const resolveUrl = (href: string): string => {
+      if (!href) return landedUrl;
+      if (href.startsWith("http://") || href.startsWith("https://")) return href;
+      if (href.startsWith("/")) return `${new URL(landedUrl).origin}${href}`;
+      return `${baseUri}${href}`;
+    };
+
+    const isIgnoredTitle = (t: string) => {
+      if (!t || t.length < 12) return true;
+      return /total hits|select department|view details|click here|home|notice board|^rti$|^caution|^tender|^disclaimer|^privacy policy|^sitemap/i.test(t);
+    };
+
+    // 1. Tabular parsing (<tr> <td>)
     const rowRegex = /<tr[^>]*>([\s\S]*?)<\/tr>/gi;
     let match;
 
@@ -165,52 +182,62 @@ export class StandardGovJobSourceAdapter extends BaseSourceAdapter<any, Canonica
       if (rowContent.includes("<th")) continue;
 
       const cellMatches = [...rowContent.matchAll(/<td[^>]*>([\s\S]*?)<\/td>/gi)];
-      if (cellMatches.length >= 3) {
-        const cleanCell = (c: string) => c.replace(/<[^>]*>/g, "").trim();
-        const titleCell = cleanCell(cellMatches[1][1]);
-        const dateCell = cleanCell(cellMatches[2][1]);
-        const pdfLinkMatch = cellMatches[cellMatches.length - 1][1].match(/href="([^"]+)"/i);
+      if (cellMatches.length >= 2) {
+        const cleanCell = (c: string) => c.replace(/<[^>]*>/g, "").replace(/\s+/g, " ").trim();
+        const titleCell = cleanCell(cellMatches[1] ? cellMatches[1][1] : cellMatches[0][1]);
+        const dateCell = cellMatches.length >= 3 ? cleanCell(cellMatches[2][1]) : undefined;
 
-        if (titleCell && titleCell.length > 8) {
-          let pdfHref: string | null = null;
-          const pdfRegex = /href="([^"]+?\.pdf[^"]*)"/i;
-          const anyHrefRegex = /href="([^"]+)"/i;
+        if (!isIgnoredTitle(titleCell)) {
+          const pdfMatch = rowContent.match(/href=["']([^"']+\.pdf[^"']*)["']/i);
+          const anyLinkMatch = rowContent.match(/href=["']([^"']+)["']/i);
+          const rawLink = pdfMatch ? pdfMatch[1] : (anyLinkMatch ? anyLinkMatch[1] : null);
 
-          const rowPdfMatch = rowContent.match(pdfRegex);
-          if (rowPdfMatch) {
-            pdfHref = rowPdfMatch[1];
-          } else {
-            const lastCellMatch = cellMatches[cellMatches.length - 1][1].match(anyHrefRegex);
-            if (lastCellMatch) {
-              pdfHref = lastCellMatch[1];
-            }
+          if (rawLink) {
+            const finalDocUrl = resolveUrl(rawLink);
+            const advtMatch = titleCell.match(/(?:advt\.?\s*no\.?|cen|notification\s*no\.?)\s*[:\-]?\s*([A-Za-z0-9\/\-_]+)/i);
+            const advtNumber = advtMatch ? advtMatch[1] : `${this.config.organizationSlug.toUpperCase()}-${notices.length + 1}`;
+
+            notices.push({
+              advertisement_number: advtNumber,
+              title: titleCell,
+              total_vacancies: 0,
+              date_of_notification: dateCell || new Date().toISOString().split("T")[0],
+              closing_date: "",
+              pdf_url: finalDocUrl,
+              apply_url: this.config.applyUrl,
+              qualification_summary: "",
+              age_limit_summary: "",
+              pay_scale: "",
+            });
           }
+        }
+      }
+    }
 
-          let pdfUrl: string;
-          if (pdfHref) {
-            if (pdfHref.startsWith("http://") || pdfHref.startsWith("https://")) {
-              pdfUrl = pdfHref;
-            } else {
-              const cleanPath = pdfHref.startsWith("/") ? pdfHref : `/${pdfHref}`;
-              pdfUrl = `${this.config.baseUrl}${cleanPath}`;
-            }
-          } else {
-            const fallbackNotice =
-              this.config.canonicalNotices[notices.length % (this.config.canonicalNotices.length || 1)];
-            pdfUrl = fallbackNotice?.pdf_url || `${this.config.baseUrl}${this.config.recruitmentPath}`;
-          }
+    // 2. Link/Card list parsing if no table rows found (<a href="*.pdf">Title</a>)
+    if (notices.length === 0) {
+      const aTagRegex = /<a\s+[^>]*href=["']([^"']+\.pdf[^"']*)["'][^>]*>([\s\S]*?)<\/a>/gi;
+      let aMatch;
+
+      while ((aMatch = aTagRegex.exec(html)) !== null) {
+        const rawHref = aMatch[1];
+        const rawTitle = aMatch[2].replace(/<[^>]*>/g, "").replace(/\s+/g, " ").trim();
+
+        if (!isIgnoredTitle(rawTitle)) {
+          const advtMatch = rawTitle.match(/(?:advt\.?\s*no\.?|cen|notification\s*no\.?)\s*[:\-]?\s*([A-Za-z0-9\/\-_]+)/i);
+          const advtNumber = advtMatch ? advtMatch[1] : `${this.config.organizationSlug.toUpperCase()}-${notices.length + 1}`;
 
           notices.push({
-            advertisement_number: `${this.config.organizationSlug.toUpperCase()}-${Date.now().toString().slice(-6)}-${notices.length + 1}`,
-            title: titleCell,
-            total_vacancies: 1,
-            date_of_notification: dateCell || new Date().toISOString().split("T")[0],
-            closing_date: new Date(Date.now() + 30 * 86400000).toISOString().split("T")[0],
-            pdf_url: pdfUrl,
+            advertisement_number: advtNumber,
+            title: rawTitle,
+            total_vacancies: 0,
+            date_of_notification: new Date().toISOString().split("T")[0],
+            closing_date: "",
+            pdf_url: resolveUrl(rawHref),
             apply_url: this.config.applyUrl,
-            qualification_summary: "Refer to official advertisement for qualification details.",
-            age_limit_summary: "As per official notification guidelines.",
-            pay_scale: "As per applicable government pay matrix.",
+            qualification_summary: "",
+            age_limit_summary: "",
+            pay_scale: "",
           });
         }
       }

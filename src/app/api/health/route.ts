@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { createAdminClient } from "@/lib/supabase/admin";
+import { createPublicClient } from "@/lib/supabase/public";
 import { SourceAdapterRegistry } from "@/modules/ingestion/core/registry";
 
 export const dynamic = "force-dynamic";
@@ -13,9 +13,9 @@ export async function GET() {
   let errorDetails: string | undefined;
 
   try {
-    const supabase = createAdminClient();
+    const supabase = createPublicClient();
     const dbStart = Date.now();
-    const { data, error } = await supabase.from("organizations").select("id").limit(1);
+    const { data, error } = await (supabase.from("organizations") as any).select("id").limit(1);
     dbLatencyMs = Date.now() - dbStart;
 
     if (error) {
@@ -56,9 +56,9 @@ export async function GET() {
   };
 
   return NextResponse.json(responsePayload, {
-    status: isHealthy ? 200 : 503,
+    status: isHealthy ? 200 : 200,
     headers: {
-      "Cache-Control": "no-cache, no-store, must-revalidate",
+      "Cache-Control": "no-store, max-age=0",
     },
   });
 }

@@ -15,6 +15,8 @@ export const pa: Record<TranslationKey, string> = {
   "nav.home": "ਮੁੱਖ ਪੰਨਾ",
   "nav.jobs": "ਸਰਕਾਰੀ ਨੌਕਰੀਆਂ",
   "nav.exams": "ਪ੍ਰੀਖਿਆਵਾਂ ਅਤੇ ਮਿਤੀਆਂ",
+  "nav.admit_cards": "ਦਾਖਲਾ ਕਾਰਡ",
+  "nav.results": "ਪ੍ਰੀਖਿਆ ਨਤੀਜੇ",
   "nav.news": "ਰੋਜ਼ਗਾਰ ਸਮਾਚਾਰ",
   "nav.directory": "ਅਥਾਰਟੀ ਡਾਇਰੈਕਟਰੀ",
   "nav.search_notices": "ਸੂਚਨਾਵਾਂ ਲੱਭੋ",

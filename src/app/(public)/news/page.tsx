@@ -8,7 +8,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { constructMetadata } from "@/lib/seo";
 import { BULLETIN_CATEGORIES, BulletinCategoryKey } from "@/modules/bulletins/constants";
-import { Newspaper, ChevronLeft, ChevronRight, X, Sparkles } from "lucide-react";
+import { Newspaper, ChevronLeft, ChevronRight, X } from "lucide-react";
 
 interface NewsPageProps {
   searchParams: Promise<{
@@ -26,7 +26,8 @@ export async function generateMetadata({ searchParams }: NewsPageProps): Promise
   }
   return constructMetadata({
     title,
-    description: "Official weekly Employment News digests, government scheme updates, exam notifications, education advisories, court stay orders, and verified public communiques.",
+    description:
+      "Official weekly Employment News digests, government scheme updates, exam notifications, education advisories, court stay orders, and verified public communiques.",
     path: "/news",
   });
 }
@@ -77,51 +78,52 @@ export default async function PublicNewsPage({ searchParams }: NewsPageProps) {
   });
 
   return (
-    <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8 space-y-8">
-      {/* Heading */}
-      <div className="section-saffron-bar flex flex-col md:flex-row md:items-end justify-between border-b border-slate-200 pb-6 gap-4">
-        <div>
-          <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-[#013089]">
-            <Newspaper className="h-4 w-4" />
-            <span>Official Gazette &amp; Information Desk</span>
+    <div className="min-h-screen">
+      {/* 1. Compact Sticky Top Header & Search Bar */}
+      <div className="sticky top-14 z-30 bg-white/95 backdrop-blur-md border-b border-slate-200/80 shadow-2xs py-2.5 px-4 sm:px-6 lg:px-8">
+        <div className="mx-auto max-w-7xl flex flex-col sm:flex-row sm:items-center justify-between gap-2.5">
+          <div className="flex items-center gap-2 shrink-0">
+            <Newspaper className="h-4 w-4 text-[#013089]" />
+            <h1 className="text-base sm:text-lg font-bold tracking-tight text-slate-900 font-heading whitespace-nowrap">
+              News &amp; Employment Advisories
+            </h1>
+            <Badge variant="navy" className="text-[10px] py-0.5 px-2">
+              {total} Bulletins
+            </Badge>
           </div>
-          <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-[#0F172A] font-heading mt-1">
-            Government News, Rozgar Samachar &amp; Advisories
-          </h1>
-          <p className="text-xs sm:text-sm text-slate-600 mt-1 max-w-2xl">
-            Verified public-service communiques, weekly Employment News digests, welfare schemes, examination notices, and court rulings.
-          </p>
-        </div>
 
-        <Badge variant="navy" className="text-xs py-1 px-2.5">
-          {total} Active {total === 1 ? "Bulletin" : "Bulletins"}
-        </Badge>
+          <div className="w-full sm:max-w-lg flex items-center gap-2">
+            <div className="flex-1">
+              <SearchBar placeholder="Search news headlines, PIB releases, or topics..." />
+            </div>
+            {params.search && (
+              <Link
+                href={buildClearSearchUrl(params)}
+                className="text-xs text-slate-500 hover:text-slate-900 flex items-center gap-1 bg-slate-100 border border-slate-200 px-2 py-1.5 rounded-md shrink-0"
+                title="Clear search"
+              >
+                <X className="h-3.5 w-3.5" />
+                <span className="hidden sm:inline text-[11px]">Clear</span>
+              </Link>
+            )}
+          </div>
+        </div>
       </div>
 
-      {/* Category Filter Pills & Search */}
-      <div className="space-y-4">
-        <div className="flex items-center gap-1.5 overflow-x-auto pb-2 no-scrollbar">
-          <Link
-            href={buildCategoryUrl(params, "all")}
-            className={`rounded-xs px-3 py-1.5 text-xs font-semibold transition-colors shrink-0 ${
-              currentCategory === "all"
-                ? "bg-[#013089] text-white"
-                : "bg-slate-100 text-slate-700 hover:bg-slate-200 border border-slate-200"
-            }`}
-          >
-            All News
-          </Link>
-
+      {/* 2. Main Content */}
+      <div className="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8 space-y-6">
+        {/* Category Filter Pills */}
+        <div className="flex items-center gap-1.5 overflow-x-auto pb-2 scrollbar-none">
           {BULLETIN_CATEGORIES.map((cat) => {
             const isActive = currentCategory === cat.key;
             return (
               <Link
                 key={cat.key}
                 href={buildCategoryUrl(params, cat.key)}
-                className={`rounded-xs px-3 py-1.5 text-xs font-semibold transition-colors shrink-0 ${
+                className={`whitespace-nowrap rounded-md px-3 py-1 text-xs font-bold transition-all ${
                   isActive
-                    ? "bg-[#013089] text-white font-bold"
-                    : "bg-slate-100 text-slate-700 hover:bg-slate-200 border border-slate-200"
+                    ? "bg-[#013089] text-white shadow-xs"
+                    : "bg-slate-100 text-slate-700 hover:bg-slate-200"
                 }`}
               >
                 {cat.label}
@@ -130,88 +132,64 @@ export default async function PublicNewsPage({ searchParams }: NewsPageProps) {
           })}
         </div>
 
-        <div className="max-w-3xl space-y-3">
-          <SearchBar placeholder="Search government news, Rozgar Samachar, exam advisories, court rulings, or schemes..." />
-
-          {/* Active Search Pill */}
-          {params.search && (
-            <div className="flex items-center gap-2 text-xs text-slate-700 bg-slate-100 border border-slate-200 px-3 py-1 rounded-xs w-fit">
-              <span>
-                Showing results for: <strong>&ldquo;{params.search}&rdquo;</strong> ({total} matches)
-              </span>
-              <Link
-                href={buildClearSearchUrl(params)}
-                className="text-slate-500 hover:text-slate-900 p-0.5 rounded-xs transition-colors"
-                title="Clear search query"
-              >
-                <X className="h-3.5 w-3.5" />
-              </Link>
+        {/* Bulletins Grid */}
+        {bulletins.length > 0 ? (
+          <>
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+              {bulletins.map((bulletin) => (
+                <BulletinCard key={bulletin.id} bulletin={bulletin} />
+              ))}
             </div>
-          )}
-        </div>
-      </div>
 
-      {/* Bulletins Grid / Empty State */}
-      {bulletins.length > 0 ? (
-        <div className="space-y-8">
-          <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
-            {bulletins.map((bulletin) => (
-              <BulletinCard key={bulletin.id} bulletin={bulletin} />
-            ))}
+            {/* Pagination Controls */}
+            {totalPages > 1 && (
+              <div className="flex items-center justify-between border-t border-slate-200 pt-6">
+                <div className="text-xs text-slate-500">
+                  Showing page <span className="font-semibold text-slate-800">{currentPage}</span> of{" "}
+                  <span className="font-semibold text-slate-800">{totalPages}</span>
+                </div>
+
+                <div className="flex items-center gap-2">
+                  {currentPage > 1 && (
+                    <Link href={buildPageUrl(params, currentPage - 1)}>
+                      <Button variant="outline" size="sm" className="gap-1 text-xs">
+                        <ChevronLeft className="h-4 w-4" />
+                        <span>Previous</span>
+                      </Button>
+                    </Link>
+                  )}
+
+                  {currentPage < totalPages && (
+                    <Link href={buildPageUrl(params, currentPage + 1)}>
+                      <Button variant="outline" size="sm" className="gap-1 text-xs">
+                        <span>Next</span>
+                        <ChevronRight className="h-4 w-4" />
+                      </Button>
+                    </Link>
+                  )}
+                </div>
+              </div>
+            )}
+          </>
+        ) : (
+          <div className="space-y-4">
+            <EmptyState
+              icon={Newspaper}
+              title={params.search ? `No bulletins found for "${params.search}"` : "No Bulletins in this Category"}
+              description="No official news communiques match your current filters. Check back shortly for newly published gazette advisories."
+            />
+            {(currentCategory !== "all" || params.search) && (
+              <div className="text-center">
+                <Link href="/news">
+                  <Button variant="brand" size="sm">
+                    Reset Filters
+                  </Button>
+                </Link>
+              </div>
+            )}
           </div>
-
-          {/* Pagination with parameter preservation */}
-          {totalPages > 1 && (
-            <div className="flex items-center justify-between border-t border-slate-200 pt-6">
-              <div className="text-xs text-slate-500">
-                Showing page <span className="font-semibold text-slate-800">{currentPage}</span> of{" "}
-                <span className="font-semibold text-slate-800">{totalPages}</span>
-              </div>
-
-              <div className="flex items-center gap-2">
-                {currentPage > 1 && (
-                  <Link href={buildPageUrl(params, currentPage - 1)}>
-                    <Button variant="outline" size="sm" className="gap-1 text-xs">
-                      <ChevronLeft className="h-4 w-4" />
-                      <span>Previous</span>
-                    </Button>
-                  </Link>
-                )}
-
-                {currentPage < totalPages && (
-                  <Link href={buildPageUrl(params, currentPage + 1)}>
-                    <Button variant="outline" size="sm" className="gap-1 text-xs">
-                      <span>Next</span>
-                      <ChevronRight className="h-4 w-4" />
-                    </Button>
-                  </Link>
-                )}
-              </div>
-            </div>
-          )}
-        </div>
-      ) : (
-        <div className="space-y-4">
-          <EmptyState
-            icon={Newspaper}
-            title={params.search ? `No bulletins found for "${params.search}"` : "No Bulletins Found"}
-            description={
-              params.search
-                ? "No news articles or bulletins matched your search query. Try searching with different keywords or clearing your search."
-                : "There are currently no published bulletins matching this category. Please check back as official weekly releases and public notices are indexed."
-            }
-          />
-          {(params.search || currentCategory !== "all") && (
-            <div className="text-center">
-              <Link href="/news">
-                <Button variant="brand" size="sm">
-                  Clear Search &amp; All Categories
-                </Button>
-              </Link>
-            </div>
-          )}
-        </div>
-      )}
+        )}
+      </div>
     </div>
   );
 }

@@ -5,7 +5,7 @@ import Link from "next/link";
 import { GovJobDetailed } from "../types";
 import { useLanguage } from "@/lib/i18n/context";
 import { resolveLocalizedJob } from "@/lib/i18n/localize";
-import { formatDate, formatINR, formatNumber } from "@/lib/utils";
+import { formatDate, formatINR, formatNumber, formatApplicationFee } from "@/lib/utils";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Table, TableHeader, TableBody, TableHead, TableRow, TableCell } from "@/components/ui/table";
@@ -76,12 +76,7 @@ export function JobDetailView({ job: rawJob }: JobDetailViewProps) {
     eligibility?.selection_process ||
     null;
 
-  const applicationFee =
-    eligibility?.application_fee_details
-      ? typeof eligibility.application_fee_details === "string"
-        ? eligibility.application_fee_details
-        : JSON.stringify(eligibility.application_fee_details, null, 2)
-      : null;
+  const applicationFee = formatApplicationFee(eligibility?.application_fee_details);
 
   return (
     <div className="mx-auto max-w-5xl px-4 py-8 sm:px-6 lg:px-8 space-y-6">
@@ -153,15 +148,10 @@ export function JobDetailView({ job: rawJob }: JobDetailViewProps) {
               href={job.official_apply_url}
               target="_blank"
               rel="noopener noreferrer"
+              className="inline-flex items-center justify-center font-semibold rounded-md h-9 px-4 text-xs sm:text-sm gap-2 bg-[#013089] hover:bg-[#01276E] text-white shadow-xs select-none active:scale-[0.99] transition-all"
             >
-              <Button
-                variant="primary"
-                size="md"
-                className="gap-2 font-bold bg-[#013089] hover:bg-[#01276E] text-white shadow-xs"
-              >
-                <span>{t("card.apply_now")}</span>
-                <ExternalLink className="h-4 w-4" />
-              </Button>
+              <span>{t("card.apply_now")}</span>
+              <ExternalLink className="h-4 w-4" />
             </a>
           )}
 
@@ -170,16 +160,11 @@ export function JobDetailView({ job: rawJob }: JobDetailViewProps) {
               href={job.official_notification_url}
               target="_blank"
               rel="noopener noreferrer"
+              className="inline-flex items-center justify-center font-semibold rounded-md h-9 px-4 text-xs sm:text-sm gap-2 text-[#013089] border border-[#013089]/40 hover:bg-brand-50 hover:border-[#013089] bg-white select-none active:scale-[0.99] transition-all"
             >
-              <Button
-                variant="outline"
-                size="md"
-                className="gap-2 font-bold text-[#013089] border-[#013089]/40 hover:bg-brand-50 hover:border-[#013089]"
-              >
-                <FileText className="h-4 w-4 text-[#013089]" />
-                <span>{t("card.official_notification")}</span>
-                <ExternalLink className="h-3.5 w-3.5 ml-0.5 text-slate-400" />
-              </Button>
+              <FileText className="h-4 w-4 text-[#013089]" />
+              <span>{t("card.official_notification")}</span>
+              <ExternalLink className="h-3.5 w-3.5 ml-0.5 text-slate-400" />
             </a>
           )}
 
@@ -188,17 +173,11 @@ export function JobDetailView({ job: rawJob }: JobDetailViewProps) {
               href={org.website_url}
               target="_blank"
               rel="noopener noreferrer"
-              className="hidden sm:inline-block"
+              className="hidden sm:inline-flex items-center justify-center font-semibold rounded-md h-9 px-3 text-xs gap-1.5 text-slate-600 hover:text-slate-900 hover:bg-slate-100 select-none active:scale-[0.99] transition-all"
             >
-              <Button
-                variant="ghost"
-                size="md"
-                className="gap-1.5 text-xs text-slate-600 hover:text-slate-900"
-              >
-                <Building2 className="h-3.5 w-3.5" />
-                <span>Official Website</span>
-                <ExternalLink className="h-3 w-3 ml-0.5 text-slate-400" />
-              </Button>
+              <Building2 className="h-3.5 w-3.5" />
+              <span>Official Website</span>
+              <ExternalLink className="h-3 w-3 ml-0.5 text-slate-400" />
             </a>
           )}
         </div>

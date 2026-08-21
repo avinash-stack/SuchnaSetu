@@ -125,15 +125,12 @@ export function JobListTable({ jobs }: JobListTableProps) {
 
                   {/* Action Column */}
                   <td className="py-3.5 px-4 align-top text-right">
-                    <Link href={`/jobs/${job.slug}`}>
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        className="h-7 px-2.5 text-[11px] font-bold text-[#013089] hover:bg-[#013089] hover:text-white border-[#013089]/30 shadow-none shrink-0"
-                      >
-                        <span>{t("card.view_details")}</span>
-                        <ArrowRight className="h-3 w-3 ml-1" />
-                      </Button>
+                    <Link
+                      href={`/jobs/${job.slug}`}
+                      className="inline-flex items-center justify-center font-semibold rounded-md h-7 px-2.5 text-[11px] font-bold text-[#013089] hover:bg-[#013089] hover:text-white border border-[#013089]/30 shadow-none shrink-0 transition-all select-none"
+                    >
+                      <span>{t("card.view_details")}</span>
+                      <ArrowRight className="h-3 w-3 ml-1" />
                     </Link>
                   </td>
                 </tr>

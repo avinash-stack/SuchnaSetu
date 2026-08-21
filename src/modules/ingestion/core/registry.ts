@@ -72,7 +72,7 @@ export class SourceAdapterRegistry {
    */
   public static getAdapter(key: string): SourceAdapter | undefined {
     this.ensureInitialized();
-    return this.adapters.get(key);
+    return this.adapters.get(key) || this.adapters.get(`${key}_adapter`) || this.adapters.get(key.replace(/_adapter$/, ""));
   }
 
   /**
@@ -80,7 +80,7 @@ export class SourceAdapterRegistry {
    */
   public static getNormalizer(key: string): DataNormalizer | undefined {
     this.ensureInitialized();
-    return this.normalizers.get(key);
+    return this.normalizers.get(key) || this.normalizers.get(`${key}_adapter`) || this.normalizers.get(key.replace(/_adapter$/, ""));
   }
 
   /**

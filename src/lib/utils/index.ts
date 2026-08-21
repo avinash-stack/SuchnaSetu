@@ -86,3 +86,54 @@ export function isPdfUrl(url?: string | null): boolean {
   }
 }
 
+/**
+ * Format raw application fee string or JSON object into clean, human-readable lines
+ * e.g. { sc: 0, st: 0, ews: 100, obc: 100, female: 0, general: 100 }
+ * -> • GENERAL / OBC / EWS: ₹100
+ *    • SC / ST / FEMALE: Nil (Exempted)
+ */
+export function formatApplicationFee(feeData?: any): string | null {
+  if (!feeData) return null;
+
+  let parsed = feeData;
+  if (typeof feeData === "string") {
+    const trimmed = feeData.trim();
+    if (trimmed.startsWith("{") && trimmed.endsWith("}")) {
+      try {
+        parsed = JSON.parse(trimmed);
+      } catch {
+        return trimmed;
+      }
+    } else {
+      return trimmed;
+    }
+  }
+
+  if (typeof parsed === "object" && parsed !== null) {
+    const entries = Object.entries(parsed);
+    if (entries.length === 0) return null;
+
+    // Group categories with identical fee amounts
+    const amountToCats: Record<string, string[]> = {};
+    for (const [cat, amt] of entries) {
+      const catUpper = cat.toUpperCase();
+      const amtStr =
+        amt === 0 || amt === "0" || amt === "nil" || amt === "exempted" || amt === null
+          ? "Nil (Exempted)"
+          : typeof amt === "number"
+            ? `₹${amt}`
+            : String(amt).startsWith("₹")
+              ? String(amt)
+              : `₹${amt}`;
+
+      if (!amountToCats[amtStr]) amountToCats[amtStr] = [];
+      amountToCats[amtStr].push(catUpper);
+    }
+
+    return Object.entries(amountToCats)
+      .map(([amt, cats]) => `• ${cats.join(" / ")}: ${amt}`)
+      .join("\n");
+  }
+
+  return String(feeData);
+}

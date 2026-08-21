@@ -15,6 +15,8 @@ export const hi: Record<TranslationKey, string> = {
   "nav.home": "होम",
   "nav.jobs": "सरकारी नौकरी",
   "nav.exams": "परीक्षाएं एवं तिथियां",
+  "nav.admit_cards": "प्रवेश पत्र",
+  "nav.results": "परीक्षा परिणाम",
   "nav.news": "रोजगार समाचार",
   "nav.directory": "प्राधिकरण निर्देशिका",
   "nav.search_notices": "सूचनाएं खोजें",
