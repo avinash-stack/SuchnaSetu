@@ -12,17 +12,19 @@ import { parseSearchQuery } from "./query-parser";
 const getCachedSearchTaxonomies = unstable_cache(
   async () => {
     const supabase = createPublicClient();
-    const [orgsRes, catsRes] = await Promise.all([
+    const [orgsRes, catsRes, qualsRes] = await Promise.all([
       (supabase.from("organizations") as any).select("id, name, acronym, slug, state_code").eq("is_active", true),
       (supabase.from("categories") as any).select("id, name, slug").eq("is_active", true),
+      (supabase.from("qualifications") as any).select("id, name, slug").eq("is_active", true),
     ]);
 
     return {
       allOrgs: (orgsRes.data || []) as Array<{ id: string; name: string; acronym: string | null; slug: string; state_code: string | null }>,
       allCats: (catsRes.data || []) as Array<{ id: string; name: string; slug: string }>,
+      allQuals: (qualsRes.data || []) as Array<{ id: string; name: string; slug: string }>,
     };
   },
-  ["search-taxonomies-catalog"],
+  ["search-taxonomies-catalog-v2"],
   { revalidate: 300, tags: ["taxonomies"] }
 );
 
@@ -302,26 +304,20 @@ export async function searchJobs(params: JobFilterParams = {}): Promise<{
   if (params.isFeatured !== undefined) {
     query = query.eq("is_featured", params.isFeatured);
   }
-  if (params.categorySlug) {
-    const { data: cat } = await (supabase.from("categories") as any)
-      .select("id")
-      .eq("slug", params.categorySlug)
-      .maybeSingle();
-    if (cat) query = query.eq("category_id", (cat as any).id);
-  }
-  if (params.organizationSlug) {
-    const { data: org } = await (supabase.from("organizations") as any)
-      .select("id")
-      .eq("slug", params.organizationSlug)
-      .maybeSingle();
-    if (org) query = query.eq("organization_id", (org as any).id);
-  }
-  if (params.qualificationSlug) {
-    const { data: qual } = await (supabase.from("qualifications") as any)
-      .select("id")
-      .eq("slug", params.qualificationSlug)
-      .maybeSingle();
-    if (qual) query = query.eq("qualification_id", (qual as any).id);
+  if (params.categorySlug || params.organizationSlug || params.qualificationSlug) {
+    const { allCats, allOrgs, allQuals } = await getCachedSearchTaxonomies();
+    if (params.categorySlug) {
+      const cat = allCats.find((c) => c.slug === params.categorySlug);
+      if (cat) query = query.eq("category_id", cat.id);
+    }
+    if (params.organizationSlug) {
+      const org = allOrgs.find((o) => o.slug === params.organizationSlug);
+      if (org) query = query.eq("organization_id", org.id);
+    }
+    if (params.qualificationSlug) {
+      const qual = allQuals.find((q) => q.slug === params.qualificationSlug);
+      if (qual) query = query.eq("qualification_id", qual.id);
+    }
   }
 
   const hasSearch = !!(params.search && params.search.trim());
@@ -469,19 +465,16 @@ export async function searchExams(params: ExamFilterParams = {}): Promise<{
   if (params.isFeatured !== undefined) {
     query = query.eq("is_featured", params.isFeatured);
   }
-  if (params.categorySlug) {
-    const { data: cat } = await (supabase.from("categories") as any)
-      .select("id")
-      .eq("slug", params.categorySlug)
-      .maybeSingle();
-    if (cat) query = query.eq("category_id", (cat as any).id);
-  }
-  if (params.organizationSlug) {
-    const { data: org } = await (supabase.from("organizations") as any)
-      .select("id")
-      .eq("slug", params.organizationSlug)
-      .maybeSingle();
-    if (org) query = query.eq("organization_id", (org as any).id);
+  if (params.categorySlug || params.organizationSlug) {
+    const { allCats, allOrgs } = await getCachedSearchTaxonomies();
+    if (params.categorySlug) {
+      const cat = allCats.find((c) => c.slug === params.categorySlug);
+      if (cat) query = query.eq("category_id", cat.id);
+    }
+    if (params.organizationSlug) {
+      const org = allOrgs.find((o) => o.slug === params.organizationSlug);
+      if (org) query = query.eq("organization_id", org.id);
+    }
   }
 
   const hasSearch = !!(params.search && params.search.trim());

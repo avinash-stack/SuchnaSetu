@@ -1,4 +1,5 @@
-import { createClient } from "@/lib/supabase/server";
+import { createPublicClient } from "@/lib/supabase/public";
+import { unstable_cache } from "next/cache";
 
 export interface AdmitCardItem {
   id: string;
@@ -27,19 +28,18 @@ export interface GetAdmitCardsParams {
   page?: number;
 }
 
-export async function getPublicAdmitCards(params: GetAdmitCardsParams = {}): Promise<{
+const fetchPublicAdmitCardsUncached = async (params: GetAdmitCardsParams = {}): Promise<{
   admitCards: AdmitCardItem[];
   total: number;
   totalPages: number;
-}> {
-  const supabase = await createClient();
+}> => {
+  const supabase = createPublicClient();
   const limit = params.limit || 20;
   const page = params.page || 1;
   const offset = (page - 1) * limit;
 
   // Query verified exams with official candidate links
-  let examQuery = supabase
-    .from("gov_exams")
+  let examQuery = (supabase.from("gov_exams") as any)
     .select("id, title, slug, exam_code, official_website_url, official_notification_url, published_at, status, state_code, organizations(name, acronym, state_code, jurisdiction)", { count: "exact" })
     .eq("status", "published");
 
@@ -78,4 +78,20 @@ export async function getPublicAdmitCards(params: GetAdmitCardsParams = {}): Pro
     total,
     totalPages,
   };
+};
+
+export async function getPublicAdmitCards(params: GetAdmitCardsParams = {}): Promise<{
+  admitCards: AdmitCardItem[];
+  total: number;
+  totalPages: number;
+}> {
+  // If no search query, cache for fast high-concurrency loads
+  if (!params.search) {
+    return unstable_cache(
+      () => fetchPublicAdmitCardsUncached(params),
+      [`public-admit-cards-${params.stateCode || "all"}-${params.limit || 20}-${params.page || 1}`],
+      { revalidate: 300, tags: ["exams", "admit-cards"] }
+    )();
+  }
+  return fetchPublicAdmitCardsUncached(params);
 }

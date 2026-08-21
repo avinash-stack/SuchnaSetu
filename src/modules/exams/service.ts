@@ -85,7 +85,7 @@ export const getPublicExamBySlug = cache(async (slug: string): Promise<GovExamDe
   return unstable_cache(
     async () => fetchExamBySlugUncached(slug),
     [`exam-by-slug-${slug}`],
-    { revalidate: 60, tags: [`exam-${slug}`, "exams"] }
+    { revalidate: 300, tags: [`exam-${slug}`, "exams"] }
   )();
 });
 

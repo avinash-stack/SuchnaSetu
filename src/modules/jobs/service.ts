@@ -78,7 +78,7 @@ export const getPublicJobBySlug = cache(async (slug: string): Promise<GovJobDeta
   return unstable_cache(
     async () => fetchJobBySlugUncached(slug),
     [`job-by-slug-${slug}`],
-    { revalidate: 60, tags: [`job-${slug}`, "jobs"] }
+    { revalidate: 300, tags: [`job-${slug}`, "jobs"] }
   )();
 });
 

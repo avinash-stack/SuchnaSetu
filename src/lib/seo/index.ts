@@ -41,7 +41,7 @@ export function constructMetadata({
   title,
   description = SITE_CONFIG.description,
   path = "",
-  image = "/og-image.png",
+  image = "/og/suchnasetu-og.png",
   noIndex = false,
   keywords,
 }: MetadataProps = {}): Metadata {
@@ -88,6 +88,7 @@ export function constructMetadata({
           url: ogImageUrl,
           width: 1200,
           height: 630,
+          type: "image/png",
           alt: pageTitle,
         },
       ],
@@ -98,7 +99,14 @@ export function constructMetadata({
       card: "summary_large_image",
       title: pageTitle,
       description,
-      images: [ogImageUrl],
+      images: [
+        {
+          url: ogImageUrl,
+          width: 1200,
+          height: 630,
+          alt: pageTitle,
+        },
+      ],
     },
     robots: {
       index: !noIndex,

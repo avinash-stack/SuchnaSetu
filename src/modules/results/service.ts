@@ -1,4 +1,5 @@
-import { createClient } from "@/lib/supabase/server";
+import { createPublicClient } from "@/lib/supabase/public";
+import { unstable_cache } from "next/cache";
 
 export interface ResultItem {
   id: string;
@@ -26,19 +27,18 @@ export interface GetResultsParams {
   page?: number;
 }
 
-export async function getPublicResults(params: GetResultsParams = {}): Promise<{
+const fetchPublicResultsUncached = async (params: GetResultsParams = {}): Promise<{
   results: ResultItem[];
   total: number;
   totalPages: number;
-}> {
-  const supabase = await createClient();
+}> => {
+  const supabase = createPublicClient();
   const limit = params.limit || 20;
   const page = params.page || 1;
   const offset = (page - 1) * limit;
 
   // Query verified jobs & exams that have official result notices or notifications
-  let jobQuery = supabase
-    .from("gov_jobs")
+  let jobQuery = (supabase.from("gov_jobs") as any)
     .select("id, title, slug, notification_number, official_notification_url, official_apply_url, published_at, status, state_code, organizations(name, acronym, state_code, jurisdiction)", { count: "exact" })
     .eq("status", "published");
 
@@ -76,4 +76,19 @@ export async function getPublicResults(params: GetResultsParams = {}): Promise<{
     total,
     totalPages,
   };
+};
+
+export async function getPublicResults(params: GetResultsParams = {}): Promise<{
+  results: ResultItem[];
+  total: number;
+  totalPages: number;
+}> {
+  if (!params.search) {
+    return unstable_cache(
+      () => fetchPublicResultsUncached(params),
+      [`public-results-${params.stateCode || "all"}-${params.limit || 20}-${params.page || 1}`],
+      { revalidate: 300, tags: ["jobs", "results"] }
+    )();
+  }
+  return fetchPublicResultsUncached(params);
 }

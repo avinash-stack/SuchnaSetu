@@ -1,8 +1,21 @@
 import type { Metadata } from "next";
+import { Inter, Outfit } from "next/font/google";
 import { constructMetadata, HeadScripts } from "@/lib/seo";
 import { LanguageProvider } from "@/lib/i18n/context";
 import { LanguageSuggestionBanner } from "@/components/shared/language-suggestion-banner";
 import "./globals.css";
+
+const inter = Inter({
+  subsets: ["latin"],
+  display: "swap",
+  variable: "--font-inter",
+});
+
+const outfit = Outfit({
+  subsets: ["latin"],
+  display: "swap",
+  variable: "--font-outfit",
+});
 
 export const metadata: Metadata = constructMetadata();
 
@@ -12,15 +25,8 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en" className="scroll-smooth">
+    <html lang="en" className={`scroll-smooth ${inter.variable} ${outfit.variable}`}>
       <head>
-        <link rel="preconnect" href="https://fonts.googleapis.com" />
-        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
-        {/* Load English (Inter/Outfit) + Regional Indic Fonts (Noto Sans Devanagari, Bengali, Oriya, Gurmukhi) */}
-        <link
-          href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Noto+Sans+Bengali:wght@400;500;600;700&family=Noto+Sans+Devanagari:wght@400;500;600;700&family=Noto+Sans+Gurmukhi:wght@400;500;600;700&family=Noto+Sans+Oriya:wght@400;500;600;700&family=Outfit:wght@600;700;800&display=swap"
-          rel="stylesheet"
-        />
         <HeadScripts />
       </head>
       <body className="min-h-screen bg-slate-50 text-slate-900 antialiased flex flex-col font-sans">
