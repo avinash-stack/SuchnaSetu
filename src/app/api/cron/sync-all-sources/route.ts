@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { IngestionPipelineEngine } from "@/modules/ingestion/core/pipeline";
+import { SourceAdapterRegistry } from "@/modules/ingestion/core/registry";
 import { getSchedulerConfig, getNextScheduledSync } from "@/modules/ingestion/config/scheduler.config";
 import { isSourceActivelyRunning } from "@/modules/ingestion/actions";
 
@@ -65,6 +66,15 @@ async function handleSync(request: NextRequest) {
         error: sourcesError?.message,
       },
       { status: 200 }
+    );
+  }
+
+  // 3. Pre-execution Adapter Registry Validation: Ensure all enabled sources resolve to registered adapters
+  const unregisteredSources = sources.filter((src: any) => !SourceAdapterRegistry.getAdapter(src.adapter_key));
+  if (unregisteredSources.length > 0) {
+    console.error(
+      `[CRON PRE-CHECK WARNING] ${unregisteredSources.length} sources have missing/unregistered adapters:`,
+      unregisteredSources.map((s: any) => `${s.code} -> ${s.adapter_key}`)
     );
   }
 

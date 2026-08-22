@@ -29,10 +29,39 @@ export async function GET() {
     errorDetails = err?.message || "Failed to query database";
   }
 
-  // Query Ingestion Registry stats
+  // Query Ingestion Registry stats & validate enabled sources
   const registeredAdapters = SourceAdapterRegistry.listAdapters();
+  const registeredKeySet = new Set(registeredAdapters.map((a) => a.key));
 
-  const isHealthy = dbStatus === "healthy";
+  let totalEnabledSources = 0;
+  const missingAdapters: Array<{ sourceCode: string; sourceName: string; adapterKey: string }> = [];
+
+  try {
+    const { createAdminClient } = await import("@/lib/supabase/admin");
+    const adminSupabase = createAdminClient();
+    const { data: enabledSources } = await (adminSupabase.from("import_sources") as any)
+      .select("id, code, name, adapter_key, is_enabled")
+      .eq("is_enabled", true);
+
+    if (enabledSources) {
+      totalEnabledSources = enabledSources.length;
+      for (const src of enabledSources) {
+        const adapter = SourceAdapterRegistry.getAdapter(src.adapter_key);
+        if (!adapter) {
+          missingAdapters.push({
+            sourceCode: src.code,
+            sourceName: src.name,
+            adapterKey: src.adapter_key,
+          });
+        }
+      }
+    }
+  } catch (ingestionCheckErr) {
+    console.warn("Health check: failed to query import_sources for adapter validation:", ingestionCheckErr);
+  }
+
+  const isIngestionHealthy = missingAdapters.length === 0 && registeredAdapters.length > 0;
+  const isHealthy = dbStatus === "healthy" && isIngestionHealthy;
   const status = isHealthy ? "healthy" : "degraded";
 
   const responsePayload = {
@@ -48,15 +77,18 @@ export async function GET() {
         ...(errorDetails ? { error: errorDetails } : {}),
       },
       ingestionEngine: {
-        status: registeredAdapters.length > 0 ? "healthy" : "warning",
+        status: isIngestionHealthy ? "healthy" : "warning",
+        totalEnabledSources,
         registeredAdaptersCount: registeredAdapters.length,
+        missingAdaptersCount: missingAdapters.length,
+        ...(missingAdapters.length > 0 ? { missingAdapters } : {}),
       },
     },
     totalResponseTimeMs: Date.now() - startTime,
   };
 
   return NextResponse.json(responsePayload, {
-    status: isHealthy ? 200 : 200,
+    status: 200,
     headers: {
       "Cache-Control": "no-store, max-age=0",
     },
