@@ -1,9 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { IngestionPipelineEngine } from "@/modules/ingestion/core/pipeline";
-import { SourceAdapterRegistry } from "@/modules/ingestion/core/registry";
-import { getSchedulerConfig, getNextScheduledSync } from "@/modules/ingestion/config/scheduler.config";
 import { isSourceActivelyRunning } from "@/modules/ingestion/actions";
+import { getSchedulerConfig, getNextScheduledSync } from "@/modules/ingestion/config/scheduler.config";
+import { SourceAdapterRegistry } from "@/modules/ingestion/core/registry";
 
 export const maxDuration = 300; // 5 minutes max duration for serverless cron execution
 export const dynamic = "force-dynamic";
@@ -96,7 +96,7 @@ async function handleSync(request: NextRequest) {
   let totalFailed = 0;
   let totalExtracted = 0;
 
-  // 3. Execute synchronization with isolated error boundary per pipeline
+  // 4. Execute synchronization with isolated error boundary per pipeline
   for (const src of sources) {
     const sourceStart = Date.now();
 

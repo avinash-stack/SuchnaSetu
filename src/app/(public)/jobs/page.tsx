@@ -10,6 +10,8 @@ import { Button } from "@/components/ui/button";
 import { constructMetadata, buildBreadcrumbJsonLd } from "@/lib/seo";
 import { Briefcase, ChevronLeft, ChevronRight, X } from "lucide-react";
 
+export const revalidate = 120; // 2 minutes ISR cache for instant mobile listing rendering
+
 interface JobsPageProps {
   searchParams: Promise<{
     search?: string;

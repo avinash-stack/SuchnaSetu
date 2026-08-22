@@ -7,6 +7,8 @@ import { resolveLocalizedJob } from "@/lib/i18n/localize";
 import { LanguageCode } from "@/lib/i18n/config";
 import { JobDetailView } from "@/modules/jobs/components/job-detail-view";
 
+export const revalidate = 300; // 5 minutes cache for high performance & instant mobile rendering
+
 interface JobDetailPageProps {
   params: Promise<{
     slug: string;
@@ -19,7 +21,7 @@ interface JobDetailPageProps {
 export async function generateMetadata({ params, searchParams }: JobDetailPageProps): Promise<Metadata> {
   const { slug } = await params;
   const sParams = searchParams ? await searchParams : {};
-  const lang = (sParams.lang as LanguageCode) || "en";
+  const requestedLang = (sParams.lang as LanguageCode) || "en";
   const rawJob = await getPublicJobBySlug(slug);
 
   if (!rawJob) {
@@ -29,7 +31,19 @@ export async function generateMetadata({ params, searchParams }: JobDetailPagePr
     });
   }
 
-  const job = resolveLocalizedJob(rawJob, lang);
+  const translations = (rawJob.translations || []) as any[];
+  const hasGenuineRequestedTranslation = requestedLang === "en" || translations.some((t) => t.language_code === requestedLang);
+  const isUntranslatedParameterRequest = requestedLang !== "en" && !hasGenuineRequestedTranslation;
+
+  // Build authentic available languages dictionary only for genuine translations
+  const availableLanguages: Record<string, string> = {};
+  translations.forEach((t) => {
+    if (t.language_code && t.language_code !== "en") {
+      availableLanguages[t.language_code] = `${getCanonicalSiteUrl()}/jobs/${rawJob.slug}?lang=${t.language_code}`;
+    }
+  });
+
+  const job = resolveLocalizedJob(rawJob, requestedLang);
   const orgName = job.organization?.name || "Government Authority";
   const orgAcronym = job.organization?.acronym || "";
   const postCount = job.total_vacancies ? ` (${job.total_vacancies} Posts)` : "";
@@ -39,7 +53,10 @@ export async function generateMetadata({ params, searchParams }: JobDetailPagePr
     description:
       job.meta_description ||
       `Official recruitment notice for ${job.total_vacancies || "multiple"} vacancies by ${orgName}. Check eligibility, online application dates, selection process, and official gazette notification.`,
-    path: `/jobs/${job.slug}`,
+    path: `/jobs/${rawJob.slug}`,
+    canonicalPath: `/jobs/${rawJob.slug}`,
+    noIndex: isUntranslatedParameterRequest, // Prevent Google from indexing untranslated parameter fallback URLs
+    availableLanguages: Object.keys(availableLanguages).length > 0 ? availableLanguages : undefined,
     keywords: [
       `${job.title} 2026`,
       `${orgAcronym || orgName} Recruitment 2026`,

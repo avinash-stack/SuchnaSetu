@@ -2,6 +2,8 @@ import Link from "next/link";
 import { Metadata } from "next";
 import { SITE_CONFIG } from "@/lib/constants";
 import { constructMetadata, buildWebSiteJsonLd, buildSuchnaSetuOrgJsonLd } from "@/lib/seo";
+
+export const revalidate = 120; // Revalidate homepage every 2 minutes for high performance and fresh data
 import { INDIAN_STATES } from "@/lib/constants/states";
 import { getBreakingBulletins, getPublicBulletins } from "@/modules/bulletins/service";
 import { getPublicJobs } from "@/modules/jobs/service";

@@ -19,7 +19,7 @@ interface BulletinDetailPageProps {
 export async function generateMetadata({ params, searchParams }: BulletinDetailPageProps): Promise<Metadata> {
   const { slug } = await params;
   const sParams = searchParams ? await searchParams : {};
-  const lang = (sParams.lang as LanguageCode) || "en";
+  const requestedLang = (sParams.lang as LanguageCode) || "en";
   const rawBulletin = await getPublicBulletinBySlug(slug);
 
   if (!rawBulletin) {
@@ -29,12 +29,18 @@ export async function generateMetadata({ params, searchParams }: BulletinDetailP
     });
   }
 
-  const bulletin = resolveLocalizedBulletin(rawBulletin, lang);
+  const translations = (rawBulletin.translations || []) as any[];
+  const hasGenuineRequestedTranslation = requestedLang === "en" || translations.some((t) => t.language_code === requestedLang);
+  const isUntranslatedParameterRequest = requestedLang !== "en" && !hasGenuineRequestedTranslation;
+
+  const bulletin = resolveLocalizedBulletin(rawBulletin, requestedLang);
 
   return constructMetadata({
     title: `${bulletin.title} | SuchnaSetu`,
     description: bulletin.summary,
-    path: `/news/${bulletin.slug}`,
+    path: `/news/${rawBulletin.slug}`,
+    canonicalPath: `/news/${rawBulletin.slug}`,
+    noIndex: isUntranslatedParameterRequest,
   });
 }
 

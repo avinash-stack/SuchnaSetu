@@ -90,3 +90,43 @@ export async function getImportLogsByJobId(jobId: string): Promise<ImportLog[]> 
 
   return (data || []) as ImportLog[];
 }
+
+/**
+ * Executes direct programmatic synchronization for a single source.
+ */
+export async function executeSourceSyncDirect(sourceId: string, triggerType: "manual" | "scheduled" = "manual") {
+  const supabase = createAdminClient();
+  const { data: source, error: srcError } = await (supabase.from("import_sources") as any)
+    .select("*")
+    .eq("id", sourceId)
+    .single();
+
+  if (srcError || !source) {
+    throw new Error(`Source not found: ${srcError?.message || "Invalid ID"}`);
+  }
+
+  const { data: job, error: jobError } = await (supabase.from("import_jobs") as any)
+    .insert({
+      source_id: sourceId,
+      trigger_type: triggerType,
+      status: "running",
+      started_at: new Date().toISOString(),
+    })
+    .select("id")
+    .single();
+
+  if (jobError || !job) {
+    throw new Error(`Failed to create import job: ${jobError?.message}`);
+  }
+
+  const { IngestionPipelineEngine } = await import("./core/pipeline");
+  const pipeline = new IngestionPipelineEngine();
+  const stats = await pipeline.executeJob(job.id);
+
+  return {
+    success: true,
+    jobId: job.id,
+    stats,
+  };
+}
+

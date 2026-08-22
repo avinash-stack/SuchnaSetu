@@ -5,9 +5,11 @@ interface MetadataProps {
   title?: string;
   description?: string;
   path?: string;
+  canonicalPath?: string;
   image?: string;
   noIndex?: boolean;
   keywords?: string[];
+  availableLanguages?: Record<string, string>;
 }
 
 /**
@@ -36,21 +38,36 @@ export function normalizeAdsenseId(rawId?: string | null): {
 /**
  * Generates standardized Next.js Metadata with OpenGraph, Twitter cards, and verification meta tags.
  * Guarantees absolute canonical HTTPS URL resolution using the production domain.
+ * Strictly avoids emitting phantom/untranslated hreflang language variants to prevent Google Search Console duplicate indexing issues.
  */
 export function constructMetadata({
   title,
   description = SITE_CONFIG.description,
   path = "",
+  canonicalPath,
   image = "/og/suchnasetu-og.png",
   noIndex = false,
   keywords,
+  availableLanguages,
 }: MetadataProps = {}): Metadata {
   const baseUrl = getCanonicalSiteUrl();
   const pageTitle = title ? `${title} | ${SITE_CONFIG.name}` : `${SITE_CONFIG.name} - ${SITE_CONFIG.tagline}`;
-  const cleanPath = path ? (path.startsWith("/") ? path : `/${path}`) : "";
+  
+  // Use canonicalPath if explicitly supplied, otherwise clean the path
+  const targetPath = canonicalPath !== undefined ? canonicalPath : path;
+  const cleanPath = targetPath ? (targetPath.startsWith("/") ? targetPath : `/${targetPath}`) : "";
   const canonicalUrl = `${baseUrl}${cleanPath}`;
   const ogImageUrl = image.startsWith("http") ? image : `${baseUrl}${image.startsWith("/") ? image : `/${image}`}`;
   const adsense = normalizeAdsenseId(process.env.NEXT_PUBLIC_ADSENSE_CLIENT_ID);
+
+  // Build clean, authentic hreflang mapping:
+  // If availableLanguages is provided, emit those authentic alternates.
+  // Otherwise, emit ONLY English and x-default to eliminate phantom ?lang= URLs.
+  const languageAlternates: Record<string, string> = {
+    "en": canonicalUrl,
+    ...(availableLanguages || {}),
+    "x-default": canonicalUrl,
+  };
 
   return {
     title: pageTitle,
@@ -68,15 +85,7 @@ export function constructMetadata({
     metadataBase: new URL(baseUrl),
     alternates: {
       canonical: canonicalUrl,
-      languages: {
-        "en": `${canonicalUrl}`,
-        "hi": `${canonicalUrl}${cleanPath.includes("?") ? "&" : "?"}lang=hi`,
-        "bn": `${canonicalUrl}${cleanPath.includes("?") ? "&" : "?"}lang=bn`,
-        "or": `${canonicalUrl}${cleanPath.includes("?") ? "&" : "?"}lang=or`,
-        "as": `${canonicalUrl}${cleanPath.includes("?") ? "&" : "?"}lang=as`,
-        "pa": `${canonicalUrl}${cleanPath.includes("?") ? "&" : "?"}lang=pa`,
-        "x-default": `${canonicalUrl}`,
-      },
+      languages: !noIndex ? languageAlternates : undefined,
     },
     openGraph: {
       title: pageTitle,
@@ -124,10 +133,10 @@ export function constructMetadata({
     manifest: "/site.webmanifest",
     robots: {
       index: !noIndex,
-      follow: !noIndex,
+      follow: true,
       googleBot: {
         index: !noIndex,
-        follow: !noIndex,
+        follow: true,
         "max-video-preview": -1,
         "max-image-preview": "large",
         "max-snippet": -1,

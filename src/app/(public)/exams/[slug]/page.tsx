@@ -7,6 +7,8 @@ import { resolveLocalizedExam } from "@/lib/i18n/localize";
 import { LanguageCode } from "@/lib/i18n/config";
 import { ExamDetailView } from "@/modules/exams/components/exam-detail-view";
 
+export const revalidate = 300; // 5 minutes cache for high performance & instant mobile rendering
+
 interface ExamDetailPageProps {
   params: Promise<{
     slug: string;
@@ -19,7 +21,7 @@ interface ExamDetailPageProps {
 export async function generateMetadata({ params, searchParams }: ExamDetailPageProps): Promise<Metadata> {
   const { slug } = await params;
   const sParams = searchParams ? await searchParams : {};
-  const lang = (sParams.lang as LanguageCode) || "en";
+  const requestedLang = (sParams.lang as LanguageCode) || "en";
   const rawExam = await getPublicExamBySlug(slug);
 
   if (!rawExam) {
@@ -29,7 +31,19 @@ export async function generateMetadata({ params, searchParams }: ExamDetailPageP
     });
   }
 
-  const exam = resolveLocalizedExam(rawExam, lang);
+  const translations = (rawExam.translations || []) as any[];
+  const hasGenuineRequestedTranslation = requestedLang === "en" || translations.some((t) => t.language_code === requestedLang);
+  const isUntranslatedParameterRequest = requestedLang !== "en" && !hasGenuineRequestedTranslation;
+
+  // Build authentic available languages dictionary only for genuine translations
+  const availableLanguages: Record<string, string> = {};
+  translations.forEach((t) => {
+    if (t.language_code && t.language_code !== "en") {
+      availableLanguages[t.language_code] = `${getCanonicalSiteUrl()}/exams/${rawExam.slug}?lang=${t.language_code}`;
+    }
+  });
+
+  const exam = resolveLocalizedExam(rawExam, requestedLang);
   const orgName = exam.organization?.name || "Official Examination Authority";
   const orgAcronym = exam.organization?.acronym || "";
 
@@ -38,7 +52,10 @@ export async function generateMetadata({ params, searchParams }: ExamDetailPageP
     description:
       exam.meta_description ||
       `Official examination schedule, syllabus, and pattern for ${exam.title} conducted by ${orgName}. Check exam dates, admit card release, answer key, and eligibility.`,
-    path: `/exams/${exam.slug}`,
+    path: `/exams/${rawExam.slug}`,
+    canonicalPath: `/exams/${rawExam.slug}`,
+    noIndex: isUntranslatedParameterRequest, // Prevent Google from indexing untranslated parameter fallback URLs
+    availableLanguages: Object.keys(availableLanguages).length > 0 ? availableLanguages : undefined,
     keywords: [
       `${exam.title} 2026`,
       `${orgAcronym || orgName} Exam Date`,
