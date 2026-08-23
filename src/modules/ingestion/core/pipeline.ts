@@ -16,6 +16,54 @@ import { slugify } from "@/lib/utils";
 
 export class IngestionPipelineEngine {
   private changeDetector = new DatabaseChangeDetector();
+  private orgCache = new Map<string, string>();
+  private catCache = new Map<string, string>();
+
+  private async getOrganizationId(supabase: any, slug?: string): Promise<string> {
+    const key = slug || "__default__";
+    if (this.orgCache.has(key)) return this.orgCache.get(key)!;
+
+    if (slug) {
+      const { data: org } = await (supabase.from("organizations") as any)
+        .select("id")
+        .eq("slug", slug)
+        .maybeSingle();
+      if (org?.id) {
+        this.orgCache.set(key, org.id);
+        return org.id;
+      }
+    }
+
+    if (this.orgCache.has("__default__")) return this.orgCache.get("__default__")!;
+    const { data: defaultOrg } = await (supabase.from("organizations") as any).select("id").limit(1).single();
+    const defaultId = defaultOrg?.id || "";
+    this.orgCache.set("__default__", defaultId);
+    if (slug) this.orgCache.set(slug, defaultId);
+    return defaultId;
+  }
+
+  private async getCategoryId(supabase: any, slug?: string): Promise<string> {
+    const key = slug || "__default__";
+    if (this.catCache.has(key)) return this.catCache.get(key)!;
+
+    if (slug) {
+      const { data: cat } = await (supabase.from("categories") as any)
+        .select("id")
+        .eq("slug", slug)
+        .maybeSingle();
+      if (cat?.id) {
+        this.catCache.set(key, cat.id);
+        return cat.id;
+      }
+    }
+
+    if (this.catCache.has("__default__")) return this.catCache.get("__default__")!;
+    const { data: defaultCat } = await (supabase.from("categories") as any).select("id").limit(1).single();
+    const defaultId = defaultCat?.id || "";
+    this.catCache.set("__default__", defaultId);
+    if (slug) this.catCache.set(slug, defaultId);
+    return defaultId;
+  }
 
   /**
    * Executes an ingestion job end-to-end with strict state tracking, duplicate detection, and error handling.
@@ -248,15 +296,33 @@ export class IngestionPipelineEngine {
 
       const shouldRetry = classified.isRetryable && job.retry_count < job.max_retries;
 
-      await (supabase.from("import_jobs") as any)
-        .update({
-          status: shouldRetry ? "retrying" : "failed",
-          error_message: classified.message,
-          error_details: { category: classified.category, isRetryable: classified.isRetryable },
-          retry_count: job.retry_count + (shouldRetry ? 1 : 0),
-          completed_at: shouldRetry ? null : new Date().toISOString(),
-        })
-        .eq("id", jobId);
+      if (shouldRetry) {
+        const nextRetry = new Date(Date.now() + calculateBackoffDelay(job.retry_count)).toISOString();
+        await (supabase.from("import_jobs") as any)
+          .update({
+            status: "retrying",
+            retry_count: job.retry_count + 1,
+            error_message: classified.message,
+            error_details: {
+              category: classified.category,
+              retry_after: nextRetry,
+              stack: err.stack,
+            },
+          })
+          .eq("id", jobId);
+      } else {
+        await (supabase.from("import_jobs") as any)
+          .update({
+            status: "failed",
+            completed_at: new Date().toISOString(),
+            error_message: classified.message,
+            error_details: {
+              category: classified.category,
+              stack: err.stack,
+            },
+          })
+          .eq("id", jobId);
+      }
 
       throw err;
     }
@@ -268,28 +334,9 @@ export class IngestionPipelineEngine {
   private async persistJobNotice(notice: NormalizedJobNotice, existingId?: string | null): Promise<string> {
     const supabase = createAdminClient();
 
-    // Resolve Org ID & Category ID from slugs
-    const { data: org } = await (supabase.from("organizations") as any)
-      .select("id")
-      .eq("slug", notice.organizationSlug)
-      .maybeSingle();
-
-    const { data: cat } = await (supabase.from("categories") as any)
-      .select("id")
-      .eq("slug", notice.categorySlug)
-      .maybeSingle();
-
-    let organizationId = org?.id;
-    let categoryId = cat?.id;
-
-    if (!organizationId) {
-      const { data: defaultOrg } = await (supabase.from("organizations") as any).select("id").limit(1).single();
-      organizationId = defaultOrg?.id;
-    }
-    if (!categoryId) {
-      const { data: defaultCat } = await (supabase.from("categories") as any).select("id").limit(1).single();
-      categoryId = defaultCat?.id;
-    }
+    // Resolve Org ID & Category ID from cached lookup
+    const organizationId = await this.getOrganizationId(supabase, notice.organizationSlug);
+    const categoryId = await this.getCategoryId(supabase, notice.categorySlug);
 
     let slug = notice.slug || slugify(notice.title);
 
@@ -406,15 +453,7 @@ export class IngestionPipelineEngine {
   private async persistBulletinNotice(bulletin: NormalizedBulletinNotice, existingId?: string | null): Promise<string> {
     const supabase = createAdminClient();
 
-    let orgId: string | null = null;
-    if (bulletin.organizationSlug) {
-      const { data: org } = await (supabase.from("organizations") as any)
-        .select("id")
-        .eq("slug", bulletin.organizationSlug)
-        .maybeSingle();
-      orgId = org?.id || null;
-    }
-
+    const orgId = bulletin.organizationSlug ? await this.getOrganizationId(supabase, bulletin.organizationSlug) : null;
     const slug = bulletin.slug || slugify(bulletin.title);
 
     // Check if bulletin exists by existingId or slug
@@ -486,28 +525,9 @@ export class IngestionPipelineEngine {
   private async persistExamNotice(notice: NormalizedJobNotice | any, existingId?: string | null): Promise<string> {
     const supabase = createAdminClient();
 
-    // Resolve Org ID & Category ID from slugs
-    const { data: org } = await (supabase.from("organizations") as any)
-      .select("id")
-      .eq("slug", notice.organizationSlug)
-      .maybeSingle();
-
-    const { data: cat } = await (supabase.from("categories") as any)
-      .select("id")
-      .eq("slug", notice.categorySlug)
-      .maybeSingle();
-
-    let organizationId = org?.id;
-    let categoryId = cat?.id;
-
-    if (!organizationId) {
-      const { data: defaultOrg } = await (supabase.from("organizations") as any).select("id").limit(1).single();
-      organizationId = defaultOrg?.id;
-    }
-    if (!categoryId) {
-      const { data: defaultCat } = await (supabase.from("categories") as any).select("id").limit(1).single();
-      categoryId = defaultCat?.id;
-    }
+    // Resolve Org ID & Category ID from cached lookup
+    const organizationId = await this.getOrganizationId(supabase, notice.organizationSlug);
+    const categoryId = await this.getCategoryId(supabase, notice.categorySlug);
 
     let slug = notice.slug || slugify(notice.title);
 

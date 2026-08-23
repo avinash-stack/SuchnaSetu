@@ -107,12 +107,13 @@ export class StandardGovJobSourceAdapter extends BaseSourceAdapter<any, Canonica
           const html = await response.text();
           const parsed = this.parseHtmlNotices(html, landedUrl);
           if (parsed.length > 0) {
-            extractedItems.push(...parsed);
+            const boundedNotices = parsed.slice(0, 15);
+            extractedItems.push(...boundedNotices);
             liveExtractionSucceeded = true;
             await context.log(
               "info",
               "extract",
-              `Parsed ${parsed.length} live notices directly from ${this.config.organizationSlug.toUpperCase()} HTML stream`
+              `Parsed ${boundedNotices.length} live notices directly from ${this.config.organizationSlug.toUpperCase()} HTML stream (capped from ${parsed.length} raw matches)`
             );
           }
         }

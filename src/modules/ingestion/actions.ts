@@ -15,13 +15,29 @@ import { getSchedulerConfig } from "./config/scheduler.config";
 export async function isSourceActivelyRunning(sourceId: string): Promise<boolean> {
   const supabase = createAdminClient();
   const config = getSchedulerConfig();
-  const cutoffTime = new Date(Date.now() - config.jobTimeoutMinutes * 60 * 1000).toISOString();
+  const timeoutWindowMs = (config.jobTimeoutMinutes || 5) * 60 * 1000;
+  const cutoffTime = new Date(Date.now() - timeoutWindowMs).toISOString();
 
+  // 1. Auto-clear stale jobs for this source older than cutoff window
+  try {
+    await (supabase.from("import_jobs") as any)
+      .update({
+        status: "failed",
+        completed_at: new Date().toISOString(),
+        error_message: "Job timed out and was cleared by scheduler deadlock recovery",
+      })
+      .eq("source_id", sourceId)
+      .eq("status", "running")
+      .lt("created_at", cutoffTime);
+  } catch (clearErr) {
+    console.error("Failed to clear stale running jobs:", clearErr);
+  }
+
+  // 2. Check for active running job within valid window
   const { data: runningJobs } = await (supabase.from("import_jobs") as any)
     .select("id")
     .eq("source_id", sourceId)
     .eq("status", "running")
-    .gt("started_at", cutoffTime)
     .limit(1);
 
   return Boolean(runningJobs && runningJobs.length > 0);
