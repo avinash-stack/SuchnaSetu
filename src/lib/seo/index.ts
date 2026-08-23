@@ -1,5 +1,6 @@
 import { Metadata } from "next";
 import { SITE_CONFIG, getCanonicalSiteUrl } from "@/lib/constants";
+import { getStateByCode } from "@/lib/constants/states";
 
 interface MetadataProps {
   title?: string;
@@ -215,7 +216,87 @@ export function buildBreadcrumbJsonLd(items: Array<{ name: string; url: string }
 }
 
 /**
- * Builds Google Search Central compliant JobPosting JSON-LD
+ * Safely extracts authentic salary bounds from structured fields or official pay scale strings.
+ * Returns null if no reliable numeric salary is present (NEVER invents fake values).
+ */
+export function parseSalaryQuantitativeValue({
+  salaryMin,
+  salaryMax,
+  payScaleDetails,
+}: {
+  salaryMin?: number | null;
+  salaryMax?: number | null;
+  payScaleDetails?: string | null;
+}): { minValue?: number; maxValue?: number; value?: number; unitText: string } | null {
+  if (salaryMin && salaryMin > 0) {
+    if (salaryMax && salaryMax > salaryMin) {
+      return { minValue: salaryMin, maxValue: salaryMax, unitText: "MONTH" };
+    }
+    return { value: salaryMin, unitText: "MONTH" };
+  }
+
+  if (!payScaleDetails || typeof payScaleDetails !== "string") {
+    return null;
+  }
+
+  const clean = payScaleDetails.trim();
+  if (!clean || /as per|not specified|applicable|null/i.test(clean)) {
+    return null;
+  }
+
+  // 1. Range regex: Rs. 56,100 - Rs. 1,77,500 or 21700 - 69100 or Rs. 36,000-63,840
+  const rangeMatch = clean.match(
+    /(?:Rs\.?|INR|₹)?\s*([0-9]{1,3}(?:,[0-9]{2,3})*|[0-9]{4,7})\s*(?:-|to|\/)\s*(?:Rs\.?|INR|₹)?\s*([0-9]{1,3}(?:,[0-9]{2,3})*|[0-9]{4,7})/i
+  );
+  if (rangeMatch) {
+    const min = parseInt(rangeMatch[1].replace(/,/g, ""), 10);
+    const max = parseInt(rangeMatch[2].replace(/,/g, ""), 10);
+    if (!isNaN(min) && !isNaN(max) && min > 0 && max >= min) {
+      return { minValue: min, maxValue: max, unitText: "MONTH" };
+    }
+  }
+
+  // 2. Single amount regex: Initial Pay Rs. 19,900 / Basic Pay Rs. 41,960 / Starting Rs. 56,100
+  const singleMatch = clean.match(
+    /(?:Initial Pay|Basic Pay|Starting Pay|Starting|Pay|Salary|Stipend)?\s*(?:Rs\.?|INR|₹)\s*([0-9]{1,3}(?:,[0-9]{2,3})*|[0-9]{4,7})/i
+  );
+  if (singleMatch) {
+    const val = parseInt(singleMatch[1].replace(/,/g, ""), 10);
+    if (!isNaN(val) && val >= 5000) {
+      return { value: val, unitText: "MONTH" };
+    }
+  }
+
+  // 3. Known 7th CPC Pay Matrix Levels (official Central Government Gazette figures)
+  const cpcLevels: Record<string, { min: number; max: number }> = {
+    "1": { min: 18000, max: 56900 },
+    "2": { min: 19900, max: 63200 },
+    "3": { min: 21700, max: 69100 },
+    "4": { min: 25500, max: 81100 },
+    "5": { min: 29200, max: 92300 },
+    "6": { min: 35400, max: 112400 },
+    "7": { min: 44900, max: 142400 },
+    "8": { min: 47600, max: 151100 },
+    "9": { min: 53100, max: 167800 },
+    "10": { min: 56100, max: 177500 },
+    "11": { min: 67700, max: 208700 },
+    "12": { min: 78800, max: 209200 },
+    "13": { min: 123100, max: 215900 },
+    "14": { min: 144200, max: 218200 },
+  };
+
+  const levelMatch = clean.match(/(?:Pay\s*(?:Matrix\s*)?Level|Level)\s*[-:]?\s*([0-9]{1,2})/i);
+  if (levelMatch && cpcLevels[levelMatch[1]]) {
+    const lvl = cpcLevels[levelMatch[1]];
+    return { minValue: lvl.min, maxValue: lvl.max, unitText: "MONTH" };
+  }
+
+  return null;
+}
+
+/**
+ * Builds Google Search Central compliant JobPosting JSON-LD.
+ * Grounded in authentic database records without fabricating non-existent location/salary data.
  */
 export function buildJobPostingJsonLd({
   title,
@@ -226,9 +307,15 @@ export function buildJobPostingJsonLd({
   datePosted,
   validThrough,
   jobLocationState,
+  stateCode,
   employmentType = "FULL_TIME",
   totalVacancies,
+  salaryMin,
+  salaryMax,
+  payScaleDetails,
   educationRequirements,
+  experienceRequirements,
+  directApplyUrl,
 }: {
   title: string;
   description: string;
@@ -238,20 +325,75 @@ export function buildJobPostingJsonLd({
   datePosted?: string | null;
   validThrough?: string | null;
   jobLocationState?: string | null;
+  stateCode?: string | null;
   employmentType?: string | null;
   totalVacancies?: number | null;
+  salaryMin?: number | null;
+  salaryMax?: number | null;
+  payScaleDetails?: string | null;
   educationRequirements?: string | null;
+  experienceRequirements?: string | null;
+  directApplyUrl?: string | null;
 }) {
-  const isNational = !jobLocationState || jobLocationState.toLowerCase() === "all india" || jobLocationState.toUpperCase() === "NATIONAL";
+  // Normalize employmentType to schema.org enum
+  const normalizedEmploymentType = (() => {
+    if (!employmentType) return "FULL_TIME";
+    const lower = employmentType.toLowerCase();
+    if (lower === "contract" || lower === "contractor") return "CONTRACTOR";
+    if (lower === "apprenticeship" || lower === "intern") return "INTERN";
+    if (lower === "temporary") return "TEMPORARY";
+    if (lower === "part_time" || lower === "part-time") return "PART_TIME";
+    return "FULL_TIME";
+  })();
+
+  // Resolve authentic state name if stateCode or state is provided
+  let regionName: string | undefined = undefined;
+  if (stateCode) {
+    regionName = getStateByCode(stateCode)?.name || stateCode;
+  } else if (
+    jobLocationState &&
+    !["all india", "national", "india", "central"].includes(jobLocationState.toLowerCase())
+  ) {
+    regionName = getStateByCode(jobLocationState)?.name || jobLocationState;
+  }
+
+  const isNational = !regionName;
+
+  // Resolve authentic salary (omitted if no reliable numeric salary is available)
+  const salaryValue = parseSalaryQuantitativeValue({ salaryMin, salaryMax, payScaleDetails });
+
+  // Format validThrough only if valid date
+  let formattedValidThrough: string | undefined = undefined;
+  if (validThrough) {
+    try {
+      const parsedDate = new Date(validThrough);
+      if (!isNaN(parsedDate.getTime())) {
+        formattedValidThrough = parsedDate.toISOString();
+      }
+    } catch {}
+  }
+
+  // Format datePosted
+  let formattedDatePosted = new Date().toISOString();
+  if (datePosted) {
+    try {
+      const parsedDate = new Date(datePosted);
+      if (!isNaN(parsedDate.getTime())) {
+        formattedDatePosted = parsedDate.toISOString();
+      }
+    } catch {}
+  }
 
   return {
     "@context": "https://schema.org",
     "@type": "JobPosting",
     title,
-    description: description || `${title} released by ${organizationName}. Check official notification, eligibility criteria, vacancy details and online application procedures.`,
-    datePosted: datePosted || new Date().toISOString(),
-    ...(validThrough ? { validThrough: new Date(validThrough).toISOString() } : {}),
-    employmentType: employmentType || "FULL_TIME",
+    description:
+      description ||
+      `${title} released by ${organizationName}. Check official notification, eligibility criteria, vacancy details and online application procedures.`,
+    datePosted: formattedDatePosted,
+    ...(formattedValidThrough ? { validThrough: formattedValidThrough } : {}),
+    employmentType: normalizedEmploymentType,
     hiringOrganization: {
       "@type": "GovernmentOrganization",
       name: organizationName,
@@ -269,16 +411,33 @@ export function buildJobPostingJsonLd({
           "@type": "Place",
           address: {
             "@type": "PostalAddress",
-            addressRegion: jobLocationState,
+            addressRegion: regionName,
             addressCountry: "IN",
           },
         },
-    applicantLocationRequirements: {
-      "@type": "Country",
-      name: "India",
-    },
-    directApply: true,
+    ...(isNational
+      ? {
+          applicantLocationRequirements: {
+            "@type": "Country",
+            name: "India",
+          },
+        }
+      : {}),
+    ...(salaryValue
+      ? {
+          baseSalary: {
+            "@type": "MonetaryAmount",
+            currency: "INR",
+            value: {
+              "@type": "QuantitativeValue",
+              ...salaryValue,
+            },
+          },
+        }
+      : {}),
+    directApply: Boolean(directApplyUrl),
     ...(educationRequirements ? { educationRequirements } : {}),
+    ...(experienceRequirements ? { experienceRequirements } : {}),
     ...(totalVacancies && totalVacancies > 0 ? { totalJobOpenings: totalVacancies } : {}),
   };
 }
