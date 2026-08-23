@@ -18,7 +18,10 @@ export function HeadScripts() {
     process.env.NEXT_PUBLIC_ENABLE_SCRIPTS_DEV === "true";
 
   const adsense = normalizeAdsenseId(process.env.NEXT_PUBLIC_ADSENSE_CLIENT_ID);
-  const gaMeasurementId = process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID;
+  const gaMeasurementId =
+    process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID ||
+    process.env.NEXT_PUBLIC_GA_ID ||
+    "G-GPENK8HFEH";
   const clarityProjectId = process.env.NEXT_PUBLIC_CLARITY_PROJECT_ID;
   const gscVerificationTag = process.env.NEXT_PUBLIC_GSC_VERIFICATION_TAG;
   const bingVerificationTag = process.env.NEXT_PUBLIC_BING_VERIFICATION_TAG;
