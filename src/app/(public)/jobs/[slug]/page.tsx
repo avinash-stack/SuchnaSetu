@@ -67,39 +67,46 @@ export async function generateMetadata({ params, searchParams }: JobDetailPagePr
   });
 }
 
-export default async function PublicJobDetailPage({ params }: JobDetailPageProps) {
+export default async function PublicJobDetailPage({ params, searchParams }: JobDetailPageProps) {
   const { slug } = await params;
+  const resolvedSearchParams = searchParams ? await searchParams : {};
+  const requestedLang = resolvedSearchParams?.lang || "en";
+
   const job = await getPublicJobBySlug(slug);
 
   if (!job) {
     notFound();
   }
 
+  const translations = job.translations || [];
+  const hasRequestedTranslation = requestedLang === "en" || translations.some((t) => t.language_code === requestedLang);
+  const isUntranslatedParam = requestedLang !== "en" && !hasRequestedTranslation;
+
   const org = job.organization;
   const baseUrl = getCanonicalSiteUrl();
 
-  const stateName = job.state_code || (typeof job.state === "string" ? job.state : (job.state as any)?.name) || "All India";
-
-  // Structured JobPosting schema
-  const jobPostingJsonLd = buildJobPostingJsonLd({
-    title: `${job.title} (${org?.acronym || org?.name || "Govt"})`,
-    description: job.summary || `${job.title} official recruitment notification by ${org?.name || "Government of India"}.`,
-    url: `${baseUrl}/jobs/${job.slug}`,
-    organizationName: org?.name || "Government of India",
-    organizationUrl: org?.website_url,
-    datePosted: job.published_at,
-    validThrough: job.application_end_date,
-    stateCode: job.state_code,
-    jobLocationState: typeof job.state === "string" ? job.state : job.state?.name,
-    employmentType: job.employment_type,
-    totalVacancies: job.total_vacancies,
-    salaryMin: job.salary_min,
-    salaryMax: job.salary_max,
-    payScaleDetails: job.pay_scale_details,
-    educationRequirements: job.eligibility?.education_qualification || job.qualification_summary || job.qualification?.name,
-    experienceRequirements: job.eligibility?.experience_details,
-    directApplyUrl: job.official_apply_url,
-  });
+  // Structured JobPosting schema (only emitted for canonical and genuine translated pages)
+  const jobPostingJsonLd = !isUntranslatedParam
+    ? buildJobPostingJsonLd({
+        title: `${job.title} (${org?.acronym || org?.name || "Govt"})`,
+        description: job.summary || `${job.title} official recruitment notification by ${org?.name || "Government of India"}.`,
+        url: `${baseUrl}/jobs/${job.slug}`,
+        organizationName: org?.name || "Government of India",
+        organizationUrl: org?.website_url,
+        datePosted: job.published_at,
+        validThrough: job.application_end_date,
+        stateCode: job.state_code,
+        jobLocationState: typeof job.state === "string" ? job.state : job.state?.name,
+        employmentType: job.employment_type,
+        totalVacancies: job.total_vacancies,
+        salaryMin: job.salary_min,
+        salaryMax: job.salary_max,
+        payScaleDetails: job.pay_scale_details,
+        educationRequirements: job.eligibility?.education_qualification || job.qualification_summary || job.qualification?.name,
+        experienceRequirements: job.eligibility?.experience_details,
+        directApplyUrl: job.official_apply_url,
+      })
+    : null;
 
   // Structured Breadcrumbs schema
   const breadcrumbs = [
@@ -113,10 +120,12 @@ export default async function PublicJobDetailPage({ params }: JobDetailPageProps
   return (
     <>
       {/* Inject Google Search Central Structured Data */}
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(jobPostingJsonLd) }}
-      />
+      {jobPostingJsonLd && (
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(jobPostingJsonLd) }}
+        />
+      )}
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbJsonLd) }}
