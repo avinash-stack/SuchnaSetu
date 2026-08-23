@@ -15,7 +15,8 @@ import { getSchedulerConfig } from "./config/scheduler.config";
 export async function isSourceActivelyRunning(sourceId: string): Promise<boolean> {
   const supabase = createAdminClient();
   const config = getSchedulerConfig();
-  const timeoutWindowMs = (config.jobTimeoutMinutes || 5) * 60 * 1000;
+  // 60-second safety window for deadlock recovery
+  const timeoutWindowMs = 60 * 1000;
   const cutoffTime = new Date(Date.now() - timeoutWindowMs).toISOString();
 
   // 1. Auto-clear stale jobs for this source older than cutoff window
@@ -71,7 +72,7 @@ export async function triggerImportJob(sourceId: string): Promise<{
       return { success: false, error: `Import source "${source.name}" is currently disabled` };
     }
 
-    // 2. Concurrency Lock: Prevent concurrent sync for the same source
+    // 2. Concurrency Lock: Auto-clear stale running jobs and prevent concurrent sync
     const isRunning = await isSourceActivelyRunning(sourceId);
     if (isRunning) {
       return {

@@ -96,84 +96,134 @@ async function handleSync(request: NextRequest) {
   let totalFailed = 0;
   let totalExtracted = 0;
 
-  // 4. Execute synchronization with isolated error boundary per pipeline
-  for (const src of sources) {
-    const sourceStart = Date.now();
+  // Helper to enforce maximum per-source execution timeout during cron runs
+  const runWithTimeout = async <T>(promise: Promise<T>, ms: number, fallback: T): Promise<T> => {
+    let timer: NodeJS.Timeout;
+    const timeoutPromise = new Promise<T>((resolve) => {
+      timer = setTimeout(() => resolve(fallback), ms);
+    });
+    return Promise.race([
+      promise.then((res) => {
+        clearTimeout(timer);
+        return res;
+      }),
+      timeoutPromise,
+    ]);
+  };
 
-    // Check concurrency lock: prevent concurrent sync if this source is already in-flight
-    const isRunning = await isSourceActivelyRunning(src.id);
-    if (isRunning) {
-      results.push({
-        sourceId: src.id,
-        sourceCode: src.code,
-        sourceName: src.name,
-        targetModule: src.target_module,
-        status: "skipped_locked",
-        durationMs: Date.now() - sourceStart,
-        error: "Source is already running an active sync job. Concurrency lock applied.",
-      });
-      continue;
-    }
+  // 4. Execute synchronization in bounded parallel batches (concurrency: 4) with per-source isolation
+  const BATCH_SIZE = 4;
+  for (let i = 0; i < sources.length; i += BATCH_SIZE) {
+    const batch = sources.slice(i, i + BATCH_SIZE);
+    const batchPromises = batch.map(async (src: any) => {
+      const sourceStart = Date.now();
 
-    // Create automated import_job record
-    const { data: job, error: jobErr } = await (supabase.from("import_jobs") as any)
-      .insert({
-        source_id: src.id,
-        trigger_type: "scheduled",
-        status: "running",
-        started_at: new Date().toISOString(),
-      })
-      .select("id")
-      .single();
+      // Check concurrency lock: prevent concurrent sync if this source is already in-flight
+      const isRunning = await isSourceActivelyRunning(src.id);
+      if (isRunning) {
+        return {
+          sourceId: src.id,
+          sourceCode: src.code,
+          sourceName: src.name,
+          targetModule: src.target_module,
+          status: "skipped_locked" as const,
+          durationMs: Date.now() - sourceStart,
+          error: "Source is already running an active sync job. Concurrency lock applied.",
+        };
+      }
 
-    if (jobErr || !job) {
-      results.push({
-        sourceId: src.id,
-        sourceCode: src.code,
-        sourceName: src.name,
-        targetModule: src.target_module,
-        status: "failed",
-        durationMs: Date.now() - sourceStart,
-        error: `Failed to create job record: ${jobErr?.message}`,
-      });
-      totalFailed++;
-      continue;
-    }
+      // Create automated import_job record
+      const { data: job, error: jobErr } = await (supabase.from("import_jobs") as any)
+        .insert({
+          source_id: src.id,
+          trigger_type: "scheduled",
+          status: "running",
+          started_at: new Date().toISOString(),
+        })
+        .select("id")
+        .single();
 
-    const jobId = job.id;
+      if (jobErr || !job) {
+        return {
+          sourceId: src.id,
+          sourceCode: src.code,
+          sourceName: src.name,
+          targetModule: src.target_module,
+          status: "failed" as const,
+          durationMs: Date.now() - sourceStart,
+          error: `Failed to create job record: ${jobErr?.message}`,
+        };
+      }
 
-    try {
-      const stats = await pipeline.executeJob(jobId);
-      const sourceDuration = Date.now() - sourceStart;
+      const jobId = job.id;
 
-      totalExtracted += stats.totalExtracted || 0;
-      totalInserted += stats.totalInserted || 0;
-      totalUpdated += stats.totalUpdated || 0;
-      totalSkipped += stats.totalSkipped || 0;
-      totalFailed += stats.totalFailed || 0;
+      try {
+        // Execute with safe 12-second per-source timeout
+        const stats = await runWithTimeout(
+          pipeline.executeJob(jobId),
+          12000,
+          null
+        );
 
-      results.push({
-        sourceId: src.id,
-        sourceCode: src.code,
-        sourceName: src.name,
-        targetModule: src.target_module,
-        status: "completed",
-        stats,
-        durationMs: sourceDuration,
-      });
-    } catch (execErr: any) {
-      const sourceDuration = Date.now() - sourceStart;
-      totalFailed++;
+        const sourceDuration = Date.now() - sourceStart;
 
-      results.push({
-        sourceId: src.id,
-        sourceCode: src.code,
-        sourceName: src.name,
-        targetModule: src.target_module,
-        status: "failed",
-        durationMs: sourceDuration,
-        error: execErr?.message || "Execution exception occurred during pipeline run",
-      });
+        if (!stats) {
+          // Timeout occurred
+          await (supabase.from("import_jobs") as any)
+            .update({
+              status: "failed",
+              completed_at: new Date().toISOString(),
+              error_message: "Execution timed out (exceeded 12s safe threshold)",
+            })
+            .eq("id", jobId);
+
+          return {
+            sourceId: src.id,
+            sourceCode: src.code,
+            sourceName: src.name,
+            targetModule: src.target_module,
+            status: "failed" as const,
+            durationMs: sourceDuration,
+            error: "Source execution timed out",
+          };
+        }
+
+        return {
+          sourceId: src.id,
+          sourceCode: src.code,
+          sourceName: src.name,
+          targetModule: src.target_module,
+          status: "completed" as const,
+          stats,
+          durationMs: sourceDuration,
+        };
+      } catch (execErr: any) {
+        const sourceDuration = Date.now() - sourceStart;
+        return {
+          sourceId: src.id,
+          sourceCode: src.code,
+          sourceName: src.name,
+          targetModule: src.target_module,
+          status: "failed" as const,
+          durationMs: sourceDuration,
+          error: execErr?.message || "Execution exception occurred during pipeline run",
+        };
+      }
+    });
+
+    const batchResults = await Promise.all(batchPromises);
+
+    for (const res of batchResults) {
+      if (res.status === "completed" && res.stats) {
+        totalExtracted += res.stats.totalExtracted || 0;
+        totalInserted += res.stats.totalInserted || 0;
+        totalUpdated += res.stats.totalUpdated || 0;
+        totalSkipped += res.stats.totalSkipped || 0;
+        totalFailed += res.stats.totalFailed || 0;
+      } else if (res.status === "failed") {
+        totalFailed++;
+      }
+      results.push(res);
     }
   }
 

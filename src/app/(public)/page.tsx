@@ -545,47 +545,50 @@ export default async function HomePage({ searchParams }: HomePageProps) {
             </div>
 
             {/* ----------------------------------------------------------------- */}
-            {/* RIGHT SIDEBAR (4 Cols) - All sections max 7 single-line links */}
             {/* ----------------------------------------------------------------- */}
-            <div className="lg:col-span-4 space-y-5">
-              {/* Widget 1: TODAY'S UPDATES (Max 7 single-line links) */}
+            {/* RIGHT SIDEBAR (4 Cols) - Synced spacious editorial widgets */}
+            {/* ----------------------------------------------------------------- */}
+            <div className="lg:col-span-4 space-y-6">
+              {/* Widget 1: TODAY'S UPDATES (Max 7 links) */}
               <TodaysUpdatesSection items={todaysUpdates} />
 
-              {/* Widget 2: LATEST ADMIT CARDS & HALL TICKETS (Max 7 single-line links) */}
-              <div className="rounded-xl border border-slate-200 bg-white p-3.5 space-y-2.5 shadow-2xs">
-                <div className="flex items-center justify-between border-b border-slate-100 pb-2">
-                  <div className="flex items-center gap-1.5">
-                    <CreditCard className="h-4 w-4 text-[#013089]" />
-                    <h3 className="text-xs sm:text-sm font-bold text-slate-900 font-heading">
+              {/* Widget 2: LATEST ADMIT CARDS & HALL TICKETS */}
+              <div className="rounded-xl border border-slate-200/90 bg-white p-4 sm:p-4.5 space-y-3 shadow-2xs">
+                <div className="flex items-center justify-between border-b border-slate-100 pb-2.5">
+                  <div className="flex items-center gap-2">
+                    <div className="flex h-6 w-6 items-center justify-center rounded-md bg-blue-50 text-[#013089]">
+                      <CreditCard className="h-3.5 w-3.5 text-[#013089]" />
+                    </div>
+                    <h3 className="text-sm font-bold text-slate-900 font-heading">
                       Admit Cards &amp; Hall Tickets
                     </h3>
                   </div>
                   <Link
                     href="/admit-cards"
-                    className="text-[11px] font-bold text-[#013089] hover:underline inline-flex items-center gap-0.5"
+                    className="text-xs font-semibold text-[#013089] hover:underline inline-flex items-center gap-0.5"
                   >
                     <span>View All</span>
-                    <ChevronRight className="h-3 w-3" />
+                    <ChevronRight className="h-3.5 w-3.5" />
                   </Link>
                 </div>
 
-                <div className="space-y-1 divide-y divide-slate-100">
+                <div className="divide-y divide-slate-100/80 -mx-1">
                   {latestAdmitCards.length > 0 ? (
                     latestAdmitCards.slice(0, 7).map((ac) => (
                       <div
                         key={ac.id}
-                        className="pt-1.5 first:pt-0 flex items-center justify-between gap-2 hover:bg-slate-50/80 rounded px-1 -mx-1 transition-colors"
+                        className="py-2 px-2 hover:bg-slate-50/80 rounded-lg transition-colors flex items-center justify-between gap-2.5"
                       >
-                        <div className="flex items-center gap-1.5 min-w-0 flex-1">
+                        <div className="flex items-center gap-2 min-w-0 flex-1">
                           <Badge
                             variant="brand"
-                            className="text-[9px] font-bold py-0 px-1.5 shrink-0 bg-[#013089] text-white"
+                            className="text-[10px] font-bold py-0.5 px-1.5 shrink-0 bg-[#013089] text-white rounded"
                           >
                             {ac.organization?.acronym || "EXAM"}
                           </Badge>
                           <Link
                             href={`/exams/${ac.slug}`}
-                            className="text-xs font-semibold text-slate-900 hover:text-[#013089] transition-colors truncate block"
+                            className="text-[13px] font-medium text-slate-800 hover:text-[#013089] transition-colors truncate block leading-snug"
                             title={ac.title}
                           >
                             {ac.title}
@@ -597,107 +600,111 @@ export default async function HomePage({ searchParams }: HomePageProps) {
                             href={ac.admit_card_url}
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="inline-flex items-center gap-0.5 text-[10px] font-bold text-[#013089] hover:underline shrink-0 whitespace-nowrap bg-blue-50 px-1.5 py-0.5 rounded"
+                            className="inline-flex items-center gap-1 text-[11px] font-semibold text-[#013089] hover:underline shrink-0 whitespace-nowrap bg-blue-50 px-2 py-0.5 rounded"
                           >
                             <span>Download</span>
-                            <Download className="h-2.5 w-2.5" />
+                            <Download className="h-3 w-3" />
                           </a>
                         ) : (
-                          <span className="text-[10px] text-slate-400 shrink-0 whitespace-nowrap">
+                          <span className="text-[11px] text-slate-400 font-mono shrink-0 whitespace-nowrap">
                             {ac.state_code || "National"}
                           </span>
                         )}
                       </div>
                     ))
                   ) : (
-                    <p className="text-xs text-slate-500 py-1.5">
+                    <p className="text-xs text-slate-500 py-3 px-2 text-center">
                       No new admit cards released today.
                     </p>
                   )}
                 </div>
               </div>
 
-              {/* Widget 3: Urgent Deadlines / Closing Soon (Max 7 single-line links) */}
-              <div className="rounded-xl border border-slate-200 bg-white p-3.5 space-y-2.5 shadow-2xs">
-                <div className="flex items-center justify-between border-b border-slate-100 pb-2">
-                  <div className="flex items-center gap-1.5">
-                    <Clock className="h-4 w-4 text-[#FE8D01]" />
-                    <h3 className="text-xs sm:text-sm font-bold text-slate-900 font-heading">
+              {/* Widget 3: Urgent Deadlines / Closing Soon */}
+              <div className="rounded-xl border border-slate-200/90 bg-white p-4 sm:p-4.5 space-y-3 shadow-2xs">
+                <div className="flex items-center justify-between border-b border-slate-100 pb-2.5">
+                  <div className="flex items-center gap-2">
+                    <div className="flex h-6 w-6 items-center justify-center rounded-md bg-amber-50 text-amber-700">
+                      <Clock className="h-3.5 w-3.5 text-[#FE8D01]" />
+                    </div>
+                    <h3 className="text-sm font-bold text-slate-900 font-heading">
                       Closing Soon (Next 10 Days)
                     </h3>
                   </div>
                   <Link
                     href="/jobs"
-                    className="text-[11px] font-bold text-[#013089] hover:underline inline-flex items-center gap-0.5"
+                    className="text-xs font-semibold text-[#013089] hover:underline inline-flex items-center gap-0.5"
                   >
                     <span>View All</span>
-                    <ChevronRight className="h-3 w-3" />
+                    <ChevronRight className="h-3.5 w-3.5" />
                   </Link>
                 </div>
 
-                <div className="space-y-1 divide-y divide-slate-100">
+                <div className="divide-y divide-slate-100/80 -mx-1">
                   {urgentClosingJobs.length > 0 ? (
                     urgentClosingJobs.slice(0, 7).map((job) => (
                       <div
                         key={job.id}
-                        className="pt-1.5 first:pt-0 flex items-center justify-between gap-2 hover:bg-slate-50/80 rounded px-1 -mx-1 transition-colors"
+                        className="py-2 px-2 hover:bg-slate-50/80 rounded-lg transition-colors flex items-center justify-between gap-2.5"
                       >
-                        <div className="flex items-center gap-1.5 min-w-0 flex-1">
+                        <div className="flex items-center gap-2 min-w-0 flex-1">
                           <Badge
                             variant="secondary"
-                            className="text-[9px] font-bold py-0 px-1.5 shrink-0 text-slate-700 bg-slate-100"
+                            className="text-[10px] font-bold py-0.5 px-1.5 shrink-0 text-slate-700 bg-slate-100 rounded"
                           >
                             {job.organization?.acronym || "GOVT"}
                           </Badge>
                           <Link
                             href={`/jobs/${job.slug}`}
-                            className="text-xs font-semibold text-slate-900 hover:text-[#013089] transition-colors truncate block"
+                            className="text-[13px] font-medium text-slate-800 hover:text-[#013089] transition-colors truncate block leading-snug"
                             title={job.title}
                           >
                             {job.title}
                           </Link>
                         </div>
-                        <span className="text-[10px] font-bold text-amber-700 shrink-0 whitespace-nowrap">
+                        <span className="text-[11px] font-semibold text-amber-700 shrink-0 whitespace-nowrap font-mono">
                           {formatDate(job.application_end_date)}
                         </span>
                       </div>
                     ))
                   ) : (
-                    <p className="text-xs text-slate-500 py-1.5">
+                    <p className="text-xs text-slate-500 py-3 px-2 text-center">
                       No recruitment deadlines closing in the next 10 days.
                     </p>
                   )}
                 </div>
               </div>
 
-              {/* Widget 4: Rozgar Samachar & Advisories (Max 7 single-line links) */}
-              <div className="rounded-xl border border-slate-200 bg-white p-3.5 space-y-2.5 shadow-2xs">
-                <div className="flex items-center justify-between border-b border-slate-100 pb-2">
-                  <div className="flex items-center gap-1.5">
-                    <Newspaper className="h-4 w-4 text-[#013089]" />
-                    <h3 className="text-xs sm:text-sm font-bold text-slate-900 font-heading">
+              {/* Widget 4: Rozgar Samachar & Advisories */}
+              <div className="rounded-xl border border-slate-200/90 bg-white p-4 sm:p-4.5 space-y-3 shadow-2xs">
+                <div className="flex items-center justify-between border-b border-slate-100 pb-2.5">
+                  <div className="flex items-center gap-2">
+                    <div className="flex h-6 w-6 items-center justify-center rounded-md bg-blue-50 text-[#013089]">
+                      <Newspaper className="h-3.5 w-3.5 text-[#013089]" />
+                    </div>
+                    <h3 className="text-sm font-bold text-slate-900 font-heading">
                       Rozgar Samachar &amp; Advisories
                     </h3>
                   </div>
                   <Link
                     href="/news"
-                    className="text-[11px] font-bold text-[#013089] hover:underline inline-flex items-center gap-0.5"
+                    className="text-xs font-semibold text-[#013089] hover:underline inline-flex items-center gap-0.5"
                   >
                     <span>View All</span>
-                    <ChevronRight className="h-3 w-3" />
+                    <ChevronRight className="h-3.5 w-3.5" />
                   </Link>
                 </div>
 
-                <div className="space-y-1 divide-y divide-slate-100">
+                <div className="divide-y divide-slate-100/80 -mx-1">
                   {latestBulletins.slice(0, 7).map((bulletin) => (
                     <div
                       key={bulletin.id}
-                      className="pt-1.5 first:pt-0 flex items-center justify-between gap-2 hover:bg-slate-50/80 rounded px-1 -mx-1 transition-colors"
+                      className="py-2 px-2 hover:bg-slate-50/80 rounded-lg transition-colors flex items-center justify-between gap-2.5"
                     >
-                      <div className="flex items-center gap-1.5 min-w-0 flex-1">
+                      <div className="flex items-center gap-2 min-w-0 flex-1">
                         <Badge
                           variant="brand"
-                          className="text-[9px] font-bold py-0 px-1.5 shrink-0 bg-rose-600 text-white"
+                          className="text-[10px] font-bold py-0.5 px-1.5 shrink-0 bg-rose-600 text-white rounded"
                         >
                           {bulletin.source_name
                             ? bulletin.source_name.length > 8
@@ -707,13 +714,13 @@ export default async function HomePage({ searchParams }: HomePageProps) {
                         </Badge>
                         <Link
                           href={`/news/${bulletin.slug}`}
-                          className="text-xs font-semibold text-slate-900 hover:text-[#013089] transition-colors truncate block"
+                          className="text-[13px] font-medium text-slate-800 hover:text-[#013089] transition-colors truncate block leading-snug"
                           title={bulletin.title}
                         >
                           {bulletin.title}
                         </Link>
                       </div>
-                      <span className="text-[10px] text-slate-400 font-medium shrink-0 whitespace-nowrap">
+                      <span className="text-[11px] text-slate-400 font-medium shrink-0 whitespace-nowrap">
                         {formatDate(bulletin.published_at)}
                       </span>
                     </div>
@@ -722,8 +729,8 @@ export default async function HomePage({ searchParams }: HomePageProps) {
               </div>
 
               {/* Widget 5: Statutory Citizen Transparency Protocol */}
-              <div className="rounded-xl border border-slate-200 bg-slate-50 p-3.5 space-y-1.5 text-xs">
-                <div className="flex items-center gap-1.5 font-bold text-slate-800">
+              <div className="rounded-xl border border-slate-200/90 bg-slate-50/80 p-4 space-y-2 text-xs">
+                <div className="flex items-center gap-2 font-bold text-slate-800">
                   <ShieldAlert className="h-4 w-4 text-[#FE8D01]" />
                   <span>Statutory Notice &amp; Cross-Check</span>
                 </div>

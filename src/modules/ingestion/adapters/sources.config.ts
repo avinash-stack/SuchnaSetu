@@ -1796,6 +1796,365 @@ export const GOV_JOB_SOURCES_CONFIG: GovJobSourceConfig[] = [
         fee_details: { general_obc_ews: 1000, sc_st_pwd_women: 600, payment_mode: "Online Gateway (SBI / HDFC / ICICI / UPI)" }
       }
     ]
-  }
+  },
+  {
+    "key": "mpsc_official_feed",
+    "name": "Maharashtra Public Service Commission (MPSC) Official Feed",
+    "organizationSlug": "mpsc",
+    "organizationName": "Maharashtra Public Service Commission",
+    "jurisdiction": "state",
+    "stateCode": "MH",
+    "baseUrl": "https://mpsc.gov.in",
+    "recruitmentPath": "/adv-notification",
+    "applyUrl": "https://mpsconline.gov.in",
+    "defaultCategory": "state-psc",
+    "canonicalNotices": [
+      {
+        "advertisement_number": "MPSC/2026/01",
+        "title": "Maharashtra Civil Services Combined Preliminary Examination 2026",
+        "post_name": "Assistant Commissioner, Deputy Collector, DSP, Tehsildar",
+        "total_vacancies": 685,
+        "date_of_notification": "2026-02-15",
+        "closing_date": "2026-03-30",
+        "pdf_url": "https://mpsc.gov.in/download/adv_2026_01.pdf",
+        "apply_url": "https://mpsconline.gov.in",
+        "qualification_summary": "Bachelor's Degree in any discipline from a recognized University.",
+        "age_limit_summary": "19 to 38 years (Age relaxation applicable as per Maharashtra Govt rules).",
+        "pay_scale": "Pay Matrix Level S-15 to S-20 (₹41,800 - ₹1,77,500)",
+        "min_age": 19,
+        "max_age": 38
+      }
+    ]
+  },
+
+  {
+    "key": "gpsc_official_feed",
+    "name": "Gujarat Public Service Commission (GPSC) Official Feed",
+    "organizationSlug": "gpsc",
+    "organizationName": "Gujarat Public Service Commission",
+    "jurisdiction": "state",
+    "stateCode": "GJ",
+    "baseUrl": "https://gpsc.gujarat.gov.in",
+    "recruitmentPath": "/Advertisements",
+    "applyUrl": "https://gpsc-ojas.gujarat.gov.in",
+    "defaultCategory": "state-psc",
+    "canonicalNotices": [
+      {
+        "advertisement_number": "GPSC/202627/01",
+        "title": "Gujarat Administrative Service Class-1 and Gujarat Civil Services Class-1 & Class-2 Examination 2026",
+        "post_name": "GAS Class-1, GPS Class-1, DDO Class-2",
+        "total_vacancies": 420,
+        "date_of_notification": "2026-02-20",
+        "closing_date": "2026-03-28",
+        "pdf_url": "https://gpsc.gujarat.gov.in/adv/202627_01.pdf",
+        "apply_url": "https://gpsc-ojas.gujarat.gov.in",
+        "qualification_summary": "Graduate in any faculty of any University established by law in India.",
+        "age_limit_summary": "20 to 36 years as on application cutoff.",
+        "pay_scale": "Pay Matrix Level 8 to 10 (₹44,900 - ₹1,42,400)",
+        "min_age": 20,
+        "max_age": 36
+      }
+    ]
+  },
+
+  {
+    "key": "kpsc_official_feed",
+    "name": "Karnataka Public Service Commission (KPSC) Official Feed",
+    "organizationSlug": "kpsc",
+    "organizationName": "Karnataka Public Service Commission",
+    "jurisdiction": "state",
+    "stateCode": "KA",
+    "baseUrl": "https://kpsc.kar.nic.in",
+    "recruitmentPath": "/notification.html",
+    "applyUrl": "https://kpsconline.karnataka.gov.in",
+    "defaultCategory": "state-psc",
+    "canonicalNotices": [
+      {
+        "advertisement_number": "KPSC/KAS/2026",
+        "title": "Karnataka Administrative Services (KAS Gazetted Probationers) Recruitment 2026",
+        "post_name": "Assistant Commissioner, Tahsildar, Commercial Tax Officer",
+        "total_vacancies": 384,
+        "date_of_notification": "2026-02-18",
+        "closing_date": "2026-03-25",
+        "pdf_url": "https://kpsc.kar.nic.in/docs/kas_2026_notification.pdf",
+        "apply_url": "https://kpsconline.karnataka.gov.in",
+        "qualification_summary": "Must possess Bachelor's Degree or equivalent qualification.",
+        "age_limit_summary": "21 to 35 years (Age relaxation applicable for Category 2A/2B/3A/3B/SC/ST).",
+        "pay_scale": "Group A & B Scale (₹43,100 - ₹83,900)",
+        "min_age": 21,
+        "max_age": 35
+      }
+    ]
+  },
+
+  {
+    "key": "tnpsc_official_feed",
+    "name": "Tamil Nadu Public Service Commission (TNPSC) Official Feed",
+    "organizationSlug": "tnpsc",
+    "organizationName": "Tamil Nadu Public Service Commission",
+    "jurisdiction": "state",
+    "stateCode": "TN",
+    "baseUrl": "https://www.tnpsc.gov.in",
+    "recruitmentPath": "/english/notifications.aspx",
+    "applyUrl": "https://apply.tnpscexams.in",
+    "defaultCategory": "state-psc",
+    "canonicalNotices": [
+      {
+        "advertisement_number": "TNPSC/02/2026",
+        "title": "Combined Civil Services Examination-I (Group-I Services) Recruitment 2026",
+        "post_name": "Deputy Collector, DSP (Category-I), Assistant Commissioner (Commercial Taxes)",
+        "total_vacancies": 290,
+        "date_of_notification": "2026-02-12",
+        "closing_date": "2026-03-20",
+        "pdf_url": "https://www.tnpsc.gov.in/notifications/02_2026_group1.pdf",
+        "apply_url": "https://apply.tnpscexams.in",
+        "qualification_summary": "A degree of any of the Universities incorporated by an Act of the Central or State Legislature in India.",
+        "age_limit_summary": "21 to 34 years (40 years for SCs, SC(A)s, STs, MBCs/DCs, BC(OBCM)s, BCMs).",
+        "pay_scale": "Level 22 (₹56,100 - ₹2,05,700)",
+        "min_age": 21,
+        "max_age": 34
+      }
+    ]
+  },
+
+  {
+    "key": "tspsc_official_feed",
+    "name": "Telangana Public Service Commission (TGPSC) Official Feed",
+    "organizationSlug": "tspsc",
+    "organizationName": "Telangana Public Service Commission",
+    "jurisdiction": "state",
+    "stateCode": "TS",
+    "baseUrl": "https://www.tspsc.gov.in",
+    "recruitmentPath": "/notifications",
+    "applyUrl": "https://www.tspsc.gov.in",
+    "defaultCategory": "state-psc",
+    "canonicalNotices": [
+      {
+        "advertisement_number": "TGPSC/03/2026",
+        "title": "Group-I Services Examination Recruitment 2026",
+        "post_name": "Deputy Collector, DSP, District Registrar, Commercial Tax Officer",
+        "total_vacancies": 563,
+        "date_of_notification": "2026-02-10",
+        "closing_date": "2026-03-22",
+        "pdf_url": "https://www.tspsc.gov.in/docs/group1_2026.pdf",
+        "apply_url": "https://www.tspsc.gov.in",
+        "qualification_summary": "Bachelor's Degree in any discipline from a recognized University.",
+        "age_limit_summary": "18 to 44 years as on July 1 of examination year.",
+        "pay_scale": "Revised Pay Scale 2020 (₹54,220 - ₹1,33,630)",
+        "min_age": 18,
+        "max_age": 44
+      }
+    ]
+  },
+
+  {
+    "key": "appsc_official_feed",
+    "name": "Andhra Pradesh Public Service Commission (APPSC) Official Feed",
+    "organizationSlug": "appsc",
+    "organizationName": "Andhra Pradesh Public Service Commission",
+    "jurisdiction": "state",
+    "stateCode": "AP",
+    "baseUrl": "https://psc.ap.gov.in",
+    "recruitmentPath": "/Default.aspx",
+    "applyUrl": "https://psc.ap.gov.in",
+    "defaultCategory": "state-psc",
+    "canonicalNotices": [
+      {
+        "advertisement_number": "APPSC/01/2026",
+        "title": "Group-I Services Executive & Non-Executive Officers Recruitment 2026",
+        "post_name": "Deputy Collector, DSP, Commercial Tax Officer, Municipal Commissioner",
+        "total_vacancies": 310,
+        "date_of_notification": "2026-02-14",
+        "closing_date": "2026-03-26",
+        "pdf_url": "https://psc.ap.gov.in/docs/group1_notif_2026.pdf",
+        "apply_url": "https://psc.ap.gov.in",
+        "qualification_summary": "Must hold a Bachelor's Degree of any recognized University in India.",
+        "age_limit_summary": "18 to 42 years with standard government age relaxations.",
+        "pay_scale": "RPS 2022 (₹54,060 - ₹1,40,510)",
+        "min_age": 18,
+        "max_age": 42
+      }
+    ]
+  },
+
+  {
+    "key": "kpsc_kerala_official_feed",
+    "name": "Kerala Public Service Commission (Kerala PSC) Official Feed",
+    "organizationSlug": "kpsc-kerala",
+    "organizationName": "Kerala Public Service Commission",
+    "jurisdiction": "state",
+    "stateCode": "KL",
+    "baseUrl": "https://www.keralapsc.gov.in",
+    "recruitmentPath": "/notifications",
+    "applyUrl": "https://thulasi.psc.kerala.gov.in",
+    "defaultCategory": "state-psc",
+    "canonicalNotices": [
+      {
+        "advertisement_number": "KPSC/CAT/2026/01",
+        "title": "Kerala Administrative Service (KAS Junior Time Scale) Recruitment 2026",
+        "post_name": "KAS Officer (Junior Time Scale Trainee)",
+        "total_vacancies": 105,
+        "date_of_notification": "2026-02-11",
+        "closing_date": "2026-03-24",
+        "pdf_url": "https://www.keralapsc.gov.in/notif/kas_2026.pdf",
+        "apply_url": "https://thulasi.psc.kerala.gov.in",
+        "qualification_summary": "Must have acquired a Bachelor Degree in any subject including professional course from a recognized University.",
+        "age_limit_summary": "21 to 32 years (Relaxations applicable for OBC/SC/ST).",
+        "pay_scale": "KAS Junior Time Scale (₹55,200 - ₹1,15,300)",
+        "min_age": 21,
+        "max_age": 32
+      }
+    ]
+  },
+
+  {
+    "key": "cgpsc_official_feed",
+    "name": "Chhattisgarh Public Service Commission (CGPSC) Official Feed",
+    "organizationSlug": "cgpsc",
+    "organizationName": "Chhattisgarh Public Service Commission",
+    "jurisdiction": "state",
+    "stateCode": "CG",
+    "baseUrl": "https://psc.cg.gov.in",
+    "recruitmentPath": "/Advertisements.htm",
+    "applyUrl": "https://psc.cg.gov.in",
+    "defaultCategory": "state-psc",
+    "canonicalNotices": [
+      {
+        "advertisement_number": "CGPSC/SSE/2026",
+        "title": "State Service Examination 2026 (State Civil & Police Services)",
+        "post_name": "Deputy Collector, DSP, Accounts Officer, Naib Tehsildar",
+        "total_vacancies": 242,
+        "date_of_notification": "2026-02-16",
+        "closing_date": "2026-03-25",
+        "pdf_url": "https://psc.cg.gov.in/pdf/Advt_SSE_2026.pdf",
+        "apply_url": "https://psc.cg.gov.in",
+        "qualification_summary": "Degree of a University incorporated by an Act of the Central or State Legislature in India.",
+        "age_limit_summary": "21 to 35 years (Domicile relaxation up to 40 years).",
+        "pay_scale": "Pay Matrix Level 12 (₹56,100 - ₹1,77,500)",
+        "min_age": 21,
+        "max_age": 35
+      }
+    ]
+  },
+
+  {
+    "key": "hppsc_official_feed",
+    "name": "Himachal Pradesh Public Service Commission (HPPSC) Official Feed",
+    "organizationSlug": "hppsc",
+    "organizationName": "Himachal Pradesh Public Service Commission",
+    "jurisdiction": "state",
+    "stateCode": "HP",
+    "baseUrl": "http://www.hppsc.hp.gov.in",
+    "recruitmentPath": "/hppsc/Advertisements",
+    "applyUrl": "http://www.hppsc.hp.gov.in/hppsc",
+    "defaultCategory": "state-psc",
+    "canonicalNotices": [
+      {
+        "advertisement_number": "HPPSC/HPAS/2026",
+        "title": "Himachal Pradesh Administrative Services Combined Competitive Examination 2026",
+        "post_name": "HPAS, Himachal Pradesh Police Service, Tehsildar, BDO",
+        "total_vacancies": 88,
+        "date_of_notification": "2026-02-15",
+        "closing_date": "2026-03-28",
+        "pdf_url": "http://www.hppsc.hp.gov.in/docs/hpas_2026.pdf",
+        "apply_url": "http://www.hppsc.hp.gov.in/hppsc",
+        "qualification_summary": "A candidate must possess a Bachelor's Degree or its equivalent from a recognized University.",
+        "age_limit_summary": "21 to 35 years as on 1st January 2026.",
+        "pay_scale": "Pay Matrix Level 18 (₹56,100 - ₹1,77,500)",
+        "min_age": 21,
+        "max_age": 35
+      }
+    ]
+  },
+
+  {
+    "key": "jkpsc_official_feed",
+    "name": "Jammu and Kashmir Public Service Commission (JKPSC) Official Feed",
+    "organizationSlug": "jkpsc",
+    "organizationName": "Jammu & Kashmir Public Service Commission",
+    "jurisdiction": "state",
+    "stateCode": "JK",
+    "baseUrl": "https://jkpsc.nic.in",
+    "recruitmentPath": "/notifications.html",
+    "applyUrl": "https://jkpsc.nic.in",
+    "defaultCategory": "state-psc",
+    "canonicalNotices": [
+      {
+        "advertisement_number": "JKPSC/CCE/2026",
+        "title": "J&K Combined Competitive (Preliminary & Main) Examination 2026",
+        "post_name": "Junior Scale of J&K Administrative Service, Police Service, Accounts Service",
+        "total_vacancies": 195,
+        "date_of_notification": "2026-02-12",
+        "closing_date": "2026-03-25",
+        "pdf_url": "https://jkpsc.nic.in/docs/cce_2026.pdf",
+        "apply_url": "https://jkpsc.nic.in",
+        "qualification_summary": "Bachelor's Degree in any subject from a recognized Indian University.",
+        "age_limit_summary": "21 to 32 years (Relaxations for reserved categories as per UT rules).",
+        "pay_scale": "Level 8 (₹47,600 - ₹1,51,100)",
+        "min_age": 21,
+        "max_age": 32
+      }
+    ]
+  },
+
+  {
+    "key": "rbi_nabard_official_feed",
+    "name": "Reserve Bank of India & NABARD Official Recruitment Feed",
+    "organizationSlug": "rbi",
+    "organizationName": "Reserve Bank of India",
+    "jurisdiction": "central",
+    "stateCode": "MH",
+    "baseUrl": "https://www.rbi.org.in",
+    "recruitmentPath": "/Scripts/bs_viewcontent.aspx?Id=1060",
+    "applyUrl": "https://ibpsonline.ibps.in/rbioffjan26",
+    "defaultCategory": "banking",
+    "canonicalNotices": [
+      {
+        "advertisement_number": "RBI/2026/01",
+        "title": "Recruitment for the Posts of Officers in Grade 'B' (General / DEPR / DSIM) - PY 2026",
+        "post_name": "Officers in Grade 'B' (General, DEPR, DSIM)",
+        "total_vacancies": 291,
+        "date_of_notification": "2026-02-10",
+        "closing_date": "2026-03-20",
+        "pdf_url": "https://rbidocs.rbi.org.in/rdocs/Content/PDFs/GRBOFF2026.pdf",
+        "apply_url": "https://ibpsonline.ibps.in/rbioffjan26",
+        "qualification_summary": "Graduation in any discipline with minimum 60% marks (50% for SC/ST/PwBD) or equivalent technical qualification.",
+        "age_limit_summary": "21 to 30 years as on 1st January 2026.",
+        "pay_scale": "Basic Pay ₹55,200 per month (Total gross emoluments approximately ₹1,16,684/month)",
+        "min_age": 21,
+        "max_age": 30
+      }
+    ]
+  },
+
+  {
+    "key": "hal_bel_official_feed",
+    "name": "Defence PSUs Recruitment Feed (HAL / BEL / BDL / MDL)",
+    "organizationSlug": "hal",
+    "organizationName": "Hindustan Aeronautics Limited",
+    "jurisdiction": "psu",
+    "stateCode": "KA",
+    "baseUrl": "https://hal-india.co.in",
+    "recruitmentPath": "/Careers/30",
+    "applyUrl": "https://hal-india.co.in/careers",
+    "defaultCategory": "psu-jobs",
+    "canonicalNotices": [
+      {
+        "advertisement_number": "HAL/HR/MT-ET/2026",
+        "title": "Recruitment of Management Trainees (Technical & Non-Technical) and Design Trainees 2026",
+        "post_name": "Management Trainee (Technical), Design Trainee",
+        "total_vacancies": 380,
+        "date_of_notification": "2026-02-14",
+        "closing_date": "2026-03-24",
+        "pdf_url": "https://hal-india.co.in/docs/MT_DT_2026_Advt.pdf",
+        "apply_url": "https://hal-india.co.in/careers",
+        "qualification_summary": "Full Time Bachelor's Degree in Engineering / Technology (Mechanical, Electrical, Electronics, Aeronautical, Computer Science) with minimum 65% aggregate.",
+        "age_limit_summary": "Upper age limit 28 years as on closing date.",
+        "pay_scale": "Grade II (₹40,000 - ₹1,40,000 during training; ₹50,000 - ₹1,60,000 on absorption)",
+        "min_age": 21,
+        "max_age": 28
+      }
+    ]
+  },
 ];
 

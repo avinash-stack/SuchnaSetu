@@ -4,8 +4,6 @@ import { Badge } from "@/components/ui/badge";
 import { formatDate } from "@/lib/utils";
 import {
   Zap,
-  ArrowRight,
-  Clock,
   ChevronRight,
 } from "lucide-react";
 
@@ -14,24 +12,24 @@ interface TodaysUpdatesSectionProps {
 }
 
 export function TodaysUpdatesSection({ items }: TodaysUpdatesSectionProps) {
-  // CRITICAL REQUIREMENT: If there are no updates, hide the section entirely
+  // If there are no updates, hide the section entirely
   if (!items || items.length === 0) {
     return null;
   }
 
-  // Max 7 top links in the right panel as requested
+  // Max 7 top links in the right panel
   const displayItems = items.slice(0, 7);
 
   return (
-    <div className="rounded-xl border border-slate-200 bg-white p-3.5 space-y-2.5 shadow-2xs">
-      <div className="flex items-center justify-between border-b border-slate-100 pb-2">
-        <div className="flex items-center gap-1.5">
-          <div className="flex h-5 w-5 items-center justify-center rounded bg-red-100 text-red-700">
-            <Zap className="h-3 w-3 fill-red-600 text-red-600" />
+    <div className="rounded-xl border border-slate-200/90 bg-white p-4 sm:p-4.5 space-y-3 shadow-2xs">
+      <div className="flex items-center justify-between border-b border-slate-100 pb-2.5">
+        <div className="flex items-center gap-2">
+          <div className="flex h-6 w-6 items-center justify-center rounded-md bg-red-50 text-red-700">
+            <Zap className="h-3.5 w-3.5 fill-red-600 text-red-600" />
           </div>
-          <h3 className="text-xs sm:text-sm font-bold text-slate-900 font-heading flex items-center gap-1.5">
+          <h3 className="text-sm font-bold text-slate-900 font-heading flex items-center gap-2">
             <span>Today&apos;s Updates</span>
-            <span className="inline-flex items-center px-1.5 py-0.2 rounded-full text-[9px] font-bold bg-red-600 text-white animate-pulse">
+            <span className="inline-flex items-center px-1.5 py-0.5 rounded text-[9px] font-bold bg-red-600 text-white animate-pulse">
               LIVE
             </span>
           </h3>
@@ -39,37 +37,37 @@ export function TodaysUpdatesSection({ items }: TodaysUpdatesSectionProps) {
 
         <Link
           href="/news"
-          className="text-[11px] font-bold text-[#013089] hover:underline inline-flex items-center gap-0.5"
+          className="text-xs font-semibold text-[#013089] hover:underline inline-flex items-center gap-0.5"
         >
           <span>View All</span>
-          <ChevronRight className="h-3 w-3" />
+          <ChevronRight className="h-3.5 w-3.5" />
         </Link>
       </div>
 
-      <div className="space-y-1 divide-y divide-slate-100">
+      <div className="divide-y divide-slate-100/80 -mx-1">
         {displayItems.map((item) => (
           <div
             key={item.id}
-            className="pt-1.5 first:pt-0 flex items-center justify-between gap-2 hover:bg-slate-50/80 rounded px-1 -mx-1 transition-colors"
+            className="py-2 px-2 hover:bg-slate-50/80 rounded-lg transition-colors flex items-center justify-between gap-2.5"
           >
-            <div className="flex items-center gap-1.5 min-w-0 flex-1">
+            <div className="flex items-center gap-2 min-w-0 flex-1">
               <Badge
                 variant="brand"
-                className="text-[9px] font-bold py-0 px-1.5 shrink-0 bg-[#013089] text-white"
+                className="text-[10px] font-bold py-0.5 px-1.5 shrink-0 bg-[#013089] text-white rounded"
               >
                 {item.authorityAcronym}
               </Badge>
 
               <Link
                 href={item.slug}
-                className="text-xs font-semibold text-slate-900 hover:text-[#013089] transition-colors truncate block"
+                className="text-[13px] font-medium text-slate-800 hover:text-[#013089] transition-colors truncate block leading-snug"
                 title={item.title}
               >
                 {item.title}
               </Link>
             </div>
 
-            <span className="text-[10px] text-slate-400 font-medium shrink-0 whitespace-nowrap">
+            <span className="text-[11px] text-slate-400 font-medium shrink-0 whitespace-nowrap">
               {formatDate(item.publishedAt)}
             </span>
           </div>

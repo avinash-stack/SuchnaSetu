@@ -157,10 +157,13 @@ export const getComingSoonItems = unstable_cache(
     const supabase = createPublicClient();
     const now = new Date();
     const nowIso = now.toISOString();
+    // Maximum 60 days upcoming window — candidates only track realistic upcoming recruitment
+    const maxUpcomingWindow = new Date(now.getTime() + 60 * 24 * 60 * 60 * 1000).toISOString();
 
     const { data: upcomingJobs } = await (supabase.from("gov_jobs") as any)
       .select("id, title, slug, application_start_date, application_end_date, total_vacancies, state_code, official_notification_url, organizations(name, acronym)")
       .gt("application_start_date", nowIso)
+      .lte("application_start_date", maxUpcomingWindow)
       .order("application_start_date", { ascending: true })
       .limit(6);
 

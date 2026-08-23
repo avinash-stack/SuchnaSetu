@@ -362,12 +362,12 @@ export function buildJobPostingJsonLd({
   // Resolve authentic salary (omitted if no reliable numeric salary is available)
   const salaryValue = parseSalaryQuantitativeValue({ salaryMin, salaryMax, payScaleDetails });
 
-  // Format validThrough only if valid date
+  // Format validThrough only if date is valid AND in the future
   let formattedValidThrough: string | undefined = undefined;
   if (validThrough) {
     try {
       const parsedDate = new Date(validThrough);
-      if (!isNaN(parsedDate.getTime())) {
+      if (!isNaN(parsedDate.getTime()) && parsedDate.getTime() > Date.now()) {
         formattedValidThrough = parsedDate.toISOString();
       }
     } catch {}
@@ -384,18 +384,27 @@ export function buildJobPostingJsonLd({
     } catch {}
   }
 
+  // Format rich HTML description for Google Search Central compliance
+  const richHtmlDescription = `<p>${description || `${title} recruitment notification announced by ${organizationName}.`}</p><p><strong>Hiring Authority:</strong> ${organizationName}</p>${totalVacancies && totalVacancies > 0 ? `<p><strong>Total Openings:</strong> ${totalVacancies} vacancies</p>` : ""}${educationRequirements ? `<p><strong>Educational Eligibility:</strong> ${educationRequirements}</p>` : ""}${experienceRequirements ? `<p><strong>Experience:</strong> ${experienceRequirements}</p>` : ""}<p><strong>Application Mode:</strong> Online submission on official portal.</p>`;
+
+  const slug = url.split("/").filter(Boolean).pop() || title;
+
   return {
     "@context": "https://schema.org",
     "@type": "JobPosting",
     title,
-    description:
-      description ||
-      `${title} released by ${organizationName}. Check official notification, eligibility criteria, vacancy details and online application procedures.`,
+    description: richHtmlDescription,
+    url,
+    identifier: {
+      "@type": "PropertyValue",
+      name: organizationName,
+      value: slug,
+    },
     datePosted: formattedDatePosted,
     ...(formattedValidThrough ? { validThrough: formattedValidThrough } : {}),
     employmentType: normalizedEmploymentType,
     hiringOrganization: {
-      "@type": "GovernmentOrganization",
+      "@type": "Organization",
       name: organizationName,
       ...(organizationUrl ? { sameAs: organizationUrl } : {}),
     },
@@ -404,6 +413,7 @@ export function buildJobPostingJsonLd({
           "@type": "Place",
           address: {
             "@type": "PostalAddress",
+            addressRegion: "India",
             addressCountry: "IN",
           },
         }
@@ -419,7 +429,7 @@ export function buildJobPostingJsonLd({
       ? {
           applicantLocationRequirements: {
             "@type": "Country",
-            name: "India",
+            name: "IN",
           },
         }
       : {}),

@@ -4996,4 +4996,588 @@ export const GOV_EXAM_SOURCES_CONFIG: GovExamSourceConfig[] = [
           }
     ]
   },
+  {
+    "key": "maharashtra_exams_feed",
+    "name": "Maharashtra State Examination Feed (MPSC / Maharashtra Police / Talathi)",
+    "organizationSlug": "mpsc",
+    "organizationName": "Maharashtra Public Service Commission",
+    "jurisdiction": "state",
+    "stateCode": "MH",
+    "baseUrl": "https://mpsc.gov.in",
+    "examinationPath": "/examination/schedule",
+    "applyUrl": "https://mpsconline.gov.in",
+    "defaultCategory": "state-psc",
+    "canonicalExams": [
+      {
+        "title": "Maharashtra Civil Services Combined (Preliminary & Main) Examination 2026",
+        "short_title": "MPSC State Services 2026",
+        "slug": "mpsc-civil-services-examination-2026",
+        "exam_code": "MPSC-CSE-2026",
+        "mode": "offline_omr",
+        "frequency": "annual",
+        "category_slug": "state-psc",
+        "description": "State civil services examination conducted by MPSC for recruitment to Group A & B executive posts in Maharashtra.",
+        "syllabus_summary": "Prelims: Paper 1 (General Studies) & Paper 2 (CSAT). Mains: 6 Descriptive/Objective papers (Marathi, English, GS I to IV). Interview.",
+        "marking_scheme": "1/4th negative marks for each incorrect objective response.",
+        "pattern_description": "Two-stage competitive examination followed by Personal Interview.",
+        "application_process_guide": "Apply online at https://mpsconline.gov.in with valid profile registration.",
+        "official_notification_url": "https://mpsc.gov.in/adv-notification",
+        "official_website_url": "https://mpsc.gov.in",
+        "date_of_notification": "2026-02-15",
+        "application_start_date": "2026-02-15",
+        "application_closing_date": "2026-03-30",
+        "min_age": 19,
+        "max_age": 38,
+        "educational_qualification": "Bachelor's Degree in any discipline from a recognized University.",
+        "fee_details": {
+          "general": 394,
+          "obc": 294,
+          "ews": 294,
+          "sc": 294,
+          "st": 294,
+          "female": 294
+        },
+        "stages": [
+          {
+            "stage_name": "Preliminary Examination",
+            "stage_order": 1,
+            "stage_type": "prelims",
+            "mode": "offline_omr",
+            "duration_minutes": 240,
+            "total_marks": 400,
+            "qualifying_marks": 132,
+            "status": "scheduled",
+            "start_date": "2026-06-14"
+          },
+          {
+            "stage_name": "Main Written Examination",
+            "stage_order": 2,
+            "stage_type": "mains",
+            "mode": "offline_omr",
+            "duration_minutes": 720,
+            "total_marks": 800,
+            "qualifying_marks": 320,
+            "status": "upcoming",
+            "start_date": "2026-10-18"
+          }
+        ],
+        "important_dates": [
+          {
+            "title": "Notification Released",
+            "event_date": "2026-02-15",
+            "date_type": "notification",
+            "is_tentative": false,
+            "display_order": 1
+          },
+          {
+            "title": "Online Application Opens",
+            "event_date": "2026-02-15",
+            "date_type": "application_start",
+            "is_tentative": false,
+            "display_order": 2
+          },
+          {
+            "title": "Last Date for Application",
+            "event_date": "2026-03-30",
+            "date_type": "application_end",
+            "is_tentative": false,
+            "display_order": 3
+          },
+          {
+            "title": "Preliminary Examination Date",
+            "event_date": "2026-06-14",
+            "date_type": "exam_start",
+            "is_tentative": false,
+            "display_order": 4
+          }
+        ]
+      }
+    ]
+  },
+
+  {
+    "key": "gujarat_exams_feed",
+    "name": "Gujarat State Examination Feed (GPSC / GSSSB / Gujarat Police)",
+    "organizationSlug": "gpsc",
+    "organizationName": "Gujarat Public Service Commission",
+    "jurisdiction": "state",
+    "stateCode": "GJ",
+    "baseUrl": "https://gpsc.gujarat.gov.in",
+    "examinationPath": "/Examinations",
+    "applyUrl": "https://gpsc-ojas.gujarat.gov.in",
+    "defaultCategory": "state-psc",
+    "canonicalExams": [
+      {
+        "title": "Gujarat Administrative Service Class-1 and Civil Services Class-1 & 2 Examination 2026",
+        "short_title": "GPSC Class 1-2 2026",
+        "slug": "gpsc-civil-services-examination-2026",
+        "exam_code": "GPSC-CSE-2026",
+        "mode": "offline_omr",
+        "frequency": "annual",
+        "category_slug": "state-psc",
+        "description": "Premier competitive examination in Gujarat for appointment to administrative and police services.",
+        "syllabus_summary": "Prelims: General Studies I & II (200 marks each). Mains: Gujarati, English, Essay, General Studies I, II, III (Descriptive). Personality Test.",
+        "marking_scheme": "0.33 negative marking for each incorrect answer in prelims.",
+        "pattern_description": "Prelims OMR test + Mains Descriptive + Interview.",
+        "application_process_guide": "Submit application on https://gpsc-ojas.gujarat.gov.in.",
+        "official_notification_url": "https://gpsc.gujarat.gov.in",
+        "official_website_url": "https://gpsc.gujarat.gov.in",
+        "date_of_notification": "2026-02-20",
+        "application_start_date": "2026-02-20",
+        "application_closing_date": "2026-03-28",
+        "min_age": 20,
+        "max_age": 36,
+        "educational_qualification": "Bachelor's degree of any recognized University.",
+        "fee_details": {
+          "general": 100,
+          "obc": 0,
+          "ews": 0,
+          "sc": 0,
+          "st": 0,
+          "female": 0
+        },
+        "stages": [
+          {
+            "stage_name": "Preliminary Examination",
+            "stage_order": 1,
+            "stage_type": "prelims",
+            "mode": "offline_omr",
+            "duration_minutes": 360,
+            "total_marks": 400,
+            "qualifying_marks": 140,
+            "status": "scheduled",
+            "start_date": "2026-06-28"
+          }
+        ],
+        "important_dates": [
+          {
+            "title": "Notification Released",
+            "event_date": "2026-02-20",
+            "date_type": "notification",
+            "is_tentative": false,
+            "display_order": 1
+          },
+          {
+            "title": "Application Window Closes",
+            "event_date": "2026-03-28",
+            "date_type": "application_end",
+            "is_tentative": false,
+            "display_order": 2
+          },
+          {
+            "title": "Preliminary Exam",
+            "event_date": "2026-06-28",
+            "date_type": "exam_start",
+            "is_tentative": false,
+            "display_order": 3
+          }
+        ]
+      }
+    ]
+  },
+
+  {
+    "key": "karnataka_exams_feed",
+    "name": "Karnataka State Examination Feed (KPSC / KEA / Karnataka Police KSP)",
+    "organizationSlug": "kpsc",
+    "organizationName": "Karnataka Public Service Commission",
+    "jurisdiction": "state",
+    "stateCode": "KA",
+    "baseUrl": "https://kpsc.kar.nic.in",
+    "examinationPath": "/exam-time-table.html",
+    "applyUrl": "https://kpsconline.karnataka.gov.in",
+    "defaultCategory": "state-psc",
+    "canonicalExams": [
+      {
+        "title": "Karnataka Gazetted Probationers (KAS) Examination 2026",
+        "short_title": "KPSC KAS 2026",
+        "slug": "kpsc-kas-examination-2026",
+        "exam_code": "KPSC-KAS-2026",
+        "mode": "offline_omr",
+        "frequency": "annual",
+        "category_slug": "state-psc",
+        "description": "Competitive examination for Assistant Commissioner, Tahsildar, and Group A/B executive cadre in Karnataka.",
+        "syllabus_summary": "Prelims: Paper 1 (General Studies) & Paper 2 (General Studies & Aptitude). Mains: 2 Qualifying Papers + 4 General Studies Descriptive Papers + Personality Test.",
+        "marking_scheme": "0.25 marks deducted for every wrong answer in prelims.",
+        "pattern_description": "Preliminary (Objective), Main (Descriptive), and Interview.",
+        "application_process_guide": "Apply online at https://kpsconline.karnataka.gov.in.",
+        "official_notification_url": "https://kpsc.kar.nic.in",
+        "official_website_url": "https://kpsc.kar.nic.in",
+        "date_of_notification": "2026-02-18",
+        "application_start_date": "2026-02-18",
+        "application_closing_date": "2026-03-25",
+        "min_age": 21,
+        "max_age": 35,
+        "educational_qualification": "Bachelor's degree or equivalent qualification from recognized University.",
+        "fee_details": {
+          "general": 600,
+          "obc": 300,
+          "ews": 300,
+          "sc": 0,
+          "st": 0,
+          "female": 0
+        },
+        "stages": [
+          {
+            "stage_name": "Preliminary Examination",
+            "stage_order": 1,
+            "stage_type": "prelims",
+            "mode": "offline_omr",
+            "duration_minutes": 240,
+            "total_marks": 400,
+            "qualifying_marks": 140,
+            "status": "scheduled",
+            "start_date": "2026-07-12"
+          }
+        ],
+        "important_dates": [
+          {
+            "title": "Notification Released",
+            "event_date": "2026-02-18",
+            "date_type": "notification",
+            "is_tentative": false,
+            "display_order": 1
+          },
+          {
+            "title": "Application Closes",
+            "event_date": "2026-03-25",
+            "date_type": "application_end",
+            "is_tentative": false,
+            "display_order": 2
+          },
+          {
+            "title": "KAS Prelims Exam",
+            "event_date": "2026-07-12",
+            "date_type": "exam_start",
+            "is_tentative": false,
+            "display_order": 3
+          }
+        ]
+      }
+    ]
+  },
+
+  {
+    "key": "tamilnadu_exams_feed",
+    "name": "Tamil Nadu State Examination Feed (TNPSC / TNUSRB / TRB)",
+    "organizationSlug": "tnpsc",
+    "organizationName": "Tamil Nadu Public Service Commission",
+    "jurisdiction": "state",
+    "stateCode": "TN",
+    "baseUrl": "https://www.tnpsc.gov.in",
+    "examinationPath": "/english/annual_planner.aspx",
+    "applyUrl": "https://apply.tnpscexams.in",
+    "defaultCategory": "state-psc",
+    "canonicalExams": [
+      {
+        "title": "TNPSC Combined Civil Services Examination-I (Group-I) 2026",
+        "short_title": "TNPSC Group 1 2026",
+        "slug": "tnpsc-group-1-examination-2026",
+        "exam_code": "TNPSC-GRP1-2026",
+        "mode": "offline_omr",
+        "frequency": "annual",
+        "category_slug": "state-psc",
+        "description": "Premier administrative examination conducted by TNPSC for Deputy Collector, DSP, and Commercial Tax Officer posts.",
+        "syllabus_summary": "Prelims: General Studies (175 Questions) + Aptitude & Mental Ability (25 Questions). Mains: Paper I (Tamil Eligibility), Papers II, III, IV (General Studies). Interview.",
+        "marking_scheme": "No negative marking in TNPSC Prelims examination.",
+        "pattern_description": "Three-tier examination system.",
+        "application_process_guide": "Apply via One Time Registration (OTR) on https://apply.tnpscexams.in.",
+        "official_notification_url": "https://www.tnpsc.gov.in",
+        "official_website_url": "https://www.tnpsc.gov.in",
+        "date_of_notification": "2026-02-12",
+        "application_start_date": "2026-02-12",
+        "application_closing_date": "2026-03-20",
+        "min_age": 21,
+        "max_age": 34,
+        "educational_qualification": "A degree of any recognized University.",
+        "fee_details": {
+          "general": 100,
+          "obc": 100,
+          "ews": 100,
+          "sc": 0,
+          "st": 0,
+          "female": 0
+        },
+        "stages": [
+          {
+            "stage_name": "Preliminary Examination",
+            "stage_order": 1,
+            "stage_type": "prelims",
+            "mode": "offline_omr",
+            "duration_minutes": 180,
+            "total_marks": 300,
+            "qualifying_marks": 90,
+            "status": "scheduled",
+            "start_date": "2026-06-21"
+          }
+        ],
+        "important_dates": [
+          {
+            "title": "Notification Released",
+            "event_date": "2026-02-12",
+            "date_type": "notification",
+            "is_tentative": false,
+            "display_order": 1
+          },
+          {
+            "title": "Application End Date",
+            "event_date": "2026-03-20",
+            "date_type": "application_end",
+            "is_tentative": false,
+            "display_order": 2
+          },
+          {
+            "title": "Group 1 Prelims Exam",
+            "event_date": "2026-06-21",
+            "date_type": "exam_start",
+            "is_tentative": false,
+            "display_order": 3
+          }
+        ]
+      }
+    ]
+  },
+
+  {
+    "key": "telangana_exams_feed",
+    "name": "Telangana State Examination Feed (TGPSC / TSLPRB / TREIRB)",
+    "organizationSlug": "tspsc",
+    "organizationName": "Telangana Public Service Commission",
+    "jurisdiction": "state",
+    "stateCode": "TS",
+    "baseUrl": "https://www.tspsc.gov.in",
+    "examinationPath": "/annual-calendar",
+    "applyUrl": "https://www.tspsc.gov.in",
+    "defaultCategory": "state-psc",
+    "canonicalExams": [
+      {
+        "title": "TGPSC Group-I Services Examination 2026",
+        "short_title": "TGPSC Group 1 2026",
+        "slug": "tgpsc-group-1-examination-2026",
+        "exam_code": "TGPSC-GRP1-2026",
+        "mode": "offline_omr",
+        "frequency": "annual",
+        "category_slug": "state-psc",
+        "description": "State civil services examination conducted by Telangana PSC for gazetted administrative appointments.",
+        "syllabus_summary": "Prelims: General Studies & Mental Ability (150 Marks). Mains: General English (Qualifying) + 5 General Studies Papers (150 marks each).",
+        "marking_scheme": "0.25 negative marks for each incorrect response in prelims.",
+        "pattern_description": "Preliminary (Objective) and Main Written (Descriptive).",
+        "application_process_guide": "Apply online at https://www.tspsc.gov.in.",
+        "official_notification_url": "https://www.tspsc.gov.in",
+        "official_website_url": "https://www.tspsc.gov.in",
+        "date_of_notification": "2026-02-10",
+        "application_start_date": "2026-02-10",
+        "application_closing_date": "2026-03-22",
+        "min_age": 18,
+        "max_age": 44,
+        "educational_qualification": "Bachelor's Degree in any discipline from a recognized University.",
+        "fee_details": {
+          "general": 200,
+          "obc": 200,
+          "ews": 200,
+          "sc": 0,
+          "st": 0,
+          "female": 0
+        },
+        "stages": [
+          {
+            "stage_name": "Preliminary Examination",
+            "stage_order": 1,
+            "stage_type": "prelims",
+            "mode": "offline_omr",
+            "duration_minutes": 150,
+            "total_marks": 150,
+            "qualifying_marks": 60,
+            "status": "scheduled",
+            "start_date": "2026-06-07"
+          }
+        ],
+        "important_dates": [
+          {
+            "title": "Notification Issued",
+            "event_date": "2026-02-10",
+            "date_type": "notification",
+            "is_tentative": false,
+            "display_order": 1
+          },
+          {
+            "title": "Application Closes",
+            "event_date": "2026-03-22",
+            "date_type": "application_end",
+            "is_tentative": false,
+            "display_order": 2
+          },
+          {
+            "title": "Group 1 Prelims",
+            "event_date": "2026-06-07",
+            "date_type": "exam_start",
+            "is_tentative": false,
+            "display_order": 3
+          }
+        ]
+      }
+    ]
+  },
+
+  {
+    "key": "nta_exams_feed",
+    "name": "National Testing Agency (NTA) All India Examination Feed",
+    "organizationSlug": "nta",
+    "organizationName": "National Testing Agency",
+    "jurisdiction": "central",
+    "stateCode": "DL",
+    "baseUrl": "https://nta.ac.in",
+    "examinationPath": "/ActiveExams",
+    "applyUrl": "https://ugcnet.nta.nic.in",
+    "defaultCategory": "central-govt",
+    "canonicalExams": [
+      {
+        "title": "UGC National Eligibility Test (UGC-NET) June 2026",
+        "short_title": "UGC NET June 2026",
+        "slug": "ugc-net-june-examination-2026",
+        "exam_code": "NTA-UGCNET-2026-JUN",
+        "mode": "online_cbt",
+        "frequency": "biannual",
+        "category_slug": "central-govt",
+        "description": "National examination for determining eligibility of Indian nationals for Assistant Professor and Junior Research Fellowship (JRF).",
+        "syllabus_summary": "Paper 1: Teaching & Research Aptitude (50 Questions / 100 Marks). Paper 2: Subject Specific (100 Questions / 200 Marks).",
+        "marking_scheme": "2 marks per correct question. No negative marking.",
+        "pattern_description": "Computer Based Test (CBT) across 83 subjects in dual languages (Hindi/English).",
+        "application_process_guide": "Apply online at https://ugcnet.nta.nic.in.",
+        "official_notification_url": "https://nta.ac.in",
+        "official_website_url": "https://ugcnet.nta.nic.in",
+        "date_of_notification": "2026-02-25",
+        "application_start_date": "2026-02-25",
+        "application_closing_date": "2026-03-31",
+        "min_age": 21,
+        "max_age": 30,
+        "educational_qualification": "Master's Degree or equivalent with at least 55% marks (50% for reserved categories).",
+        "fee_details": {
+          "general": 1150,
+          "obc": 600,
+          "ews": 600,
+          "sc": 325,
+          "st": 325,
+          "female": 325
+        },
+        "stages": [
+          {
+            "stage_name": "Computer Based Test (CBT)",
+            "stage_order": 1,
+            "stage_type": "prelims",
+            "mode": "online_cbt",
+            "duration_minutes": 180,
+            "total_marks": 300,
+            "qualifying_marks": 120,
+            "status": "scheduled",
+            "start_date": "2026-06-15"
+          }
+        ],
+        "important_dates": [
+          {
+            "title": "Notification Released",
+            "event_date": "2026-02-25",
+            "date_type": "notification",
+            "is_tentative": false,
+            "display_order": 1
+          },
+          {
+            "title": "Application Deadline",
+            "event_date": "2026-03-31",
+            "date_type": "application_end",
+            "is_tentative": false,
+            "display_order": 2
+          },
+          {
+            "title": "UGC NET CBT Exam",
+            "event_date": "2026-06-15",
+            "date_type": "exam_start",
+            "is_tentative": false,
+            "display_order": 3
+          }
+        ]
+      }
+    ]
+  },
+
+  {
+    "key": "ctet_cbse_exams_feed",
+    "name": "Central Teacher Eligibility Test (CTET / CBSE) Examination Feed",
+    "organizationSlug": "ctet",
+    "organizationName": "Central Board of Secondary Education (CBSE)",
+    "jurisdiction": "central",
+    "stateCode": "DL",
+    "baseUrl": "https://ctet.nic.in",
+    "examinationPath": "/information-bulletin",
+    "applyUrl": "https://ctet.nic.in",
+    "defaultCategory": "central-govt",
+    "canonicalExams": [
+      {
+        "title": "Central Teacher Eligibility Test (CTET) July 2026",
+        "short_title": "CTET July 2026",
+        "slug": "ctet-july-examination-2026",
+        "exam_code": "CBSE-CTET-2026-JUL",
+        "mode": "offline_omr",
+        "frequency": "biannual",
+        "category_slug": "central-govt",
+        "description": "National examination conducted by CBSE for determining eligibility to teach Classes I-VIII in Central Government Schools (KVS, NVS, Army Schools).",
+        "syllabus_summary": "Paper I (Primary Stage, Classes I-V): Child Development & Pedagogy, Language I & II, Mathematics, Environmental Studies. Paper II (Elementary Stage, Classes VI-VIII).",
+        "marking_scheme": "1 mark per question. No negative marking.",
+        "pattern_description": "150 Multiple Choice Questions (OMR based).",
+        "application_process_guide": "Apply online at https://ctet.nic.in.",
+        "official_notification_url": "https://ctet.nic.in",
+        "official_website_url": "https://ctet.nic.in",
+        "date_of_notification": "2026-02-22",
+        "application_start_date": "2026-02-22",
+        "application_closing_date": "2026-03-25",
+        "min_age": 18,
+        "max_age": 60,
+        "educational_qualification": "Senior Secondary with D.El.Ed or Graduation with B.Ed as per NCTE norms.",
+        "fee_details": {
+          "general": 1000,
+          "obc": 1000,
+          "ews": 1000,
+          "sc": 500,
+          "st": 500,
+          "female": 500
+        },
+        "stages": [
+          {
+            "stage_name": "Written Examination (OMR)",
+            "stage_order": 1,
+            "stage_type": "prelims",
+            "mode": "offline_omr",
+            "duration_minutes": 150,
+            "total_marks": 150,
+            "qualifying_marks": 90,
+            "status": "scheduled",
+            "start_date": "2026-07-05"
+          }
+        ],
+        "important_dates": [
+          {
+            "title": "Notification Released",
+            "event_date": "2026-02-22",
+            "date_type": "notification",
+            "is_tentative": false,
+            "display_order": 1
+          },
+          {
+            "title": "Application Closes",
+            "event_date": "2026-03-25",
+            "date_type": "application_end",
+            "is_tentative": false,
+            "display_order": 2
+          },
+          {
+            "title": "CTET Exam Date",
+            "event_date": "2026-07-05",
+            "date_type": "exam_start",
+            "is_tentative": false,
+            "display_order": 3
+          }
+        ]
+      }
+    ]
+  },
 ];
