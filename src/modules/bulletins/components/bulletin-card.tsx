@@ -23,6 +23,10 @@ interface BulletinCardProps {
 }
 
 const categoryMeta: Record<string, { label: string; icon: any }> = {
+  exam_recruitment: { label: "Exam & Recruitment", icon: Briefcase },
+  student_aspirant: { label: "Student & Aspirant Alert", icon: Users },
+  education_govt: { label: "Education & Ministry", icon: Building2 },
+  results_admit_cards: { label: "Result / Admit Card", icon: GraduationCap },
   government_updates: { label: "Govt Update", icon: Building2 },
   recruitment_jobs: { label: "Recruitment Notice", icon: Briefcase },
   employment_news: { label: "Rozgar Samachar", icon: Briefcase },

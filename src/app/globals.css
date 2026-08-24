@@ -15,12 +15,19 @@
   --font-noto-gurmukhi: "Noto Sans Gurmukhi", "Inter", sans-serif;
 }
 
+html {
+  font-size: 16px;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
 body {
   color: var(--foreground);
   background: #F8FAFC;
   font-family: var(--font-inter);
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
+  font-size: 1rem;
+  line-height: 1.6;
 }
 
 /* Regional Script Typography Adaptation */
@@ -69,8 +76,8 @@ body {
 
 /* Civic Editorial Scrollbar */
 ::-webkit-scrollbar {
-  width: 6px;
-  height: 6px;
+  width: 7px;
+  height: 7px;
 }
 
 ::-webkit-scrollbar-track {
@@ -79,7 +86,7 @@ body {
 
 ::-webkit-scrollbar-thumb {
   background: #CBD5E1;
-  border-radius: 2px;
+  border-radius: 4px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
@@ -89,12 +96,12 @@ body {
 /* Editorial Section Header Marker */
 .section-saffron-bar {
   border-left: 4px solid #FE8D01;
-  padding-left: 0.75rem;
+  padding-left: 1rem;
 }
 
 .section-navy-bar {
   border-left: 4px solid #013089;
-  padding-left: 0.75rem;
+  padding-left: 1rem;
 }
 
 /* Clean Gazette Table Striping */

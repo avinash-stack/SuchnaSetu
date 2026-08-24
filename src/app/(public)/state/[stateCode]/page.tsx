@@ -41,8 +41,27 @@ export async function generateMetadata({ params }: StatePageProps): Promise<Meta
     return constructMetadata({
       title: "State Not Found",
       description: "State recruitment directory could not be found.",
+      noIndex: true,
     });
   }
+
+  const supabase = createAdminClient();
+  const [{ count: jobsCount }, { count: examsCount }] = await Promise.all([
+    supabase
+      .from("gov_jobs")
+      .select("id", { count: "exact", head: true })
+      .eq("status", "published")
+      .is("deleted_at", null)
+      .or(`state_code.eq.${state.code},state.ilike.%${state.name}%`),
+    supabase
+      .from("gov_exams")
+      .select("id", { count: "exact", head: true })
+      .eq("status", "published")
+      .is("deleted_at", null)
+      .or(`state_code.eq.${state.code},state.ilike.%${state.name}%`),
+  ]);
+
+  const isEmptyPortal = (jobsCount || 0) + (examsCount || 0) === 0;
 
   const title = `${state.name} Government Jobs 2026 - Latest Sarkari Naukri & ${state.pscAcronym} Notifications`;
   const description = `Find verified ${state.name} government jobs, ${state.pscName} (${state.pscAcronym}) recruitment notifications, exams, syllabus, and admit cards with direct official apply links.`;
@@ -51,6 +70,7 @@ export async function generateMetadata({ params }: StatePageProps): Promise<Meta
     title,
     description,
     path: `/state/${state.code.toLowerCase()}`,
+    noIndex: isEmptyPortal,
     keywords: [
       `${state.name} Govt Jobs 2026`,
       `${state.name} Sarkari Naukri`,

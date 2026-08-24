@@ -60,8 +60,27 @@ export async function generateMetadata({ params }: AuthorityPageProps): Promise<
     return constructMetadata({
       title: "Authority Not Found",
       description: "The requested recruiting authority could not be found.",
+      noIndex: true,
     });
   }
+
+  const supabase = createAdminClient();
+  const [{ count: jobsCount }, { count: examsCount }] = await Promise.all([
+    supabase
+      .from("gov_jobs")
+      .select("id", { count: "exact", head: true })
+      .eq("organization_id", org.id)
+      .eq("status", "published")
+      .is("deleted_at", null),
+    supabase
+      .from("gov_exams")
+      .select("id", { count: "exact", head: true })
+      .eq("organization_id", org.id)
+      .eq("status", "published")
+      .is("deleted_at", null),
+  ]);
+
+  const isEmptyAuthority = (jobsCount || 0) + (examsCount || 0) === 0;
 
   const title = `${org.name} ${org.acronym ? `(${org.acronym})` : ""} - Latest Recruitments, Exams & Notifications 2026`;
   const description = `Official recruitment portal and notification aggregator for ${org.name}. Check latest vacancy notices, exam dates, syllabus, admit cards, and verified official apply links.`;
@@ -70,6 +89,7 @@ export async function generateMetadata({ params }: AuthorityPageProps): Promise<
     title,
     description,
     path: `/authorities/${org.acronym?.toLowerCase() || org.id}`,
+    noIndex: isEmptyAuthority,
     keywords: [
       `${org.name} Recruitment 2026`,
       `${org.acronym || org.name} Jobs 2026`,

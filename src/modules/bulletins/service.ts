@@ -135,6 +135,71 @@ export async function getRelatedBulletins(
 }
 
 /**
+ * Fetch latest news / bulletins linked to a specific job or authority.
+ */
+export async function getRelatedBulletinsForJob(
+  jobId: string,
+  orgId?: string | null,
+  limit: number = 3
+): Promise<PublicBulletinDetailed[]> {
+  const supabase = createPublicClient();
+
+  let query = (supabase.from("public_bulletins") as any)
+    .select(
+      `
+      *,
+      organization:organizations(*)
+    `
+    )
+    .eq("status", "published");
+
+  if (orgId) {
+    query = query.or(`related_job_id.eq.${jobId},organization_id.eq.${orgId}`);
+  } else {
+    query = query.eq("related_job_id", jobId);
+  }
+
+  const { data, error } = await query
+    .order("published_at", { ascending: false })
+    .limit(limit);
+
+  if (error || !data) {
+    return [];
+  }
+
+  return data as PublicBulletinDetailed[];
+}
+
+/**
+ * Fetch latest news / bulletins linked to a specific exam authority.
+ */
+export async function getRelatedBulletinsForExam(
+  orgId?: string | null,
+  limit: number = 3
+): Promise<PublicBulletinDetailed[]> {
+  if (!orgId) return [];
+  const supabase = createPublicClient();
+
+  const { data, error } = await (supabase.from("public_bulletins") as any)
+    .select(
+      `
+      *,
+      organization:organizations(*)
+    `
+    )
+    .eq("status", "published")
+    .eq("organization_id", orgId)
+    .order("published_at", { ascending: false })
+    .limit(limit);
+
+  if (error || !data) {
+    return [];
+  }
+
+  return data as PublicBulletinDetailed[];
+}
+
+/**
  * Fetch all bulletins for Admin management console.
  */
 export async function getAdminBulletins(params: {

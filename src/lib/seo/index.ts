@@ -295,6 +295,28 @@ export function parseSalaryQuantitativeValue({
 }
 
 /**
+ * Helper to decode HTML entities in titles and descriptions for structured data
+ */
+export function decodeHtmlEntities(text: string): string {
+  if (!text) return "";
+  return text
+    .replace(/&#(\d+);/g, (_, dec) => String.fromCharCode(dec))
+    .replace(/&#x([0-9a-f]+);/gi, (_, hex) => String.fromCharCode(parseInt(hex, 16)))
+    .replace(/&amp;/g, "&")
+    .replace(/&lt;/g, "<")
+    .replace(/&gt;/g, ">")
+    .replace(/&quot;/g, '"')
+    .replace(/&apos;/g, "'")
+    .replace(/&#8217;/g, "'")
+    .replace(/&#8216;/g, "'")
+    .replace(/&#8220;/g, '"')
+    .replace(/&#8221;/g, '"')
+    .replace(/&#8211;/g, "-")
+    .replace(/&#8212;/g, "—")
+    .trim();
+}
+
+/**
  * Builds Google Search Central compliant JobPosting JSON-LD.
  * Grounded in authentic database records without fabricating non-existent location/salary data.
  */
@@ -308,7 +330,7 @@ export function buildJobPostingJsonLd({
   validThrough,
   jobLocationState,
   stateCode,
-  employmentType = "FULL_TIME",
+  employmentType,
   totalVacancies,
   salaryMin,
   salaryMax,
@@ -334,7 +356,14 @@ export function buildJobPostingJsonLd({
   educationRequirements?: string | null;
   experienceRequirements?: string | null;
   directApplyUrl?: string | null;
-}) {
+}): Record<string, any> | null {
+  const cleanTitle = decodeHtmlEntities(title);
+
+  // Exclude raw machine codes / non-job filenames from emitting invalid JobPosting schema
+  if (/^\d+_[A-Z0-9_]+$/i.test(cleanTitle.trim()) || /^(english|hindi)\s*\(\d+\s*kb\)$/i.test(cleanTitle.trim())) {
+    return null;
+  }
+
   // Normalize employmentType to schema.org enum
   const normalizedEmploymentType = (() => {
     if (!employmentType) return "FULL_TIME";
@@ -362,17 +391,6 @@ export function buildJobPostingJsonLd({
   // Resolve authentic salary (omitted if no reliable numeric salary is available)
   const salaryValue = parseSalaryQuantitativeValue({ salaryMin, salaryMax, payScaleDetails });
 
-  // Format validThrough only if date is valid AND in the future
-  let formattedValidThrough: string | undefined = undefined;
-  if (validThrough) {
-    try {
-      const parsedDate = new Date(validThrough);
-      if (!isNaN(parsedDate.getTime()) && parsedDate.getTime() > Date.now()) {
-        formattedValidThrough = parsedDate.toISOString();
-      }
-    } catch {}
-  }
-
   // Format datePosted
   let formattedDatePosted = new Date().toISOString();
   if (datePosted) {
@@ -384,15 +402,33 @@ export function buildJobPostingJsonLd({
     } catch {}
   }
 
-  // Format rich HTML description for Google Search Central compliance
-  const richHtmlDescription = `<p>${description || `${title} recruitment notification announced by ${organizationName}.`}</p><p><strong>Hiring Authority:</strong> ${organizationName}</p>${totalVacancies && totalVacancies > 0 ? `<p><strong>Total Openings:</strong> ${totalVacancies} vacancies</p>` : ""}${educationRequirements ? `<p><strong>Educational Eligibility:</strong> ${educationRequirements}</p>` : ""}${experienceRequirements ? `<p><strong>Experience:</strong> ${experienceRequirements}</p>` : ""}<p><strong>Application Mode:</strong> Online submission on official portal.</p>`;
+  // Format validThrough: If missing or null, calculate safe 30-day window from datePosted for active postings
+  let formattedValidThrough: string | undefined = undefined;
+  if (validThrough) {
+    try {
+      const parsedDate = new Date(validThrough);
+      if (!isNaN(parsedDate.getTime())) {
+        formattedValidThrough = parsedDate.toISOString();
+      }
+    } catch {}
+  } else if (formattedDatePosted) {
+    try {
+      const postedTime = new Date(formattedDatePosted).getTime();
+      const defaultExpiry = new Date(postedTime + 30 * 86400000);
+      formattedValidThrough = defaultExpiry.toISOString();
+    } catch {}
+  }
 
-  const slug = url.split("/").filter(Boolean).pop() || title;
+  const cleanDescription = decodeHtmlEntities(description);
+  // Format rich HTML description for Google Search Central compliance
+  const richHtmlDescription = `<p>${cleanDescription || `${cleanTitle} recruitment notification announced by ${organizationName}.`}</p><p><strong>Hiring Authority:</strong> ${organizationName}</p>${totalVacancies && totalVacancies > 0 ? `<p><strong>Total Openings:</strong> ${totalVacancies} vacancies</p>` : ""}${educationRequirements ? `<p><strong>Educational Eligibility:</strong> ${educationRequirements}</p>` : ""}${experienceRequirements ? `<p><strong>Experience:</strong> ${experienceRequirements}</p>` : ""}<p><strong>Application Mode:</strong> Online submission on official portal.</p>`;
+
+  const slug = url.split("/").filter(Boolean).pop() || cleanTitle;
 
   return {
     "@context": "https://schema.org",
     "@type": "JobPosting",
-    title,
+    title: cleanTitle,
     description: richHtmlDescription,
     url,
     identifier: {
@@ -470,14 +506,15 @@ export function buildGovOrgJsonLd({
   description?: string;
   category?: string;
 }) {
+  const cleanName = decodeHtmlEntities(name);
   return {
     "@context": "https://schema.org",
     "@type": "GovernmentOrganization",
-    name,
+    name: cleanName,
     ...(acronym ? { alternateName: acronym } : {}),
     url,
     ...(websiteUrl ? { sameAs: websiteUrl } : {}),
-    description: description || `${name} (${acronym || ""}) official government recruitment authority profile, active jobs, upcoming examinations and official syllabus.`,
+    description: description ? decodeHtmlEntities(description) : `${cleanName} (${acronym || ""}) official government recruitment authority profile, active jobs, upcoming examinations and official syllabus.`,
     ...(category ? { organizationCategory: category } : {}),
   };
 }
@@ -500,11 +537,12 @@ export function buildGovNoticeJsonLd({
   datePublished?: string | null;
   dateModified?: string | null;
 }) {
+  const cleanTitle = decodeHtmlEntities(title);
   return {
     "@context": "https://schema.org",
     "@type": "GovernmentPermit",
-    name: title,
-    description,
+    name: cleanTitle,
+    description: decodeHtmlEntities(description),
     url,
     issuedBy: {
       "@type": "GovernmentOrganization",
@@ -516,7 +554,7 @@ export function buildGovNoticeJsonLd({
 }
 
 /**
- * Builds JSON-LD Structured Data for Government Examination Item
+ * Builds JSON-LD Structured Data for Government Examination Item (Google Event compliant)
  */
 export function buildGovExamJsonLd({
   title,
@@ -528,27 +566,33 @@ export function buildGovExamJsonLd({
   mode,
   datePublished,
   dateModified,
+  stateCode,
 }: {
   title: string;
-  description: string;
+  description?: string | null;
   url: string;
   organizationName: string;
   startDate?: string | null;
   endDate?: string | null;
-  mode?: string;
+  mode?: string | null;
   datePublished?: string | null;
   dateModified?: string | null;
+  stateCode?: string | null;
 }) {
+  const cleanTitle = decodeHtmlEntities(title);
+  const isOnline = mode === "online_cbt";
+  const regionName = stateCode ? getStateByCode(stateCode)?.name || stateCode : undefined;
+  const isNational = !regionName;
+
   return {
     "@context": "https://schema.org",
     "@type": "Event",
-    name: title,
-    description,
+    name: cleanTitle,
+    description: description ? decodeHtmlEntities(description) : `${cleanTitle} conducted by ${organizationName}.`,
     url,
-    eventAttendanceMode:
-      mode === "online_cbt"
-        ? "https://schema.org/OnlineEventAttendanceMode"
-        : "https://schema.org/OfflineEventAttendanceMode",
+    eventAttendanceMode: isOnline
+      ? "https://schema.org/OnlineEventAttendanceMode"
+      : "https://schema.org/OfflineEventAttendanceMode",
     eventStatus: "https://schema.org/EventScheduled",
     organizer: {
       "@type": "GovernmentOrganization",
@@ -556,6 +600,20 @@ export function buildGovExamJsonLd({
     },
     startDate: startDate || datePublished || new Date().toISOString(),
     ...(endDate ? { endDate } : {}),
+    location: isOnline
+      ? {
+          "@type": "VirtualLocation",
+          url,
+        }
+      : {
+          "@type": "Place",
+          name: isNational ? "Designated Examination Centers Across India" : `${regionName} Examination Centers`,
+          address: {
+            "@type": "PostalAddress",
+            addressCountry: "IN",
+            ...(regionName ? { addressRegion: regionName } : { addressRegion: "India" }),
+          },
+        },
     datePublished: datePublished || new Date().toISOString(),
     dateModified: dateModified || new Date().toISOString(),
   };

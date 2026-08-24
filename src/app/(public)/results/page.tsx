@@ -81,31 +81,36 @@ export default async function PublicResultsPage({ searchParams }: ResultsPagePro
         dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbJsonLd) }}
       />
       <div className="min-h-screen">
-      {/* 1. Compact Sticky Top Header & Search Bar */}
-      <div className="sticky top-14 z-30 bg-white/95 backdrop-blur-md border-b border-slate-200/80 shadow-2xs py-2.5 px-4 sm:px-6 lg:px-8">
-        <div className="mx-auto max-w-7xl flex flex-col sm:flex-row sm:items-center justify-between gap-2.5">
-          <div className="flex items-center gap-2 shrink-0">
-            <Award className="h-4 w-4 text-[#013089]" />
-            <h1 className="text-base sm:text-lg font-bold tracking-tight text-slate-900 font-heading whitespace-nowrap">
-              Results &amp; Merit Lists
-            </h1>
-            <Badge variant="navy" className="text-[10px] py-0.5 px-2">
-              {total} Declared
-            </Badge>
+      {/* 1. Header & Search Bar */}
+      <div className="bg-white border-b border-slate-200 py-6 px-4 sm:px-6 lg:px-8">
+        <div className="mx-auto max-w-7xl flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <div className="space-y-1">
+            <div className="flex items-center gap-2">
+              <Award className="h-5 w-5 text-[#013089]" />
+              <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-slate-900 font-heading">
+                Results &amp; Merit Lists
+              </h1>
+              <Badge variant="navy" className="text-xs font-bold py-0.5 px-2.5">
+                {total} Declared
+              </Badge>
+            </div>
+            <p className="text-sm text-slate-600">
+              Official scorecards, cutoffs, and selection recommendations from official commission gazettes.
+            </p>
           </div>
 
-          <div className="w-full sm:max-w-lg flex items-center gap-2">
+          <div className="w-full sm:max-w-md flex items-center gap-2">
             <div className="flex-1">
-              <SearchBar placeholder="Search result, commission (UPSC, SSC, BSSC), or post..." />
+              <SearchBar placeholder="Search result, commission, or post..." />
             </div>
             {params.search && (
               <Link
                 href="/results"
-                className="text-xs text-slate-500 hover:text-slate-900 flex items-center gap-1 bg-slate-100 border border-slate-200 px-2 py-1.5 rounded-md shrink-0"
+                className="text-xs text-slate-600 hover:text-slate-900 flex items-center gap-1 bg-slate-100 border border-slate-200 px-3 py-2 rounded-lg shrink-0 font-semibold"
                 title="Clear search"
               >
-                <X className="h-3.5 w-3.5" />
-                <span className="hidden sm:inline text-[11px]">Clear</span>
+                <X className="h-4 w-4" />
+                <span className="hidden sm:inline">Clear</span>
               </Link>
             )}
           </div>
@@ -113,76 +118,76 @@ export default async function PublicResultsPage({ searchParams }: ResultsPagePro
       </div>
 
       {/* 2. Main Content */}
-      <div className="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8 space-y-6">
+      <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8 space-y-6">
         {results.length > 0 ? (
           <>
-            <div className="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-xs">
+            <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-xs">
               <div className="overflow-x-auto">
-                <table className="w-full text-left text-xs border-collapse">
+                <table className="w-full text-left border-collapse table-fixed">
                   <thead>
-                    <tr className="bg-slate-50/80 border-b border-slate-200 text-[11px] font-bold text-slate-600 uppercase tracking-wider">
-                      <th className="py-2.5 px-4">Authority &amp; Recruitment Result</th>
-                      <th className="py-2.5 px-4">State / Jurisdiction</th>
-                      <th className="py-2.5 px-4">Status</th>
-                      <th className="py-2.5 px-4 text-right">Official Document</th>
+                    <tr className="bg-slate-100/90 border-b border-slate-200 text-xs sm:text-[13px] font-bold text-slate-700 uppercase tracking-wider">
+                      <th className="py-3.5 px-4 w-[46%]">Authority &amp; Recruitment Result</th>
+                      <th className="py-3.5 px-4 w-[20%]">State / Jurisdiction</th>
+                      <th className="py-3.5 px-4 w-[16%]">Status</th>
+                      <th className="py-3.5 px-4 w-[18%] text-right">Official Document</th>
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-slate-100">
+                  <tbody className="divide-y divide-slate-100 text-slate-800">
                     {results.map((item) => {
                       const orgName = item.organization?.acronym || item.organization?.name || "Official Body";
                       return (
-                        <tr key={item.id} className="hover:bg-slate-50/60 transition-colors">
-                          <td className="py-3 px-4 align-top max-w-md">
-                            <div className="space-y-1">
+                        <tr key={item.id} className="hover:bg-slate-50/90 transition-colors">
+                          <td className="py-4 px-4 align-top">
+                            <div className="space-y-1.5">
                               <div className="flex items-center gap-2 flex-wrap">
-                                <Badge variant="brand" className="text-[10px] font-bold py-0 px-2 bg-[#013089] text-white">
+                                <Badge variant="brand" className="text-xs font-bold py-0.5 px-2 bg-[#013089] text-white">
                                   {orgName}
                                 </Badge>
                                 {item.code && (
-                                  <span className="font-mono text-[11px] text-slate-500 font-semibold">
+                                  <span className="font-mono text-xs text-slate-500 font-semibold">
                                     {item.code}
                                   </span>
                                 )}
                               </div>
                               <Link
                                 href={`/jobs/${item.slug}`}
-                                className="block font-bold text-slate-900 hover:text-[#013089] text-sm leading-snug transition-colors"
+                                className="block font-bold text-slate-900 hover:text-[#013089] text-[15px] sm:text-base leading-snug transition-colors line-clamp-2"
                               >
                                 {item.title}
                               </Link>
                               {item.published_at && (
-                                <p className="text-[11px] text-slate-400">
+                                <p className="text-xs text-slate-400 font-mono">
                                   Published: {formatDate(item.published_at)}
                                 </p>
                               )}
                             </div>
                           </td>
 
-                          <td className="py-3 px-4 align-top text-slate-600">
-                            <div className="flex items-center gap-1 text-slate-600">
-                              <MapPin className="h-3.5 w-3.5 text-slate-400" />
+                          <td className="py-4 px-4 align-top text-slate-600">
+                            <div className="flex items-center gap-1.5 text-xs sm:text-sm text-slate-600 font-medium">
+                              <MapPin className="h-4 w-4 text-slate-400 shrink-0" />
                               <span>{item.state_code || "National"}</span>
                             </div>
                           </td>
 
-                          <td className="py-3 px-4 align-top">
-                            <Badge variant="success" className="text-[10px] font-semibold bg-emerald-50 text-emerald-700 border-emerald-200">
-                              <ShieldCheck className="h-3 w-3 mr-1" />
+                          <td className="py-4 px-4 align-top">
+                            <Badge variant="success" className="text-xs font-semibold bg-emerald-50 text-emerald-700 border-emerald-200">
+                              <ShieldCheck className="h-3.5 w-3.5 mr-1" />
                               {item.status}
                             </Badge>
                           </td>
 
-                          <td className="py-3 px-4 align-top text-right">
+                          <td className="py-4 px-4 align-top text-right whitespace-nowrap">
                             {item.result_url && (
                               <a
                                 href={item.result_url}
                                 target="_blank"
                                 rel="noopener noreferrer"
-                                className="inline-flex items-center justify-center font-bold rounded-md h-7 px-3 text-xs bg-[#013089] hover:bg-[#01276E] text-white shadow-xs transition-all gap-1.5"
+                                className="inline-flex items-center justify-center font-bold rounded-lg h-8 px-3.5 text-xs sm:text-[13px] bg-emerald-700 hover:bg-emerald-800 text-white shadow-2xs transition-all gap-1.5"
                               >
                                 <FileCheck2 className="h-3.5 w-3.5" />
                                 <span>View Gazette</span>
-                                <ExternalLink className="h-3 w-3 ml-0.5" />
+                                <ExternalLink className="h-3 w-3" />
                               </a>
                             )}
                           </td>
@@ -197,7 +202,7 @@ export default async function PublicResultsPage({ searchParams }: ResultsPagePro
             {/* Pagination Controls */}
             {totalPages > 1 && (
               <div className="flex items-center justify-between border-t border-slate-200 pt-6">
-                <div className="text-xs text-slate-500">
+                <div className="text-sm text-slate-500">
                   Showing page <span className="font-semibold text-slate-800">{currentPage}</span> of{" "}
                   <span className="font-semibold text-slate-800">{totalPages}</span> ({currentLimit} per page)
                 </div>
@@ -205,7 +210,7 @@ export default async function PublicResultsPage({ searchParams }: ResultsPagePro
                 <div className="flex items-center gap-2">
                   {currentPage > 1 && (
                     <Link href={buildPageUrl(params, currentPage - 1)}>
-                      <Button variant="outline" size="sm" className="gap-1 text-xs">
+                      <Button variant="outline" size="sm" className="gap-1 text-sm font-semibold">
                         <ChevronLeft className="h-4 w-4" />
                         <span>Previous</span>
                       </Button>
@@ -214,7 +219,7 @@ export default async function PublicResultsPage({ searchParams }: ResultsPagePro
 
                   {currentPage < totalPages && (
                     <Link href={buildPageUrl(params, currentPage + 1)}>
-                      <Button variant="outline" size="sm" className="gap-1 text-xs">
+                      <Button variant="outline" size="sm" className="gap-1 text-sm font-semibold">
                         <span>Next</span>
                         <ChevronRight className="h-4 w-4" />
                       </Button>

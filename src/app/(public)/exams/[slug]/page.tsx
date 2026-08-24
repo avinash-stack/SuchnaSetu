@@ -91,6 +91,7 @@ export default async function PublicExamDetailPage({ params }: ExamDetailPagePro
     mode: exam.mode,
     datePublished: exam.published_at,
     dateModified: exam.updated_at,
+    stateCode: exam.state_code,
   });
 
   const breadcrumbs = [

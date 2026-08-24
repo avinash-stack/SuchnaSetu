@@ -436,10 +436,11 @@ export function SourcesManagementClient({
             <Table>
               <TableHeader>
                 <TableRow className="bg-slate-50/50">
-                  <TableHead className="w-[340px]">Source Pipeline / Authority</TableHead>
+                  <TableHead className="w-[320px]">Source Pipeline / Authority</TableHead>
                   <TableHead>Adapter Key</TableHead>
                   <TableHead>Target Module</TableHead>
                   <TableHead>Last Synced</TableHead>
+                  <TableHead>Freshness</TableHead>
                   <TableHead>Status</TableHead>
                   <TableHead className="text-right">Actions</TableHead>
                 </TableRow>
@@ -521,6 +522,41 @@ export function SourcesManagementClient({
                         ) : (
                           <span className="text-slate-400 italic">Ready to sync</span>
                         )}
+                      </TableCell>
+                      <TableCell>
+                        {(() => {
+                          if (!source.last_synced_at) {
+                            return (
+                              <Badge variant="outline" className="gap-1 text-[10px] text-red-600 bg-red-50 border-red-200">
+                                <span className="h-1.5 w-1.5 rounded-full bg-red-500" />
+                                <span>Stale (&gt;24h)</span>
+                              </Badge>
+                            );
+                          }
+                          const diffHours = (Date.now() - new Date(source.last_synced_at).getTime()) / (1000 * 60 * 60);
+                          if (diffHours < 12) {
+                            return (
+                              <Badge variant="outline" className="gap-1 text-[10px] text-emerald-700 bg-emerald-50 border-emerald-200">
+                                <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
+                                <span>Fresh (&lt;12h)</span>
+                              </Badge>
+                            );
+                          }
+                          if (diffHours < 24) {
+                            return (
+                              <Badge variant="outline" className="gap-1 text-[10px] text-amber-700 bg-amber-50 border-amber-200">
+                                <span className="h-1.5 w-1.5 rounded-full bg-amber-500" />
+                                <span>Delayed (12–24h)</span>
+                              </Badge>
+                            );
+                          }
+                          return (
+                            <Badge variant="outline" className="gap-1 text-[10px] text-red-600 bg-red-50 border-red-200">
+                              <span className="h-1.5 w-1.5 rounded-full bg-red-500" />
+                              <span>Stale (&gt;24h)</span>
+                            </Badge>
+                          );
+                        })()}
                       </TableCell>
                       <TableCell>
                         <Badge

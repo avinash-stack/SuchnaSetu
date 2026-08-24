@@ -95,7 +95,8 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     // 3. All Government Organizations / Authorities
     const { data: orgs } = await supabase
       .from("organizations")
-      .select("id, acronym, updated_at");
+      .select("id, acronym, updated_at")
+      .limit(1000);
 
     if (orgs) {
       (orgs as any[]).forEach((org) => {
@@ -109,16 +110,28 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       });
     }
 
-    // 4. All Published Jobs
-    const { data: jobs } = await supabase
-      .from("gov_jobs")
-      .select("slug, updated_at, published_at")
-      .eq("status", "published")
-      .is("deleted_at", null)
-      .order("published_at", { ascending: false });
+    // 4. All Published Jobs (Paginated to bypass 1000-row limit)
+    let jobsPage = 0;
+    const pageSize = 1000;
+    let hasMoreJobs = true;
 
-    if (jobs) {
-      (jobs as any[]).forEach((job) => {
+    while (hasMoreJobs) {
+      const from = jobsPage * pageSize;
+      const to = from + pageSize - 1;
+      const { data: jobsChunk, error: jobsError } = await supabase
+        .from("gov_jobs")
+        .select("slug, updated_at, published_at")
+        .eq("status", "published")
+        .is("deleted_at", null)
+        .order("published_at", { ascending: false })
+        .range(from, to);
+
+      if (jobsError || !jobsChunk || jobsChunk.length === 0) {
+        hasMoreJobs = false;
+        break;
+      }
+
+      jobsChunk.forEach((job: any) => {
         routes.push({
           url: `${baseUrl}/jobs/${job.slug}`,
           lastModified: job.updated_at || job.published_at || currentDate,
@@ -126,18 +139,35 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
           priority: 0.9,
         });
       });
+
+      if (jobsChunk.length < pageSize) {
+        hasMoreJobs = false;
+      } else {
+        jobsPage++;
+      }
     }
 
-    // 5. All Published Exams & Syllabi
-    const { data: exams } = await supabase
-      .from("gov_exams")
-      .select("id, slug, updated_at, published_at")
-      .eq("status", "published")
-      .is("deleted_at", null)
-      .order("published_at", { ascending: false });
+    // 5. All Published Exams & Syllabi (Paginated)
+    let examsPage = 0;
+    let hasMoreExams = true;
 
-    if (exams) {
-      (exams as any[]).forEach((exam) => {
+    while (hasMoreExams) {
+      const from = examsPage * pageSize;
+      const to = from + pageSize - 1;
+      const { data: examsChunk, error: examsError } = await supabase
+        .from("gov_exams")
+        .select("id, slug, updated_at, published_at")
+        .eq("status", "published")
+        .is("deleted_at", null)
+        .order("published_at", { ascending: false })
+        .range(from, to);
+
+      if (examsError || !examsChunk || examsChunk.length === 0) {
+        hasMoreExams = false;
+        break;
+      }
+
+      examsChunk.forEach((exam: any) => {
         routes.push({
           url: `${baseUrl}/exams/${exam.slug}`,
           lastModified: exam.updated_at || exam.published_at || currentDate,
@@ -153,6 +183,12 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
           priority: 0.8,
         });
       });
+
+      if (examsChunk.length < pageSize) {
+        hasMoreExams = false;
+      } else {
+        examsPage++;
+      }
     }
 
     // 6. All Published News Bulletins
@@ -160,10 +196,11 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       .from("public_bulletins")
       .select("slug, updated_at, published_at")
       .eq("status", "published")
-      .order("published_at", { ascending: false });
+      .order("published_at", { ascending: false })
+      .limit(1000);
 
     if (bulletins) {
-      (bulletins as any[]).forEach((b) => {
+      (bulletins as any[]).forEach((b: any) => {
         routes.push({
           url: `${baseUrl}/news/${b.slug}`,
           lastModified: b.updated_at || b.published_at || currentDate,

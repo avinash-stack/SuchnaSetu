@@ -622,6 +622,10 @@ export async function searchBulletins(params: BulletinFilterParams = {}): Promis
   if (params.category && params.category !== "all") {
     // Map UI category keys to database categories if needed
     const dbCatMap: Record<string, string[]> = {
+      exam_recruitment: ["employment_news", "exam_recruitment"],
+      student_aspirant: ["student_advisory", "legal_update", "student_aspirant"],
+      education_govt: ["press_release", "education_govt", "government_updates"],
+      results_admit_cards: ["student_advisory", "employment_news", "results_admit_cards"],
       employment_news: ["employment_news"],
       student_advisories: ["student_advisory"],
       legal_updates: ["legal_update"],

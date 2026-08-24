@@ -13,6 +13,7 @@ import {
 } from "../types";
 import { IngestionContext } from "../interfaces/adapter.interface";
 import { slugify } from "@/lib/utils";
+import { isDuplicateArticle } from "@/modules/bulletins/deduplicator";
 
 export class IngestionPipelineEngine {
   private changeDetector = new DatabaseChangeDetector();
@@ -462,7 +463,7 @@ export class IngestionPipelineEngine {
 
     if (!targetId) {
       const { data: found } = await (supabase.from("public_bulletins") as any)
-        .select("id, title, published_at")
+        .select("id, title, published_at, related_job_id")
         .eq("slug", slug)
         .maybeSingle();
       if (found) {
@@ -471,18 +472,32 @@ export class IngestionPipelineEngine {
       }
     } else {
       const { data: found } = await (supabase.from("public_bulletins") as any)
-        .select("id, title, published_at")
+        .select("id, title, published_at, related_job_id")
         .eq("id", targetId)
         .maybeSingle();
       existingBulletin = found;
+    }
+
+    // Auto-link to related Job if not already linked
+    let relatedJobId: string | null = existingBulletin?.related_job_id || null;
+    if (!relatedJobId && orgId) {
+      const { data: matchedJob } = await (supabase.from("gov_jobs") as any)
+        .select("id")
+        .eq("organization_id", orgId)
+        .order("published_at", { ascending: false })
+        .limit(1)
+        .maybeSingle();
+      if (matchedJob) {
+        relatedJobId = matchedJob.id;
+      }
     }
 
     // Map to valid db category if needed
     const validDbCategories = ["employment_news", "student_advisory", "legal_update", "press_release"];
     let cat: string = bulletin.category;
     if (!validDbCategories.includes(cat)) {
-      if (cat === "recruitment_jobs") cat = "employment_news";
-      else if (cat === "government_updates" || cat === "government_schemes") cat = "press_release";
+      if (cat === "recruitment_jobs" || cat === "exam_recruitment") cat = "employment_news";
+      else if (cat === "government_updates" || cat === "education_govt" || cat === "government_schemes") cat = "press_release";
       else cat = "student_advisory";
     }
 
@@ -491,6 +506,7 @@ export class IngestionPipelineEngine {
       slug,
       category: cat,
       organization_id: orgId,
+      related_job_id: relatedJobId,
       summary: bulletin.summary,
       content: bulletin.content || null,
       source_url: bulletin.sourceUrl,

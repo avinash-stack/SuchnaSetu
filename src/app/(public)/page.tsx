@@ -418,38 +418,38 @@ export default async function HomePage({ searchParams }: HomePageProps) {
                   </Link>
                 </div>
 
-                <div className="w-full rounded-xl border border-slate-200 bg-white shadow-2xs overflow-hidden">
-                  {/* Desktop & Tablet View (Fixed Width - No Horizontal Scroll) */}
+                <div className="w-full rounded-2xl border border-slate-200 bg-white shadow-xs overflow-hidden">
+                  {/* Desktop & Tablet View */}
                   <div className="hidden sm:block">
                     <table className="w-full text-left border-collapse table-fixed">
                       <thead>
-                        <tr className="border-b border-slate-200 bg-slate-50/80 text-[11px] font-bold uppercase tracking-wider text-slate-600">
-                          <th className="py-2.5 px-3 w-[22%]">Organization</th>
-                          <th className="py-2.5 px-3 w-[46%]">Examination / Result Title</th>
-                          <th className="py-2.5 px-3 w-[14%]">Status</th>
-                          <th className="py-2.5 px-3 w-[18%] text-right">Gazette / Score</th>
+                        <tr className="border-b border-slate-200 bg-slate-100/90 text-xs sm:text-[13px] font-bold uppercase tracking-wider text-slate-700">
+                          <th className="py-3.5 px-4 w-[20%]">Authority</th>
+                          <th className="py-3.5 px-4 w-[44%]">Examination / Result Title</th>
+                          <th className="py-3.5 px-4 w-[14%]">Status</th>
+                          <th className="py-3.5 px-4 w-[22%] text-right">Gazette / Score</th>
                         </tr>
                       </thead>
-                      <tbody className="divide-y divide-slate-100 text-xs text-slate-800">
+                      <tbody className="divide-y divide-slate-100 text-slate-800">
                         {latestResults.map((res) => (
-                          <tr key={res.id} className="hover:bg-slate-50/80 transition-colors group">
+                          <tr key={res.id} className="hover:bg-slate-50/90 transition-colors group">
                             {/* Organization */}
-                            <td className="py-3 px-3 align-top">
-                              <div className="flex flex-col gap-0.5">
-                                <span className="font-bold text-[#013089] group-hover:underline truncate block">
+                            <td className="py-4 px-4 align-top">
+                              <div className="flex flex-col gap-1">
+                                <span className="font-bold text-sm sm:text-[15px] text-[#013089] group-hover:underline truncate block">
                                   {res.organization?.acronym || res.organization?.name || "Official Body"}
                                 </span>
-                                <span className="text-[10px] text-slate-500 truncate block">
+                                <span className="text-xs text-slate-500 truncate block">
                                   {res.state_code || "National"}
                                 </span>
                               </div>
                             </td>
 
                             {/* Result Title */}
-                            <td className="py-3 px-3 align-top">
+                            <td className="py-4 px-4 align-top">
                               <Link
                                 href={`/jobs/${res.slug}`}
-                                className="font-bold text-slate-900 hover:text-[#013089] transition-colors leading-snug line-clamp-2 block"
+                                className="font-bold text-[15px] sm:text-base text-slate-900 hover:text-[#013089] transition-colors leading-snug line-clamp-2 block"
                                 title={res.title}
                               >
                                 {res.title}
@@ -457,32 +457,32 @@ export default async function HomePage({ searchParams }: HomePageProps) {
                             </td>
 
                             {/* Status */}
-                            <td className="py-3 px-3 align-top">
-                              <span className="inline-flex items-center text-[10px] text-emerald-800 font-bold bg-emerald-50 px-1.5 py-0.2 rounded border border-emerald-200">
+                            <td className="py-4 px-4 align-top">
+                              <span className="inline-flex items-center text-xs text-emerald-800 font-bold bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200">
                                 Declared
                               </span>
                             </td>
 
                             {/* Action */}
-                            <td className="py-3 px-3 align-top text-right whitespace-nowrap">
+                            <td className="py-4 px-4 align-top text-right whitespace-nowrap">
                               {res.result_url ? (
                                 <a
                                   href={res.result_url}
                                   target="_blank"
                                   rel="noopener noreferrer"
-                                  className="inline-flex items-center justify-center font-bold rounded-md h-7 px-2.5 text-[11px] bg-emerald-700 hover:bg-emerald-800 text-white transition-all shadow-2xs gap-1"
+                                  className="inline-flex items-center justify-center font-bold rounded-lg h-8 px-3 text-xs bg-emerald-700 hover:bg-emerald-800 text-white transition-all shadow-2xs gap-1.5 shrink-0"
                                 >
-                                  <FileCheck2 className="h-3 w-3" />
+                                  <FileCheck2 className="h-3.5 w-3.5 shrink-0" />
                                   <span>Gazette</span>
-                                  <ExternalLink className="h-2.5 w-2.5" />
+                                  <ExternalLink className="h-3 w-3 shrink-0" />
                                 </a>
                               ) : (
                                 <Link
                                   href={`/jobs/${res.slug}`}
-                                  className="inline-flex items-center gap-1 text-[11px] font-bold text-[#013089] hover:underline"
+                                  className="inline-flex items-center gap-1 text-xs sm:text-[13px] font-bold text-[#013089] hover:underline"
                                 >
                                   <span>Details</span>
-                                  <ArrowRight className="h-3 w-3" />
+                                  <ArrowRight className="h-3.5 w-3.5" />
                                 </Link>
                               )}
                             </td>
@@ -495,34 +495,34 @@ export default async function HomePage({ searchParams }: HomePageProps) {
                   {/* Mobile Stacked List View */}
                   <div className="sm:hidden divide-y divide-slate-100">
                     {latestResults.map((res) => (
-                      <div key={res.id} className="p-3 space-y-2 hover:bg-slate-50/70 transition-colors">
+                      <div key={res.id} className="p-4 space-y-2.5 hover:bg-slate-50/80 transition-colors">
                         <div className="flex items-center justify-between gap-2">
-                          <span className="font-bold text-[11px] text-[#013089] bg-brand-50 px-1.5 py-0.5 rounded border border-brand-100 truncate">
+                          <span className="font-bold text-xs text-[#013089] bg-brand-50 px-2 py-0.5 rounded border border-brand-100 truncate">
                             {res.organization?.acronym || "Official"}
                           </span>
-                          <span className="text-[10px] font-bold text-emerald-700 bg-emerald-50 px-1.5 py-0.2 rounded border border-emerald-200">
+                          <span className="text-xs font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200">
                             Declared
                           </span>
                         </div>
 
                         <Link
                           href={`/jobs/${res.slug}`}
-                          className="block font-bold text-xs text-slate-900 hover:text-[#013089] transition-colors leading-snug line-clamp-2"
+                          className="block font-bold text-[15px] text-slate-900 hover:text-[#013089] transition-colors leading-snug line-clamp-2"
                         >
                           {res.title}
                         </Link>
 
-                        <div className="pt-1 border-t border-slate-100 flex justify-end">
+                        <div className="pt-2 border-t border-slate-100 flex justify-end">
                           {res.result_url ? (
                             <a
                               href={res.result_url}
                               target="_blank"
                               rel="noopener noreferrer"
-                              className="inline-flex items-center gap-1 font-bold text-xs text-emerald-700 hover:underline"
+                              className="inline-flex items-center gap-1.5 font-bold text-xs text-emerald-700 hover:underline"
                             >
-                              <FileCheck2 className="h-3 w-3" />
+                              <FileCheck2 className="h-3.5 w-3.5" />
                               <span>View Gazette</span>
-                              <ExternalLink className="h-2.5 w-2.5" />
+                              <ExternalLink className="h-3 w-3" />
                             </a>
                           ) : (
                             <Link
@@ -530,7 +530,7 @@ export default async function HomePage({ searchParams }: HomePageProps) {
                               className="inline-flex items-center gap-1 font-bold text-xs text-[#013089] hover:underline"
                             >
                               <span>View Details</span>
-                              <ArrowRight className="h-2.5 w-2.5" />
+                              <ArrowRight className="h-3 w-3" />
                             </Link>
                           )}
                         </div>
@@ -545,50 +545,49 @@ export default async function HomePage({ searchParams }: HomePageProps) {
             </div>
 
             {/* ----------------------------------------------------------------- */}
-            {/* ----------------------------------------------------------------- */}
-            {/* RIGHT SIDEBAR (4 Cols) - Synced spacious editorial widgets */}
+            {/* RIGHT SIDEBAR (4 Cols) - Spacious & Legible */}
             {/* ----------------------------------------------------------------- */}
             <div className="lg:col-span-4 space-y-6">
               {/* Widget 1: TODAY'S UPDATES (Max 7 links) */}
               <TodaysUpdatesSection items={todaysUpdates} />
 
               {/* Widget 2: LATEST ADMIT CARDS & HALL TICKETS */}
-              <div className="rounded-xl border border-slate-200/90 bg-white p-4 sm:p-4.5 space-y-3 shadow-2xs">
-                <div className="flex items-center justify-between border-b border-slate-100 pb-2.5">
-                  <div className="flex items-center gap-2">
-                    <div className="flex h-6 w-6 items-center justify-center rounded-md bg-blue-50 text-[#013089]">
-                      <CreditCard className="h-3.5 w-3.5 text-[#013089]" />
+              <div className="rounded-2xl border border-slate-200 bg-white p-5 sm:p-6 space-y-4 shadow-xs">
+                <div className="flex items-center justify-between border-b border-slate-100 pb-3">
+                  <div className="flex items-center gap-2.5">
+                    <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-blue-50 text-[#013089]">
+                      <CreditCard className="h-4 w-4 text-[#013089]" />
                     </div>
-                    <h3 className="text-sm font-bold text-slate-900 font-heading">
+                    <h3 className="text-base sm:text-lg font-bold text-slate-900 font-heading">
                       Admit Cards &amp; Hall Tickets
                     </h3>
                   </div>
                   <Link
                     href="/admit-cards"
-                    className="text-xs font-semibold text-[#013089] hover:underline inline-flex items-center gap-0.5"
+                    className="text-xs sm:text-sm font-semibold text-[#013089] hover:underline inline-flex items-center gap-0.5"
                   >
                     <span>View All</span>
-                    <ChevronRight className="h-3.5 w-3.5" />
+                    <ChevronRight className="h-4 w-4" />
                   </Link>
                 </div>
 
-                <div className="divide-y divide-slate-100/80 -mx-1">
+                <div className="divide-y divide-slate-100 -mx-1">
                   {latestAdmitCards.length > 0 ? (
                     latestAdmitCards.slice(0, 7).map((ac) => (
                       <div
                         key={ac.id}
-                        className="py-2 px-2 hover:bg-slate-50/80 rounded-lg transition-colors flex items-center justify-between gap-2.5"
+                        className="py-3 px-2 hover:bg-slate-50 rounded-lg transition-colors flex items-center justify-between gap-3"
                       >
-                        <div className="flex items-center gap-2 min-w-0 flex-1">
+                        <div className="flex items-center gap-2.5 min-w-0 flex-1">
                           <Badge
                             variant="brand"
-                            className="text-[10px] font-bold py-0.5 px-1.5 shrink-0 bg-[#013089] text-white rounded"
+                            className="text-xs font-bold py-0.5 px-2 shrink-0 bg-[#013089] text-white rounded"
                           >
                             {ac.organization?.acronym || "EXAM"}
                           </Badge>
                           <Link
                             href={`/exams/${ac.slug}`}
-                            className="text-[13px] font-medium text-slate-800 hover:text-[#013089] transition-colors truncate block leading-snug"
+                            className="text-sm sm:text-[14.5px] font-semibold text-slate-800 hover:text-[#013089] transition-colors truncate block leading-snug"
                             title={ac.title}
                           >
                             {ac.title}
@@ -600,20 +599,20 @@ export default async function HomePage({ searchParams }: HomePageProps) {
                             href={ac.admit_card_url}
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="inline-flex items-center gap-1 text-[11px] font-semibold text-[#013089] hover:underline shrink-0 whitespace-nowrap bg-blue-50 px-2 py-0.5 rounded"
+                            className="inline-flex items-center gap-1 text-xs font-bold text-[#013089] hover:underline shrink-0 whitespace-nowrap bg-blue-50 px-2.5 py-1 rounded"
                           >
                             <span>Download</span>
-                            <Download className="h-3 w-3" />
+                            <Download className="h-3.5 w-3.5" />
                           </a>
                         ) : (
-                          <span className="text-[11px] text-slate-400 font-mono shrink-0 whitespace-nowrap">
+                          <span className="text-xs text-slate-400 font-mono shrink-0 whitespace-nowrap">
                             {ac.state_code || "National"}
                           </span>
                         )}
                       </div>
                     ))
                   ) : (
-                    <p className="text-xs text-slate-500 py-3 px-2 text-center">
+                    <p className="text-xs sm:text-sm text-slate-500 py-3 px-2 text-center">
                       No new admit cards released today.
                     </p>
                   )}
@@ -621,54 +620,54 @@ export default async function HomePage({ searchParams }: HomePageProps) {
               </div>
 
               {/* Widget 3: Urgent Deadlines / Closing Soon */}
-              <div className="rounded-xl border border-slate-200/90 bg-white p-4 sm:p-4.5 space-y-3 shadow-2xs">
-                <div className="flex items-center justify-between border-b border-slate-100 pb-2.5">
-                  <div className="flex items-center gap-2">
-                    <div className="flex h-6 w-6 items-center justify-center rounded-md bg-amber-50 text-amber-700">
-                      <Clock className="h-3.5 w-3.5 text-[#FE8D01]" />
+              <div className="rounded-2xl border border-slate-200 bg-white p-5 sm:p-6 space-y-4 shadow-xs">
+                <div className="flex items-center justify-between border-b border-slate-100 pb-3">
+                  <div className="flex items-center gap-2.5">
+                    <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-amber-50 text-amber-700">
+                      <Clock className="h-4 w-4 text-[#FE8D01]" />
                     </div>
-                    <h3 className="text-sm font-bold text-slate-900 font-heading">
+                    <h3 className="text-base sm:text-lg font-bold text-slate-900 font-heading">
                       Closing Soon (Next 10 Days)
                     </h3>
                   </div>
                   <Link
                     href="/jobs"
-                    className="text-xs font-semibold text-[#013089] hover:underline inline-flex items-center gap-0.5"
+                    className="text-xs sm:text-sm font-semibold text-[#013089] hover:underline inline-flex items-center gap-0.5"
                   >
                     <span>View All</span>
-                    <ChevronRight className="h-3.5 w-3.5" />
+                    <ChevronRight className="h-4 w-4" />
                   </Link>
                 </div>
 
-                <div className="divide-y divide-slate-100/80 -mx-1">
+                <div className="divide-y divide-slate-100 -mx-1">
                   {urgentClosingJobs.length > 0 ? (
                     urgentClosingJobs.slice(0, 7).map((job) => (
                       <div
                         key={job.id}
-                        className="py-2 px-2 hover:bg-slate-50/80 rounded-lg transition-colors flex items-center justify-between gap-2.5"
+                        className="py-3 px-2 hover:bg-slate-50 rounded-lg transition-colors flex items-center justify-between gap-3"
                       >
-                        <div className="flex items-center gap-2 min-w-0 flex-1">
+                        <div className="flex items-center gap-2.5 min-w-0 flex-1">
                           <Badge
                             variant="secondary"
-                            className="text-[10px] font-bold py-0.5 px-1.5 shrink-0 text-slate-700 bg-slate-100 rounded"
+                            className="text-xs font-bold py-0.5 px-2 shrink-0 text-slate-700 bg-slate-100 rounded"
                           >
                             {job.organization?.acronym || "GOVT"}
                           </Badge>
                           <Link
                             href={`/jobs/${job.slug}`}
-                            className="text-[13px] font-medium text-slate-800 hover:text-[#013089] transition-colors truncate block leading-snug"
+                            className="text-sm sm:text-[14.5px] font-semibold text-slate-800 hover:text-[#013089] transition-colors truncate block leading-snug"
                             title={job.title}
                           >
                             {job.title}
                           </Link>
                         </div>
-                        <span className="text-[11px] font-semibold text-amber-700 shrink-0 whitespace-nowrap font-mono">
+                        <span className="text-xs font-bold text-amber-700 shrink-0 whitespace-nowrap font-mono">
                           {formatDate(job.application_end_date)}
                         </span>
                       </div>
                     ))
                   ) : (
-                    <p className="text-xs text-slate-500 py-3 px-2 text-center">
+                    <p className="text-xs sm:text-sm text-slate-500 py-3 px-2 text-center">
                       No recruitment deadlines closing in the next 10 days.
                     </p>
                   )}
@@ -676,35 +675,35 @@ export default async function HomePage({ searchParams }: HomePageProps) {
               </div>
 
               {/* Widget 4: Rozgar Samachar & Advisories */}
-              <div className="rounded-xl border border-slate-200/90 bg-white p-4 sm:p-4.5 space-y-3 shadow-2xs">
-                <div className="flex items-center justify-between border-b border-slate-100 pb-2.5">
-                  <div className="flex items-center gap-2">
-                    <div className="flex h-6 w-6 items-center justify-center rounded-md bg-blue-50 text-[#013089]">
-                      <Newspaper className="h-3.5 w-3.5 text-[#013089]" />
+              <div className="rounded-2xl border border-slate-200 bg-white p-5 sm:p-6 space-y-4 shadow-xs">
+                <div className="flex items-center justify-between border-b border-slate-100 pb-3">
+                  <div className="flex items-center gap-2.5">
+                    <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-blue-50 text-[#013089]">
+                      <Newspaper className="h-4 w-4 text-[#013089]" />
                     </div>
-                    <h3 className="text-sm font-bold text-slate-900 font-heading">
+                    <h3 className="text-base sm:text-lg font-bold text-slate-900 font-heading">
                       Rozgar Samachar &amp; Advisories
                     </h3>
                   </div>
                   <Link
                     href="/news"
-                    className="text-xs font-semibold text-[#013089] hover:underline inline-flex items-center gap-0.5"
+                    className="text-xs sm:text-sm font-semibold text-[#013089] hover:underline inline-flex items-center gap-0.5"
                   >
                     <span>View All</span>
-                    <ChevronRight className="h-3.5 w-3.5" />
+                    <ChevronRight className="h-4 w-4" />
                   </Link>
                 </div>
 
-                <div className="divide-y divide-slate-100/80 -mx-1">
+                <div className="divide-y divide-slate-100 -mx-1">
                   {latestBulletins.slice(0, 7).map((bulletin) => (
                     <div
                       key={bulletin.id}
-                      className="py-2 px-2 hover:bg-slate-50/80 rounded-lg transition-colors flex items-center justify-between gap-2.5"
+                      className="py-3 px-2 hover:bg-slate-50 rounded-lg transition-colors flex items-center justify-between gap-3"
                     >
-                      <div className="flex items-center gap-2 min-w-0 flex-1">
+                      <div className="flex items-center gap-2.5 min-w-0 flex-1">
                         <Badge
                           variant="brand"
-                          className="text-[10px] font-bold py-0.5 px-1.5 shrink-0 bg-rose-600 text-white rounded"
+                          className="text-xs font-bold py-0.5 px-2 shrink-0 bg-rose-600 text-white rounded"
                         >
                           {bulletin.source_name
                             ? bulletin.source_name.length > 8
@@ -714,13 +713,13 @@ export default async function HomePage({ searchParams }: HomePageProps) {
                         </Badge>
                         <Link
                           href={`/news/${bulletin.slug}`}
-                          className="text-[13px] font-medium text-slate-800 hover:text-[#013089] transition-colors truncate block leading-snug"
+                          className="text-sm sm:text-[14.5px] font-semibold text-slate-800 hover:text-[#013089] transition-colors truncate block leading-snug"
                           title={bulletin.title}
                         >
                           {bulletin.title}
                         </Link>
                       </div>
-                      <span className="text-[11px] text-slate-400 font-medium shrink-0 whitespace-nowrap">
+                      <span className="text-xs text-slate-500 font-medium shrink-0 whitespace-nowrap">
                         {formatDate(bulletin.published_at)}
                       </span>
                     </div>
@@ -729,12 +728,12 @@ export default async function HomePage({ searchParams }: HomePageProps) {
               </div>
 
               {/* Widget 5: Statutory Citizen Transparency Protocol */}
-              <div className="rounded-xl border border-slate-200/90 bg-slate-50/80 p-4 space-y-2 text-xs">
+              <div className="rounded-2xl border border-slate-200 bg-slate-50 p-5 space-y-2.5 text-xs sm:text-sm">
                 <div className="flex items-center gap-2 font-bold text-slate-800">
-                  <ShieldAlert className="h-4 w-4 text-[#FE8D01]" />
+                  <ShieldAlert className="h-4.5 w-4.5 text-[#FE8D01]" />
                   <span>Statutory Notice &amp; Cross-Check</span>
                 </div>
-                <p className="text-[11px] text-slate-600 leading-relaxed">
+                <p className="text-xs sm:text-sm text-slate-600 leading-relaxed">
                   SuchnaSetu only publishes notifications backed by verified official PDFs. Candidates are advised to cross-verify all terms with the respective recruitment portal before fee submission.
                 </p>
               </div>
