@@ -126,7 +126,7 @@ export default async function PublicExamsPage({ searchParams }: ExamsPageProps) 
       <div className="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8">
         <div className="grid grid-cols-1 gap-6 lg:grid-cols-4 items-start">
           {/* Sticky Filter Sidebar */}
-          <aside className="w-full lg:w-72 flex-shrink-0 lg:sticky lg:top-28 lg:max-h-[calc(100vh-8rem)] lg:overflow-y-auto pr-1 pb-4">
+          <aside className="w-full min-w-0 lg:sticky lg:top-28 lg:max-h-[calc(100vh-8rem)] lg:overflow-y-auto pr-1 pb-4">
             <ExamFilterSidebar
               categories={taxonomies.categories}
               organizations={taxonomies.organizations}
@@ -135,7 +135,7 @@ export default async function PublicExamsPage({ searchParams }: ExamsPageProps) 
           </aside>
 
           {/* Exam Grid / List */}
-          <div className="lg:col-span-3 space-y-6">
+          <div className="w-full min-w-0 lg:col-span-3 space-y-6">
             {exams.length > 0 ? (
               <>
                 <ExamsListingContainer exams={exams} total={total} currentLimit={currentLimit} />

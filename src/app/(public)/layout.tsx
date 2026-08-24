@@ -8,7 +8,7 @@ export default function PublicLayout({
   children: React.ReactNode;
 }) {
   return (
-    <div className="flex min-h-screen flex-col bg-slate-50">
+    <div className="flex min-h-screen flex-col bg-slate-50 w-full overflow-x-hidden max-w-full">
       {/* Accessibility: Skip to Content link for keyboard and screen reader users */}
       <a
         href="#main-content"
@@ -18,7 +18,7 @@ export default function PublicLayout({
       </a>
 
       <PublicHeader />
-      <main id="main-content" tabIndex={-1} className="flex-1 focus:outline-none">
+      <main id="main-content" tabIndex={-1} className="flex-1 focus:outline-none w-full overflow-x-hidden max-w-full">
         {children}
       </main>
       <PublicFooter />

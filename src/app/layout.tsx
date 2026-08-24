@@ -29,7 +29,7 @@ export default function RootLayout({
       <head>
         <HeadScripts />
       </head>
-      <body className="min-h-screen bg-slate-50 text-slate-900 antialiased flex flex-col font-sans">
+      <body className="min-h-screen bg-slate-50 text-slate-900 antialiased flex flex-col font-sans overflow-x-hidden max-w-full w-full">
         <LanguageProvider>
           <LanguageSuggestionBanner />
           {children}

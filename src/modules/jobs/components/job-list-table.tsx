@@ -18,8 +18,8 @@ export function JobListTable({ jobs }: JobListTableProps) {
   return (
     <div className="w-full rounded-2xl border border-slate-200 bg-white shadow-xs overflow-hidden">
       {/* Desktop & Tablet Table */}
-      <div className="hidden sm:block">
-        <table className="w-full text-left border-collapse table-fixed">
+      <div className="hidden sm:block overflow-x-auto">
+        <table className="w-full text-left border-collapse table-fixed min-w-[620px] sm:min-w-0">
           <thead>
             <tr className="border-b border-slate-200 bg-slate-100/90 text-xs sm:text-[13px] font-bold uppercase tracking-wider text-slate-700">
               <th className="py-3.5 px-4 w-[20%]">Authority</th>

@@ -420,8 +420,8 @@ export default async function HomePage({ searchParams }: HomePageProps) {
 
                 <div className="w-full rounded-2xl border border-slate-200 bg-white shadow-xs overflow-hidden">
                   {/* Desktop & Tablet View */}
-                  <div className="hidden sm:block">
-                    <table className="w-full text-left border-collapse table-fixed">
+                  <div className="hidden sm:block overflow-x-auto">
+                    <table className="w-full text-left border-collapse table-fixed min-w-[620px] sm:min-w-0">
                       <thead>
                         <tr className="border-b border-slate-200 bg-slate-100/90 text-xs sm:text-[13px] font-bold uppercase tracking-wider text-slate-700">
                           <th className="py-3.5 px-4 w-[20%]">Authority</th>
@@ -745,147 +745,149 @@ export default async function HomePage({ searchParams }: HomePageProps) {
       {/* ========================================================================= */}
       {/* CRAWLABLE SEARCH ENGINE DIRECTORY & INTERNAL LINKING MATRIX */}
       {/* ========================================================================= */}
-      <section className="rounded-2xl border border-slate-200 bg-white p-6 sm:p-8 shadow-2xs space-y-6" aria-label="Quick Directory">
-        <div className="border-b border-slate-100 pb-3">
-          <h2 className="text-base sm:text-lg font-bold text-slate-900 font-heading">
-            Government Recruitment &amp; Public Examinations Hub
-          </h2>
-          <p className="text-xs text-slate-500">
-            Explore state-wise recruitment portals, central commissions, and verified civic notice archives across India.
-          </p>
-        </div>
-
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 text-xs">
-          {/* Column 1: Major States */}
-          <div className="space-y-2.5">
-            <h3 className="font-bold text-slate-900 flex items-center gap-1.5 uppercase tracking-wider text-[11px]">
-              <MapPin className="h-3.5 w-3.5 text-[#013089]" />
-              <span>State Government Jobs</span>
-            </h3>
-            <ul className="space-y-1.5">
-              {INDIAN_STATES.slice(0, 8).map((st) => (
-                <li key={st.code}>
-                  <Link
-                    href={`/state/${st.code.toLowerCase()}`}
-                    className="text-slate-600 hover:text-[#013089] hover:underline flex items-center justify-between"
-                  >
-                    <span>{st.name} Govt Jobs</span>
-                    <span className="text-[10px] text-slate-400 font-mono">{st.pscAcronym}</span>
-                  </Link>
-                </li>
-              ))}
-            </ul>
+      <section className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <div className="rounded-2xl border border-slate-200 bg-white p-6 sm:p-8 shadow-2xs space-y-6" aria-label="Quick Directory">
+          <div className="border-b border-slate-100 pb-3">
+            <h2 className="text-base sm:text-lg font-bold text-slate-900 font-heading">
+              Government Recruitment &amp; Public Examinations Hub
+            </h2>
+            <p className="text-xs text-slate-500">
+              Explore state-wise recruitment portals, central commissions, and verified civic notice archives across India.
+            </p>
           </div>
 
-          {/* Column 2: More States */}
-          <div className="space-y-2.5">
-            <h3 className="font-bold text-slate-900 flex items-center gap-1.5 uppercase tracking-wider text-[11px]">
-              <MapPin className="h-3.5 w-3.5 text-[#013089]" />
-              <span>Regional Recruitment</span>
-            </h3>
-            <ul className="space-y-1.5">
-              {INDIAN_STATES.slice(8, 16).map((st) => (
-                <li key={st.code}>
-                  <Link
-                    href={`/state/${st.code.toLowerCase()}`}
-                    className="text-slate-600 hover:text-[#013089] hover:underline flex items-center justify-between"
-                  >
-                    <span>{st.name} Govt Jobs</span>
-                    <span className="text-[10px] text-slate-400 font-mono">{st.pscAcronym}</span>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 text-xs">
+            {/* Column 1: Major States */}
+            <div className="space-y-2.5">
+              <h3 className="font-bold text-slate-900 flex items-center gap-1.5 uppercase tracking-wider text-[11px]">
+                <MapPin className="h-3.5 w-3.5 text-[#013089]" />
+                <span>State Government Jobs</span>
+              </h3>
+              <ul className="space-y-1.5">
+                {INDIAN_STATES.slice(0, 8).map((st) => (
+                  <li key={st.code}>
+                    <Link
+                      href={`/state/${st.code.toLowerCase()}`}
+                      className="text-slate-600 hover:text-[#013089] hover:underline flex items-center justify-between"
+                    >
+                      <span>{st.name} Govt Jobs</span>
+                      <span className="text-[10px] text-slate-400 font-mono">{st.pscAcronym}</span>
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            </div>
+
+            {/* Column 2: More States */}
+            <div className="space-y-2.5">
+              <h3 className="font-bold text-slate-900 flex items-center gap-1.5 uppercase tracking-wider text-[11px]">
+                <MapPin className="h-3.5 w-3.5 text-[#013089]" />
+                <span>Regional Recruitment</span>
+              </h3>
+              <ul className="space-y-1.5">
+                {INDIAN_STATES.slice(8, 16).map((st) => (
+                  <li key={st.code}>
+                    <Link
+                      href={`/state/${st.code.toLowerCase()}`}
+                      className="text-slate-600 hover:text-[#013089] hover:underline flex items-center justify-between"
+                    >
+                      <span>{st.name} Govt Jobs</span>
+                      <span className="text-[10px] text-slate-400 font-mono">{st.pscAcronym}</span>
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            </div>
+
+            {/* Column 3: Central Authorities & Commissions */}
+            <div className="space-y-2.5">
+              <h3 className="font-bold text-slate-900 flex items-center gap-1.5 uppercase tracking-wider text-[11px]">
+                <Building className="h-3.5 w-3.5 text-[#013089]" />
+                <span>Central Commissions</span>
+              </h3>
+              <ul className="space-y-1.5">
+                {[
+                  { name: "Union Public Service Commission", acronym: "UPSC" },
+                  { name: "Staff Selection Commission", acronym: "SSC" },
+                  { name: "Railway Recruitment Boards", acronym: "RRB" },
+                  { name: "Institute of Banking Personnel", acronym: "IBPS" },
+                  { name: "State Bank of India", acronym: "SBI" },
+                  { name: "Defence Research & Dev (DRDO)", acronym: "DRDO" },
+                  { name: "National Testing Agency", acronym: "NTA" },
+                  { name: "Border Security Force", acronym: "BSF" },
+                ].map((auth) => (
+                  <li key={auth.acronym}>
+                    <Link
+                      href={`/authorities/${auth.acronym.toLowerCase()}`}
+                      className="text-slate-600 hover:text-[#013089] hover:underline flex items-center justify-between"
+                    >
+                      <span className="truncate max-w-[150px]">{auth.name}</span>
+                      <span className="text-[10px] font-bold text-[#013089] bg-brand-50 px-1.5 py-0.2 rounded">
+                        {auth.acronym}
+                      </span>
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            </div>
+
+            {/* Column 4: Key Service Hubs */}
+            <div className="space-y-2.5">
+              <h3 className="font-bold text-slate-900 flex items-center gap-1.5 uppercase tracking-wider text-[11px]">
+                <Sparkles className="h-3.5 w-3.5 text-[#013089]" />
+                <span>Civic Portals</span>
+              </h3>
+              <ul className="space-y-1.5">
+                <li>
+                  <Link href="/todays-updates" className="text-slate-600 hover:text-[#013089] hover:underline flex items-center gap-1.5">
+                    <Sparkles className="h-3 w-3 text-red-500" />
+                    <span>Today&apos;s Updates (Live Feed)</span>
                   </Link>
                 </li>
-              ))}
-            </ul>
-          </div>
-
-          {/* Column 3: Central Authorities & Commissions */}
-          <div className="space-y-2.5">
-            <h3 className="font-bold text-slate-900 flex items-center gap-1.5 uppercase tracking-wider text-[11px]">
-              <Building className="h-3.5 w-3.5 text-[#013089]" />
-              <span>Central Commissions</span>
-            </h3>
-            <ul className="space-y-1.5">
-              {[
-                { name: "Union Public Service Commission", acronym: "UPSC" },
-                { name: "Staff Selection Commission", acronym: "SSC" },
-                { name: "Railway Recruitment Boards", acronym: "RRB" },
-                { name: "Institute of Banking Personnel", acronym: "IBPS" },
-                { name: "State Bank of India", acronym: "SBI" },
-                { name: "Defence Research & Dev (DRDO)", acronym: "DRDO" },
-                { name: "National Testing Agency", acronym: "NTA" },
-                { name: "Border Security Force", acronym: "BSF" },
-              ].map((auth) => (
-                <li key={auth.acronym}>
-                  <Link
-                    href={`/authorities/${auth.acronym.toLowerCase()}`}
-                    className="text-slate-600 hover:text-[#013089] hover:underline flex items-center justify-between"
-                  >
-                    <span className="truncate max-w-[150px]">{auth.name}</span>
-                    <span className="text-[10px] font-bold text-[#013089] bg-brand-50 px-1.5 py-0.2 rounded">
-                      {auth.acronym}
-                    </span>
+                <li>
+                  <Link href="/coming-soon" className="text-slate-600 hover:text-[#013089] hover:underline flex items-center gap-1.5">
+                    <Hourglass className="h-3 w-3 text-amber-500" />
+                    <span>Coming Soon / Advance Notices</span>
                   </Link>
                 </li>
-              ))}
-            </ul>
-          </div>
-
-          {/* Column 4: Key Service Hubs */}
-          <div className="space-y-2.5">
-            <h3 className="font-bold text-slate-900 flex items-center gap-1.5 uppercase tracking-wider text-[11px]">
-              <Sparkles className="h-3.5 w-3.5 text-[#013089]" />
-              <span>Civic Portals</span>
-            </h3>
-            <ul className="space-y-1.5">
-              <li>
-                <Link href="/todays-updates" className="text-slate-600 hover:text-[#013089] hover:underline flex items-center gap-1.5">
-                  <Sparkles className="h-3 w-3 text-red-500" />
-                  <span>Today&apos;s Updates (Live Feed)</span>
-                </Link>
-              </li>
-              <li>
-                <Link href="/coming-soon" className="text-slate-600 hover:text-[#013089] hover:underline flex items-center gap-1.5">
-                  <Hourglass className="h-3 w-3 text-amber-500" />
-                  <span>Coming Soon / Advance Notices</span>
-                </Link>
-              </li>
-              <li>
-                <Link href="/answer-keys" className="text-slate-600 hover:text-[#013089] hover:underline flex items-center gap-1.5">
-                  <KeyRound className="h-3 w-3 text-teal-600" />
-                  <span>Official Answer Keys</span>
-                </Link>
-              </li>
-              <li>
-                <Link href="/syllabus" className="text-slate-600 hover:text-[#013089] hover:underline flex items-center gap-1.5">
-                  <BookOpen className="h-3 w-3 text-blue-600" />
-                  <span>Exam Patterns &amp; Syllabi</span>
-                </Link>
-              </li>
-              <li>
-                <Link href="/admit-cards" className="text-slate-600 hover:text-[#013089] hover:underline flex items-center gap-1.5">
-                  <Download className="h-3 w-3 text-indigo-600" />
-                  <span>Admit Cards &amp; Hall Tickets</span>
-                </Link>
-              </li>
-              <li>
-                <Link href="/results" className="text-slate-600 hover:text-[#013089] hover:underline flex items-center gap-1.5">
-                  <Award className="h-3 w-3 text-emerald-600" />
-                  <span>Results &amp; Merit Gazettes</span>
-                </Link>
-              </li>
-              <li>
-                <Link href="/news" className="text-slate-600 hover:text-[#013089] hover:underline flex items-center gap-1.5">
-                  <Newspaper className="h-3 w-3 text-rose-600" />
-                  <span>Employment News &amp; PIB</span>
-                </Link>
-              </li>
-              <li>
-                <Link href="/directory" className="text-slate-600 hover:text-[#013089] hover:underline flex items-center gap-1.5">
-                  <Building className="h-3 w-3 text-slate-600" />
-                  <span>Verified Organization Directory</span>
-                </Link>
-              </li>
-            </ul>
+                <li>
+                  <Link href="/answer-keys" className="text-slate-600 hover:text-[#013089] hover:underline flex items-center gap-1.5">
+                    <KeyRound className="h-3 w-3 text-teal-600" />
+                    <span>Official Answer Keys</span>
+                  </Link>
+                </li>
+                <li>
+                  <Link href="/syllabus" className="text-slate-600 hover:text-[#013089] hover:underline flex items-center gap-1.5">
+                    <BookOpen className="h-3 w-3 text-blue-600" />
+                    <span>Exam Patterns &amp; Syllabi</span>
+                  </Link>
+                </li>
+                <li>
+                  <Link href="/admit-cards" className="text-slate-600 hover:text-[#013089] hover:underline flex items-center gap-1.5">
+                    <Download className="h-3 w-3 text-indigo-600" />
+                    <span>Admit Cards &amp; Hall Tickets</span>
+                  </Link>
+                </li>
+                <li>
+                  <Link href="/results" className="text-slate-600 hover:text-[#013089] hover:underline flex items-center gap-1.5">
+                    <Award className="h-3 w-3 text-emerald-600" />
+                    <span>Results &amp; Merit Gazettes</span>
+                  </Link>
+                </li>
+                <li>
+                  <Link href="/news" className="text-slate-600 hover:text-[#013089] hover:underline flex items-center gap-1.5">
+                    <Newspaper className="h-3 w-3 text-rose-600" />
+                    <span>Employment News &amp; PIB</span>
+                  </Link>
+                </li>
+                <li>
+                  <Link href="/directory" className="text-slate-600 hover:text-[#013089] hover:underline flex items-center gap-1.5">
+                    <Building className="h-3 w-3 text-slate-600" />
+                    <span>Verified Organization Directory</span>
+                  </Link>
+                </li>
+              </ul>
+            </div>
           </div>
         </div>
       </section>
