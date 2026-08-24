@@ -64,6 +64,18 @@ export function ExamCard({ exam: rawExam }: ExamCardProps) {
           )}
         </div>
 
+        {/* Grounded AI Match Reason Pills if present */}
+        {(exam as any).matchExplanation?.reasons?.length > 0 && (
+          <div className="flex flex-wrap items-center gap-1 text-[10px] text-blue-800 bg-blue-50/80 px-2 py-1 rounded-sm border border-blue-100">
+            <span className="font-bold text-blue-700">Matches:</span>
+            {(exam as any).matchExplanation.reasons.slice(0, 3).map((r: string, idx: number) => (
+              <span key={idx} className="bg-white px-1.5 py-0.5 rounded text-[9.5px] border border-blue-200/80 font-medium text-blue-900">
+                ✓ {r}
+              </span>
+            ))}
+          </div>
+        )}
+
         {/* Structured Selection & Date Strip */}
         <div className="space-y-2 pt-1 border-t border-slate-100">
           <div className="rounded-xs bg-slate-50 p-2.5 space-y-1.5 text-xs border border-slate-100">

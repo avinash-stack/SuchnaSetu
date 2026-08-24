@@ -1,11 +1,12 @@
 import { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { getPublicJobBySlug } from "@/modules/jobs/service";
-import { constructMetadata, buildJobPostingJsonLd, buildBreadcrumbJsonLd } from "@/lib/seo";
+import { constructMetadata, buildJobPostingJsonLd, buildBreadcrumbJsonLd, buildFaqJsonLd } from "@/lib/seo";
 import { getCanonicalSiteUrl } from "@/lib/constants";
 import { resolveLocalizedJob } from "@/lib/i18n/localize";
 import { LanguageCode } from "@/lib/i18n/config";
 import { JobDetailView } from "@/modules/jobs/components/job-detail-view";
+import { generateVerifiedJobFaqs } from "@/modules/jobs/utils/generate-job-faqs";
 
 export const revalidate = 300; // 5 minutes cache for high performance & instant mobile rendering
 
@@ -117,6 +118,10 @@ export default async function PublicJobDetailPage({ params, searchParams }: JobD
   ];
   const breadcrumbJsonLd = buildBreadcrumbJsonLd(breadcrumbs);
 
+  // Structured FAQPage schema
+  const verifiedFaqs = generateVerifiedJobFaqs(job);
+  const faqJsonLd = buildFaqJsonLd(verifiedFaqs);
+
   return (
     <>
       {/* Inject Google Search Central Structured Data */}
@@ -130,6 +135,12 @@ export default async function PublicJobDetailPage({ params, searchParams }: JobD
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbJsonLd) }}
       />
+      {faqJsonLd && (
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(faqJsonLd) }}
+        />
+      )}
 
       {/* Multilingual Reactive Detail View */}
       <JobDetailView job={job} />

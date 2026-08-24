@@ -1,6 +1,6 @@
 import { Metadata } from "next";
 import Link from "next/link";
-import { searchGlobal } from "@/modules/search/service";
+import { executeAiEnhancedSearch } from "@/modules/ai/search/search-service";
 import { JobCard } from "@/modules/jobs/components/job-card";
 import { ExamCard } from "@/modules/exams/components/exam-card";
 import { BulletinCard } from "@/modules/bulletins/components/bulletin-card";
@@ -20,6 +20,7 @@ import {
   CheckCircle2,
   HelpCircle,
   TrendingUp,
+  Cpu,
 } from "lucide-react";
 
 interface SearchPageProps {
@@ -47,14 +48,14 @@ export async function generateMetadata({ searchParams }: SearchPageProps): Promi
 }
 
 const POPULAR_SEARCH_TAGS = [
-  { label: "Bihar Govt Jobs", query: "Bihar Govt Job" },
-  { label: "UPSC Civil Services", query: "UPSC CSE" },
-  { label: "SSC CGL / CHSL", query: "SSC recruitment" },
-  { label: "Banking & IBPS", query: "Banking jobs" },
-  { label: "Railway Recruitment", query: "Railway recruitment" },
-  { label: "Teacher Vacancies", query: "Teacher vacancy" },
+  { label: "10th Pass Bihar", query: "10th pass government jobs in Bihar" },
+  { label: "UP Govt Jobs", query: "government jobs in UP" },
+  { label: "Upcoming SSC Exams", query: "upcoming SSC exams" },
+  { label: "Salary > ₹50,000", query: "government jobs with salary above 50000" },
+  { label: "Graduate Fresher", query: "graduate jobs without experience" },
   { label: "Police & Defence", query: "Police Constable" },
-  { label: "Employment News", query: "Employment News" },
+  { label: "Banking & IBPS", query: "Banking jobs" },
+  { label: "Closing This Month", query: "jobs closing this month" },
 ];
 
 export default async function GlobalSearchPage({ searchParams }: SearchPageProps) {
@@ -63,9 +64,14 @@ export default async function GlobalSearchPage({ searchParams }: SearchPageProps
   const currentType = (params.type || "all") as "all" | "jobs" | "exams" | "news";
 
   const searchResult = rawQuery
-    ? await searchGlobal(rawQuery, { limitPerType: 12 })
+    ? await executeAiEnhancedSearch(rawQuery, {
+        module: currentType === "news" ? "bulletins" : currentType,
+        limitPerType: 12,
+      })
     : {
         query: "",
+        isAiAssisted: false,
+        executionTimeMs: 0,
         totalCount: 0,
         counts: { jobs: 0, exams: 0, bulletins: 0 },
         jobs: [],
@@ -73,7 +79,7 @@ export default async function GlobalSearchPage({ searchParams }: SearchPageProps
         bulletins: [],
       };
 
-  const { totalCount, counts, jobs, exams, bulletins } = searchResult;
+  const { totalCount, counts, jobs, exams, bulletins, isAiAssisted, intent } = searchResult;
 
   const buildTypeUrl = (type: string) => {
     const q = new URLSearchParams();
@@ -82,6 +88,14 @@ export default async function GlobalSearchPage({ searchParams }: SearchPageProps
     const qs = q.toString();
     return qs ? `/search?${qs}` : "/search";
   };
+
+  // Build filter pills summary if AI detected parameters
+  const detectedFilters: string[] = [];
+  if (intent?.state) detectedFilters.push(`State: ${intent.state}`);
+  if (intent?.qualification?.length) detectedFilters.push(`Qualification: ${intent.qualification.join(", ")}`);
+  if (intent?.salary_min) detectedFilters.push(`Min Salary: ₹${intent.salary_min.toLocaleString("en-IN")}`);
+  if (intent?.gender === "female") detectedFilters.push("Reserved for Women");
+  if (intent?.application_open) detectedFilters.push("Application Open");
 
   return (
     <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8 space-y-8">
@@ -137,15 +151,35 @@ export default async function GlobalSearchPage({ searchParams }: SearchPageProps
       {rawQuery && (
         <div className="space-y-4">
           {/* Active Query Pill */}
-          <div className="flex flex-wrap items-center justify-between gap-3 bg-slate-100/80 border border-slate-200/80 p-3 rounded-xl">
-            <div className="flex items-center gap-2 text-sm text-slate-700">
-              <Sparkles className="h-4 w-4 text-brand-600 shrink-0" />
-              <span>
-                Found <strong>{totalCount}</strong> verified notices across all modules for &ldquo;<strong>{rawQuery}</strong>&rdquo;
-              </span>
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-slate-100/90 border border-slate-200 p-3.5 rounded-2xl">
+            <div className="space-y-1.5">
+              <div className="flex flex-wrap items-center gap-2 text-sm text-slate-800">
+                {isAiAssisted ? (
+                  <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-[#013089] text-white shadow-2xs">
+                    <Sparkles className="h-3 w-3 text-amber-300" />
+                    <span>AI Intent Understanding</span>
+                  </span>
+                ) : (
+                  <Sparkles className="h-4 w-4 text-brand-600 shrink-0" />
+                )}
+                <span>
+                  Found <strong>{totalCount}</strong> verified notices for &ldquo;<strong>{rawQuery}</strong>&rdquo;
+                </span>
+              </div>
+
+              {detectedFilters.length > 0 && (
+                <div className="flex flex-wrap items-center gap-1.5 text-[11px] text-slate-600">
+                  <span className="font-semibold text-slate-700">Understood Filters:</span>
+                  {detectedFilters.map((f, idx) => (
+                    <span key={idx} className="bg-white px-2 py-0.5 rounded-md border border-slate-200 text-slate-700 font-medium">
+                      {f}
+                    </span>
+                  ))}
+                </div>
+              )}
             </div>
 
-            <Link href="/search" className="text-xs text-slate-500 hover:text-slate-900 underline">
+            <Link href="/search" className="text-xs text-slate-500 hover:text-slate-900 underline shrink-0">
               Clear search
             </Link>
           </div>

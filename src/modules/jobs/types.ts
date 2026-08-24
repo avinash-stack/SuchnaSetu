@@ -38,6 +38,8 @@ export interface JobFilterParams {
   isFeatured?: boolean;
   status?: string;
   search?: string;
+  minSalary?: number;
+  maxSalary?: number;
   page?: number;
   limit?: number;
 }

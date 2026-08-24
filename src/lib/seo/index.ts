@@ -634,3 +634,22 @@ export function buildNewsArticleJsonLd({
     },
   };
 }
+
+/**
+ * Builds Schema.org FAQPage JSON-LD for verified recruitment and examination FAQs.
+ */
+export function buildFaqJsonLd(faqs: Array<{ question: string; answer: string }>) {
+  if (!faqs || faqs.length === 0) return null;
+  return {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    mainEntity: faqs.map((faq) => ({
+      "@type": "Question",
+      name: faq.question,
+      acceptedAnswer: {
+        "@type": "Answer",
+        text: faq.answer,
+      },
+    })),
+  };
+}

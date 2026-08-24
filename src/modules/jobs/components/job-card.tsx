@@ -92,20 +92,32 @@ export function JobCard({ job: rawJob }: JobCardProps) {
           </div>
         </div>
 
+        {/* Grounded AI Match Reason Pills if present */}
+        {(job as any).matchExplanation?.reasons?.length > 0 && (
+          <div className="flex flex-wrap items-center gap-1 text-[10px] text-emerald-800 bg-emerald-50/80 px-2 py-1 rounded-sm border border-emerald-100">
+            <span className="font-bold text-emerald-700">Matches:</span>
+            {(job as any).matchExplanation.reasons.slice(0, 3).map((r: string, idx: number) => (
+              <span key={idx} className="bg-white px-1.5 py-0.5 rounded text-[9.5px] border border-emerald-200/80 font-medium text-emerald-900">
+                ✓ {r}
+              </span>
+            ))}
+          </div>
+        )}
+
         {/* Deadline Strip */}
         <div className="flex items-center justify-between text-[11px] pt-0.5">
           <div className="flex items-center gap-1.5 text-slate-500">
             <Calendar className="h-3.5 w-3.5 text-slate-400" />
             <span>{t("card.last_date")}:</span>
             <span className={`font-semibold ${isClosingSoon ? "text-amber-700 font-bold" : "text-slate-800"}`}>
-              {formatDate(job.application_end_date)}
+              {job.application_end_date ? formatDate(job.application_end_date) : "Refer Notice"}
             </span>
           </div>
 
           {isClosingSoon && (
-            <span className="inline-flex items-center gap-1 rounded-xs bg-[#FE8D01] px-1.5 py-0.5 text-[10px] font-bold text-white">
+            <span className="inline-flex items-center gap-1 text-[10px] font-bold text-amber-700 bg-amber-50 px-1.5 py-0.5 rounded border border-amber-200">
               <Clock className="h-3 w-3" />
-              <span>{t("card.closes")}</span>
+              <span>Closing Soon</span>
             </span>
           )}
         </div>

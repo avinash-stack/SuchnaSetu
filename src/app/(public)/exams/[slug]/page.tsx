@@ -1,11 +1,12 @@
 import { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { getPublicExamBySlug } from "@/modules/exams/service";
-import { constructMetadata, buildGovExamJsonLd, buildBreadcrumbJsonLd } from "@/lib/seo";
+import { constructMetadata, buildGovExamJsonLd, buildBreadcrumbJsonLd, buildFaqJsonLd } from "@/lib/seo";
 import { getCanonicalSiteUrl } from "@/lib/constants";
 import { resolveLocalizedExam } from "@/lib/i18n/localize";
 import { LanguageCode } from "@/lib/i18n/config";
 import { ExamDetailView } from "@/modules/exams/components/exam-detail-view";
+import { generateVerifiedExamFaqs } from "@/modules/exams/utils/generate-exam-faqs";
 
 export const revalidate = 300; // 5 minutes cache for high performance & instant mobile rendering
 
@@ -100,6 +101,10 @@ export default async function PublicExamDetailPage({ params }: ExamDetailPagePro
   ];
   const breadcrumbJsonLd = buildBreadcrumbJsonLd(breadcrumbs);
 
+  // Structured FAQPage schema
+  const verifiedFaqs = generateVerifiedExamFaqs(exam);
+  const faqJsonLd = buildFaqJsonLd(verifiedFaqs);
+
   return (
     <>
       {/* Schema.org Structured Data */}
@@ -111,6 +116,12 @@ export default async function PublicExamDetailPage({ params }: ExamDetailPagePro
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbJsonLd) }}
       />
+      {faqJsonLd && (
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(faqJsonLd) }}
+        />
+      )}
 
       {/* Multilingual Reactive Detail View */}
       <ExamDetailView exam={exam} />

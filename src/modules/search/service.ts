@@ -9,24 +9,34 @@ import { parseSearchQuery } from "./query-parser";
 /**
  * Cached taxonomy catalog for high-performance query token resolution.
  */
-const getCachedSearchTaxonomies = unstable_cache(
-  async () => {
-    const supabase = createPublicClient();
-    const [orgsRes, catsRes, qualsRes] = await Promise.all([
-      (supabase.from("organizations") as any).select("id, name, acronym, slug, state_code").eq("is_active", true),
-      (supabase.from("categories") as any).select("id, name, slug").eq("is_active", true),
-      (supabase.from("qualifications") as any).select("id, name, slug").eq("is_active", true),
-    ]);
+async function fetchTaxonomiesDirectly() {
+  const supabase = createPublicClient();
+  const [orgsRes, catsRes, qualsRes] = await Promise.all([
+    (supabase.from("organizations") as any).select("id, name, acronym, slug, state_code").eq("is_active", true),
+    (supabase.from("categories") as any).select("id, name, slug").eq("is_active", true),
+    (supabase.from("qualifications") as any).select("id, name, slug").eq("is_active", true),
+  ]);
 
-    return {
-      allOrgs: (orgsRes.data || []) as Array<{ id: string; name: string; acronym: string | null; slug: string; state_code: string | null }>,
-      allCats: (catsRes.data || []) as Array<{ id: string; name: string; slug: string }>,
-      allQuals: (qualsRes.data || []) as Array<{ id: string; name: string; slug: string }>,
-    };
-  },
+  return {
+    allOrgs: (orgsRes.data || []) as Array<{ id: string; name: string; acronym: string | null; slug: string; state_code: string | null }>,
+    allCats: (catsRes.data || []) as Array<{ id: string; name: string; slug: string }>,
+    allQuals: (qualsRes.data || []) as Array<{ id: string; name: string; slug: string }>,
+  };
+}
+
+const getCachedSearchTaxonomiesWrapped = unstable_cache(
+  fetchTaxonomiesDirectly,
   ["search-taxonomies-catalog-v2"],
   { revalidate: 300, tags: ["taxonomies"] }
 );
+
+async function getCachedSearchTaxonomies() {
+  try {
+    return await getCachedSearchTaxonomiesWrapped();
+  } catch {
+    return await fetchTaxonomiesDirectly();
+  }
+}
 
 /**
  * Cached/in-memory helper to resolve matching organization IDs and category IDs
@@ -303,6 +313,12 @@ export async function searchJobs(params: JobFilterParams = {}): Promise<{
   }
   if (params.isFeatured !== undefined) {
     query = query.eq("is_featured", params.isFeatured);
+  }
+  if (params.minSalary) {
+    query = query.or(`salary_max.gte.${params.minSalary},salary_min.gte.${params.minSalary}`);
+  }
+  if (params.maxSalary) {
+    query = query.lte("salary_min", params.maxSalary);
   }
   if (params.categorySlug || params.organizationSlug || params.qualificationSlug) {
     const { allCats, allOrgs, allQuals } = await getCachedSearchTaxonomies();
@@ -715,10 +731,11 @@ export async function searchBulletins(params: BulletinFilterParams = {}): Promis
  */
 export async function searchGlobal(
   rawQuery?: string,
-  options: { limitPerType?: number } = {}
+  options: { limitPerType?: number; page?: number } = {}
 ): Promise<GlobalSearchResult> {
   const query = (rawQuery || "").trim();
   const limitPerType = options.limitPerType || 6;
+  const page = options.page || 1;
 
   if (!query) {
     return {
