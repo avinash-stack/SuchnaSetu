@@ -13,13 +13,13 @@ export const hi: Record<TranslationKey, string> = {
 
   // Navigation Items
   "nav.home": "होम",
-  "nav.jobs": "सरकारी नौकरी",
-  "nav.exams": "परीक्षाएं एवं तिथियां",
+  "nav.jobs": "सरकारी नौकरियाँ",
+  "nav.exams": "परीक्षाएँ",
   "nav.admit_cards": "प्रवेश पत्र",
-  "nav.results": "परीक्षा परिणाम",
-  "nav.news": "रोजगार समाचार",
-  "nav.directory": "प्राधिकरण निर्देशिका",
-  "nav.search_notices": "सूचनाएं खोजें",
+  "nav.results": "परिणाम",
+  "nav.news": "रोज़गार समाचार",
+  "nav.directory": "निर्देशिका",
+  "nav.search_notices": "सूचना खोजें",
 
   // Hero & Search
   "hero.title": "राष्ट्रीय सार्वजनिक सूचना एवं आधिकारिक राजपत्र पोर्टल",

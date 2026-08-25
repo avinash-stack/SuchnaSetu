@@ -15,6 +15,10 @@ import {
   Search,
   ChevronRight,
   ShieldCheck,
+  Building2,
+  KeyRound,
+  BookOpen,
+  Sparkles,
 } from "lucide-react";
 
 interface NavConfigItem {
@@ -24,14 +28,22 @@ interface NavConfigItem {
   badgeColor?: string;
 }
 
-const PUBLIC_NAV_CONFIG: NavConfigItem[] = [
+// 6 Core Navigation Links
+const MAIN_NAV_CONFIG: NavConfigItem[] = [
   { key: "nav.home", href: "/" },
   { key: "nav.jobs", href: "/jobs" },
   { key: "nav.exams", href: "/exams" },
   { key: "nav.admit_cards", href: "/admit-cards", badge: "Live", badgeColor: "bg-[#FE8D01] text-white" },
   { key: "nav.results", href: "/results", badge: "New", badgeColor: "bg-emerald-600 text-white" },
   { key: "nav.news", href: "/news" },
-  { key: "nav.directory", href: "/directory" },
+];
+
+// Additional portals for Mobile Drawer
+const MOBILE_EXTRA_PORTALS = [
+  { href: "/directory", label: "Verified Directory", icon: Building2 },
+  { href: "/answer-keys", label: "Official Answer Keys", icon: KeyRound },
+  { href: "/syllabus", label: "Exam Syllabus & Pattern", icon: BookOpen },
+  { href: "/coming-soon", label: "Advance Recruitment Notices", icon: Sparkles },
 ];
 
 export function PublicHeader() {
@@ -45,134 +57,182 @@ export function PublicHeader() {
   }, [pathname]);
 
   return (
-    <header className="sticky top-0 z-50 w-full bg-white/98 backdrop-blur-md border-b border-slate-200 shadow-xs">
-      <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8 gap-4">
-        {/* Brand Emblem & Title */}
-        <Link href="/" className="flex items-center gap-3 group shrink-0">
-          <Image
-            src="/brand/logo-icon.png"
-            alt="SuchnaSetu Logo"
-            width={36}
-            height={36}
-            className="h-9 w-9 object-contain transition-transform group-hover:scale-105"
-            priority
-          />
-          <div className="flex items-center gap-2">
-            <span className="text-xl sm:text-2xl font-extrabold tracking-tight text-[#013089] font-heading whitespace-nowrap">
-              {SITE_CONFIG.name}
-            </span>
-            <span className="hidden sm:inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider bg-[#013089]/10 text-[#013089] border border-[#013089]/20">
-              <ShieldCheck className="h-3.5 w-3.5 text-emerald-600" />
-              <span>Official</span>
-            </span>
-          </div>
-        </Link>
-
-        {/* Desktop Navigation Links */}
-        <nav className="hidden lg:flex items-center gap-1.5">
-          {PUBLIC_NAV_CONFIG.map((item) => {
-            const isActive =
-              item.href === "/"
-                ? pathname === "/"
-                : pathname.startsWith(item.href);
-
-            return (
-              <Link
-                key={item.href}
-                href={item.href}
-                className={`relative px-3.5 py-2 rounded-lg text-sm sm:text-[15px] font-bold transition-all whitespace-nowrap flex items-center gap-1.5 ${
-                  isActive
-                    ? "bg-[#013089] text-white shadow-xs"
-                    : "text-slate-700 hover:text-[#013089] hover:bg-slate-100"
-                }`}
-              >
-                <span>{t(item.key)}</span>
-                {item.badge && (
-                  <span
-                    className={`text-[9px] font-extrabold px-2 py-0.5 rounded-full uppercase tracking-wider leading-none ${
-                      isActive ? "bg-white text-[#013089]" : item.badgeColor
-                    }`}
-                  >
-                    {item.badge}
-                  </span>
-                )}
-              </Link>
-            );
-          })}
-        </nav>
-
-        {/* Right Actions: Quick Search + Language Selector */}
-        <div className="flex items-center gap-2.5 shrink-0">
-          <Link
-            href="/search"
-            className="hidden sm:inline-flex items-center gap-2 px-3.5 py-1.5 rounded-lg border border-slate-200 bg-slate-50 hover:bg-slate-100 text-sm font-semibold text-slate-700 transition-colors shadow-2xs"
-          >
-            <Search className="h-4 w-4 text-[#013089]" />
-            <span>{t("nav.search_notices")}</span>
+    <header className="fixed top-3 left-0 right-0 z-50 pointer-events-none px-3 sm:px-6 lg:px-8">
+      <div className="mx-auto max-w-7xl pointer-events-auto">
+        {/* Floating Capsule Island Navbar */}
+        <div className="rounded-full bg-white/95 backdrop-blur-2xl border border-slate-200/90 shadow-xl shadow-slate-900/10 px-3 sm:px-4 py-2 flex items-center justify-between gap-2 sm:gap-4 transition-all">
+          {/* ================================================================= */}
+          {/* 1. Left: Circular Brand Logo & Title */}
+          {/* ================================================================= */}
+          <Link href="/" className="flex items-center gap-2.5 group shrink-0">
+            <div className="h-9 w-9 rounded-full bg-gradient-to-tr from-[#FE8D01] to-[#013089] p-[2px] shadow-xs flex items-center justify-center shrink-0 transition-transform group-hover:scale-105">
+              <div className="h-full w-full rounded-full bg-white flex items-center justify-center overflow-hidden">
+                <Image
+                  src="/brand/logo-icon.png"
+                  alt="SuchnaSetu Logo"
+                  width={28}
+                  height={28}
+                  className="h-7 w-7 object-contain"
+                  priority
+                />
+              </div>
+            </div>
+            <div className="flex flex-col">
+              <span className="text-base sm:text-lg font-black tracking-tight text-[#013089] font-heading leading-none">
+                {SITE_CONFIG.name}
+              </span>
+              <span className="text-[8.5px] sm:text-[9px] font-extrabold uppercase tracking-widest text-[#FE8D01] mt-0.5 leading-none">
+                Official Gazette
+              </span>
+            </div>
           </Link>
 
-          <LanguageSelector variant="navbar" />
-
-          {/* Mobile Menu Hamburger */}
-          <button
-            type="button"
-            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-            className="lg:hidden inline-flex items-center justify-center p-2 rounded-lg text-slate-700 hover:bg-slate-100 border border-slate-200"
-            aria-label="Toggle navigation menu"
-          >
-            {mobileMenuOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6 text-[#013089]" />}
-          </button>
-        </div>
-      </div>
-
-      {/* Mobile Drawer */}
-      {mobileMenuOpen && (
-        <div className="lg:hidden border-t border-slate-200 bg-white px-4 pt-3 pb-6 space-y-3 shadow-xl animate-in slide-in-from-top-1">
-          <div className="space-y-1">
-            {PUBLIC_NAV_CONFIG.map((item) => {
+          {/* ================================================================= */}
+          {/* 2. Center: Inner Pill Navigation Track */}
+          {/* ================================================================= */}
+          <nav className="hidden lg:flex items-center bg-slate-100/80 border border-slate-200/70 rounded-full p-1 shadow-2xs gap-0.5 shrink-0" aria-label="Main Navigation">
+            {MAIN_NAV_CONFIG.map((item) => {
               const isActive =
                 item.href === "/"
                   ? pathname === "/"
-                  : pathname.startsWith(item.href);
+                  : pathname === item.href || pathname.startsWith(item.href);
 
               return (
                 <Link
                   key={item.href}
                   href={item.href}
-                  className={`flex items-center justify-between px-4 py-2.5 text-base font-bold rounded-lg transition-colors ${
+                  className={`relative px-3.5 py-1 rounded-full text-xs xl:text-[13px] font-bold transition-all whitespace-nowrap flex items-center gap-1.5 shrink-0 ${
                     isActive
-                      ? "bg-[#013089] text-white"
-                      : "text-slate-800 hover:bg-slate-50"
+                      ? "bg-white text-[#013089] shadow-xs font-extrabold"
+                      : "text-slate-600 hover:text-slate-900 hover:bg-white/60 font-semibold"
                   }`}
                 >
-                  <div className="flex items-center gap-2">
-                    <span>{t(item.key)}</span>
-                    {item.badge && (
-                      <span
-                        className={`text-[9px] font-extrabold px-2 py-0.5 rounded-full uppercase tracking-wider ${
-                          isActive ? "bg-white text-[#013089]" : item.badgeColor
-                        }`}
-                      >
-                        {item.badge}
-                      </span>
-                    )}
-                  </div>
-                  <ChevronRight className={`h-5 w-5 ${isActive ? "text-white/70" : "text-slate-400"}`} />
+                  <span>{t(item.key)}</span>
+                  {item.badge && (
+                    <span
+                      className={`text-[8px] font-extrabold px-1.5 py-0.2 rounded-full uppercase tracking-wider leading-none shrink-0 ${
+                        isActive ? "bg-[#013089] text-white" : item.badgeColor
+                      }`}
+                    >
+                      {item.badge}
+                    </span>
+                  )}
                 </Link>
               );
             })}
-          </div>
+          </nav>
 
-          <div className="pt-3 border-t border-slate-100">
-            <Link href="/search" className="block w-full">
-              <Button variant="brand" size="lg" className="w-full justify-center text-sm font-bold h-11 gap-2">
-                <Search className="h-4 w-4" />
-                <span>{t("nav.search_notices")}</span>
-              </Button>
+          {/* ================================================================= */}
+          {/* 3. Right: Saffron Gradient Search CTA + Language Selector + Menu */}
+          {/* ================================================================= */}
+          <div className="flex items-center gap-2 shrink-0">
+            {/* Vibrant Search CTA Pill */}
+            <Link
+              href="/search"
+              className="inline-flex items-center gap-1.5 px-3.5 sm:px-4 py-1.5 rounded-full bg-gradient-to-r from-[#FE8D01] to-[#E07B00] hover:from-[#E07B00] hover:to-[#C66D00] text-white font-bold text-xs sm:text-[13px] shadow-xs shadow-amber-500/25 transition-all transform hover:scale-[1.02] active:scale-[0.98] shrink-0"
+              title={t("nav.search_notices")}
+              aria-label={t("nav.search_notices")}
+            >
+              <Search className="h-3.5 w-3.5" />
+              <span className="hidden sm:inline-block whitespace-nowrap">{t("nav.search_notices")}</span>
             </Link>
+
+            {/* Multilingual Selector (Capsule Variant) */}
+            <LanguageSelector variant="capsule" className="shrink-0" />
+
+            {/* Mobile / Tablet Menu Toggle */}
+            <button
+              type="button"
+              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+              className="lg:hidden h-9 w-9 rounded-full inline-flex items-center justify-center text-slate-700 hover:bg-slate-100 border border-slate-200/90 transition-colors shrink-0"
+              aria-label="Toggle navigation menu"
+              aria-expanded={mobileMenuOpen}
+            >
+              {mobileMenuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5 text-[#013089]" />}
+            </button>
           </div>
         </div>
-      )}
+
+        {/* ================================================================= */}
+        {/* 4. Mobile & Tablet Drawer Menu (Floating Rounded Card) */}
+        {/* ================================================================= */}
+        {mobileMenuOpen && (
+          <div className="lg:hidden mt-2 mx-auto max-w-lg rounded-3xl border border-slate-200/90 bg-white/98 backdrop-blur-2xl px-5 py-4 shadow-2xl space-y-4 animate-in slide-in-from-top-2 fade-in-50">
+            {/* Main Navigation Links */}
+            <div className="space-y-1">
+              {MAIN_NAV_CONFIG.map((item) => {
+                const isActive =
+                  item.href === "/"
+                    ? pathname === "/"
+                    : pathname.startsWith(item.href);
+
+                return (
+                  <Link
+                    key={item.href}
+                    href={item.href}
+                    className={`flex items-center justify-between px-3.5 py-2.5 text-[14px] sm:text-[15px] font-bold rounded-2xl transition-colors ${
+                      isActive
+                        ? "bg-[#013089] text-white"
+                        : "text-slate-800 hover:bg-slate-50"
+                    }`}
+                  >
+                    <div className="flex items-center gap-2">
+                      <span>{t(item.key)}</span>
+                      {item.badge && (
+                        <span
+                          className={`text-[9px] font-extrabold px-2 py-0.5 rounded-full uppercase tracking-wider ${
+                            isActive ? "bg-white text-[#013089]" : item.badgeColor
+                          }`}
+                        >
+                          {item.badge}
+                        </span>
+                      )}
+                    </div>
+                    <ChevronRight className={`h-4 w-4 ${isActive ? "text-white/70" : "text-slate-400"}`} />
+                  </Link>
+                );
+              })}
+            </div>
+
+            {/* Quick Portals & Directory */}
+            <div className="pt-3 border-t border-slate-100">
+              <div className="px-3 pb-2 text-[10.5px] font-bold uppercase tracking-wider text-slate-400">
+                Civic Portals &amp; Directory
+              </div>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-1.5">
+                {MOBILE_EXTRA_PORTALS.map((hub) => {
+                  const HubIcon = hub.icon;
+                  const isHubActive = pathname.startsWith(hub.href);
+                  return (
+                    <Link
+                      key={hub.href}
+                      href={hub.href}
+                      className={`flex items-center gap-2 px-3 py-2 rounded-xl text-xs font-semibold transition-colors ${
+                        isHubActive
+                          ? "bg-[#013089]/10 text-[#013089]"
+                          : "text-slate-600 hover:bg-slate-50"
+                      }`}
+                    >
+                      <HubIcon className="h-3.5 w-3.5 text-slate-500 shrink-0" />
+                      <span>{hub.label}</span>
+                    </Link>
+                  );
+                })}
+              </div>
+            </div>
+
+            {/* Mobile Search CTA */}
+            <div className="pt-2 border-t border-slate-100">
+              <Link href="/search" className="block w-full">
+                <Button variant="brand" size="lg" className="w-full justify-center text-sm font-bold h-11 gap-2 rounded-full shadow-md shadow-amber-500/20">
+                  <Search className="h-4 w-4" />
+                  <span>{t("nav.search_notices")}</span>
+                </Button>
+              </Link>
+            </div>
+          </div>
+        )}
+      </div>
     </header>
   );
 }

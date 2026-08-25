@@ -57,7 +57,7 @@ export function PublicFooter() {
             <h4 className="text-sm font-bold uppercase tracking-wider text-slate-200 border-b border-slate-800 pb-2">
               {t("footer.public_modules")}
             </h4>
-            <ul className="mt-4 space-y-2.5 text-sm">
+            <ul className="mt-4 space-y-2 text-xs sm:text-[13px]">
               <li>
                 <Link href="/jobs" className="hover:text-white transition-colors flex items-center justify-between">
                   <span>{t("nav.jobs")}</span>
@@ -71,15 +71,40 @@ export function PublicFooter() {
                 </Link>
               </li>
               <li>
+                <Link href="/admit-cards" className="hover:text-white transition-colors flex items-center justify-between">
+                  <span>Admit Cards &amp; Hall Tickets</span>
+                  <span className="rounded bg-[#FE8D01] px-1.5 py-0.2 text-[10px] text-white font-bold">Live</span>
+                </Link>
+              </li>
+              <li>
+                <Link href="/results" className="hover:text-white transition-colors flex items-center justify-between">
+                  <span>Results &amp; Merit Gazettes</span>
+                  <span className="rounded bg-emerald-600 px-1.5 py-0.2 text-[10px] text-white font-bold">New</span>
+                </Link>
+              </li>
+              <li>
                 <Link href="/news" className="hover:text-white transition-colors flex items-center justify-between">
                   <span>{t("nav.news")}</span>
-                  <span className="rounded bg-[#013089] px-1.5 py-0.2 text-[10px] text-white font-bold">Live</span>
+                </Link>
+              </li>
+              <li>
+                <Link href="/answer-keys" className="hover:text-white transition-colors flex items-center justify-between">
+                  <span>Official Answer Keys</span>
+                </Link>
+              </li>
+              <li>
+                <Link href="/syllabus" className="hover:text-white transition-colors flex items-center justify-between">
+                  <span>Exam Patterns &amp; Syllabi</span>
+                </Link>
+              </li>
+              <li>
+                <Link href="/coming-soon" className="hover:text-white transition-colors flex items-center justify-between">
+                  <span>Advance Notices / Upcoming</span>
                 </Link>
               </li>
               <li>
                 <Link href="/directory" className="hover:text-white transition-colors flex items-center justify-between">
-                  <span>{t("nav.directory")}</span>
-                  <span className="rounded bg-[#013089] px-1.5 py-0.2 text-[10px] text-white font-bold">Live</span>
+                  <span>Verified Organization Directory</span>
                 </Link>
               </li>
             </ul>

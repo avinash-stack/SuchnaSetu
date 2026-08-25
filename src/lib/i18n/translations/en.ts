@@ -12,7 +12,7 @@ export const en = {
   // Navigation Items
   "nav.home": "Home",
   "nav.jobs": "Govt Jobs",
-  "nav.exams": "Exams & Notifications",
+  "nav.exams": "Exams",
   "nav.admit_cards": "Admit Cards",
   "nav.results": "Results",
   "nav.news": "Employment News",

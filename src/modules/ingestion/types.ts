@@ -137,3 +137,58 @@ export interface NormalizedBulletinNotice {
   isBreaking?: boolean;
   publishedAt?: Date;
 }
+
+/**
+ * Durable Sequential Batch Orchestration Types
+ */
+export type SourceExecutionOutcome = "SUCCESS" | "FAILED" | "TIMEOUT" | "SKIPPED_LOCKED";
+export type BatchExecutionStatus = "COMPLETED" | "FAILED" | "PARTIAL";
+
+export interface SourceExecutionResult {
+  sourceId: string;
+  sourceCode: string;
+  sourceName: string;
+  targetModule: string;
+  status: SourceExecutionOutcome;
+  jobId?: string;
+  stats?: IngestionStats;
+  durationMs: number;
+  error?: string;
+  errorCategory?: IngestionErrorCategory;
+}
+
+export interface SyncBatchResult {
+  batchIndex: number;
+  batchSize: number;
+  totalBatches: number;
+  status: BatchExecutionStatus;
+  startedAt: string;
+  completedAt: string;
+  durationMs: number;
+  sources: SourceExecutionResult[];
+  summary: {
+    total: number;
+    successful: number;
+    failed: number;
+    timedOut: number;
+    skippedLocked: number;
+  };
+}
+
+export interface DurableSyncSummary {
+  executionType: "durable_sequential_batch_sync";
+  executedAt: string;
+  totalSources: number;
+  batchesTotal: number;
+  batchesCompleted: number;
+  successfulSources: number;
+  failedSources: number;
+  timedOutSources: number;
+  skippedLockedSources: number;
+  overallDurationMs: number;
+  isComplete: boolean;
+  nextBatchIndex?: number | null;
+  summary: IngestionStats;
+  batchResults: SyncBatchResult[];
+  results: SourceExecutionResult[];
+}

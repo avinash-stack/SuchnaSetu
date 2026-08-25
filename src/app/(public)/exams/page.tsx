@@ -92,21 +92,21 @@ export default async function PublicExamsPage({ searchParams }: ExamsPageProps) 
       />
       <div className="min-h-screen">
       {/* 1. Compact Sticky Top Header & Search Bar */}
-      <div className="sticky top-14 z-30 bg-white/95 backdrop-blur-md border-b border-slate-200/80 shadow-2xs py-2.5 px-4 sm:px-6 lg:px-8">
+      <div className="sticky top-[68px] sm:top-[76px] z-30 bg-white/95 backdrop-blur-md border-b border-slate-200/80 shadow-2xs py-2.5 px-4 sm:px-6 lg:px-8">
         <div className="mx-auto max-w-7xl flex flex-col sm:flex-row sm:items-center justify-between gap-2.5">
           <div className="flex items-center gap-2 shrink-0">
             <Calendar className="h-4 w-4 text-[#013089]" />
             <h1 className="text-base sm:text-lg font-bold tracking-tight text-slate-900 font-heading whitespace-nowrap">
-              Examination Calendar
+              Examinations
             </h1>
             <Badge variant="navy" className="text-[10px] py-0.5 px-2">
-              {total} Schedules
+              {total} Active
             </Badge>
           </div>
 
           <div className="w-full sm:max-w-lg flex items-center gap-2">
             <div className="flex-1">
-              <SearchBar placeholder="Search exam name, commission (UPSC, SSC, BPSC), or code..." />
+              <SearchBar placeholder="Search examination, commission (UPSC, BPSC), or code..." />
             </div>
             {params.search && (
               <Link
@@ -126,7 +126,7 @@ export default async function PublicExamsPage({ searchParams }: ExamsPageProps) 
       <div className="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8">
         <div className="grid grid-cols-1 gap-6 lg:grid-cols-4 items-start">
           {/* Sticky Filter Sidebar */}
-          <aside className="w-full min-w-0 lg:sticky lg:top-28 lg:max-h-[calc(100vh-8rem)] lg:overflow-y-auto pr-1 pb-4">
+          <aside className="w-full min-w-0 lg:sticky lg:top-36 lg:max-h-[calc(100vh-10rem)] lg:overflow-y-auto pr-1 pb-4">
             <ExamFilterSidebar
               categories={taxonomies.categories}
               organizations={taxonomies.organizations}

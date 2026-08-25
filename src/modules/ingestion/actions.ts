@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { requireAdmin } from "@/lib/auth";
 import { IngestionPipelineEngine } from "./core/pipeline";
+import { BatchOrchestrator } from "./core/batch-orchestrator";
 import { SourceAdapterRegistry } from "./core/registry";
 import { IngestionStats, ImportSource } from "./types";
 import { getSchedulerConfig } from "./config/scheduler.config";
@@ -190,8 +191,7 @@ async function runWithTimeout<T>(promise: Promise<T>, ms: number, fallback: T): 
 
 /**
  * Executes a bulk synchronization across all enabled sources or specified IDs.
- * Utilizes bounded parallel chunks (concurrency 5) with individual source timeouts
- * to prevent HTTP connection timeouts and ensure responsive admin responses.
+ * Utilizes Durable Sequential Batch Orchestration to prevent HTTP connection timeouts.
  */
 export async function bulkSyncSourcesAction(sourceIds?: string[]): Promise<{
   success: boolean;
@@ -204,7 +204,7 @@ export async function bulkSyncSourcesAction(sourceIds?: string[]): Promise<{
     const supabase = createAdminClient();
 
     let query = (supabase.from("import_sources") as any)
-      .select("id, code, name, is_enabled")
+      .select("*")
       .eq("is_enabled", true);
 
     if (sourceIds && sourceIds.length > 0) {
@@ -221,38 +221,16 @@ export async function bulkSyncSourcesAction(sourceIds?: string[]): Promise<{
       };
     }
 
-    const results: Array<{ sourceId: string; sourceCode: string; success: boolean; error?: string }> = [];
-    let totalSynced = 0;
-    let totalErrors = 0;
+    // Execute via Durable Sequential Batch Orchestrator
+    const orchestrator = new BatchOrchestrator({
+      batchSize: 4,
+      sourceTimeoutMs: 10000,
+      maxFunctionDurationMs: 240000,
+    });
 
-    // Process sources in parallel batches of 5
-    const CHUNK_SIZE = 5;
-    for (let i = 0; i < sources.length; i += CHUNK_SIZE) {
-      const chunk = sources.slice(i, i + CHUNK_SIZE);
-      const chunkPromises = chunk.map(async (src: any) => {
-        try {
-          const res = await runWithTimeout(
-            triggerImportJob(src.id),
-            8500,
-            { success: false, error: `Sync for ${src.code} timed out (safe skip)` }
-          );
-          if (res.success) {
-            return { sourceId: src.id, sourceCode: src.code, success: true };
-          } else {
-            return { sourceId: src.id, sourceCode: src.code, success: false, error: res.error };
-          }
-        } catch (e: any) {
-          return { sourceId: src.id, sourceCode: src.code, success: false, error: e?.message || "Sync failed" };
-        }
-      });
-
-      const chunkResults = await Promise.all(chunkPromises);
-      for (const cr of chunkResults) {
-        if (cr.success) totalSynced++;
-        else totalErrors++;
-        results.push(cr);
-      }
-    }
+    const syncSummary = await orchestrator.orchestrateSequentialSync(sources as ImportSource[], {
+      triggerType: "manual",
+    });
 
     revalidatePath("/admin/sources");
     revalidatePath("/admin/operations");
@@ -263,10 +241,15 @@ export async function bulkSyncSourcesAction(sourceIds?: string[]): Promise<{
     revalidatePath("/");
 
     return {
-      success: totalErrors === 0 || totalSynced > 0,
-      totalSynced,
-      totalErrors,
-      results,
+      success: syncSummary.failedSources === 0 || syncSummary.successfulSources > 0,
+      totalSynced: syncSummary.successfulSources,
+      totalErrors: syncSummary.failedSources + syncSummary.timedOutSources,
+      results: syncSummary.results.map((r) => ({
+        sourceId: r.sourceId,
+        sourceCode: r.sourceCode,
+        success: r.status === "SUCCESS",
+        error: r.error,
+      })),
     };
   } catch (err: any) {
     return {

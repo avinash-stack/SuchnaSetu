@@ -1,16 +1,16 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createAdminClient } from "@/lib/supabase/admin";
-import { IngestionPipelineEngine } from "@/modules/ingestion/core/pipeline";
-import { isSourceActivelyRunning } from "@/modules/ingestion/actions";
+import { BatchOrchestrator } from "@/modules/ingestion/core/batch-orchestrator";
 import { getSchedulerConfig, getNextScheduledSync } from "@/modules/ingestion/config/scheduler.config";
 import { SourceAdapterRegistry } from "@/modules/ingestion/core/registry";
+import { revalidatePath } from "next/cache";
 
 export const maxDuration = 300; // 5 minutes max duration for serverless cron execution
 export const dynamic = "force-dynamic";
 
 /**
  * Automated Cron Execution Handler for All Enabled Government Jobs, Exams, and News Sources.
- * Invoked 3 times daily at 08:00 AM IST (02:30 UTC), 04:00 PM IST (10:30 UTC), and 01:30 AM IST (20:00 UTC).
+ * Utilizes Durable Sequential Batch Orchestration to eliminate Vercel serverless execution timeouts.
  */
 export async function GET(request: NextRequest) {
   return handleSync(request);
@@ -21,10 +21,9 @@ export async function POST(request: NextRequest) {
 }
 
 async function handleSync(request: NextRequest) {
-  const startTime = Date.now();
   const config = getSchedulerConfig();
 
-  // 1. Security Verification: Validate CRON_SECRET or Vercel Cron Header
+  // 1. Security Verification: Validate CRON_SECRET, API Key, or Vercel Cron Header
   const authHeader = request.headers.get("authorization");
   const cronSecret = process.env.CRON_SECRET;
   const isVercelCron = request.headers.get("x-vercel-cron") === "1";
@@ -51,7 +50,7 @@ async function handleSync(request: NextRequest) {
 
   const supabase = createAdminClient();
 
-  // 2. Fetch all active and enabled sources across Jobs, Exams, and Bulletins
+  // 2. Fetch all active and enabled sources deterministically
   const { data: sources, error: sourcesError } = await (supabase.from("import_sources") as any)
     .select("id, code, name, target_module, adapter_key, is_enabled")
     .eq("is_enabled", true)
@@ -69,7 +68,7 @@ async function handleSync(request: NextRequest) {
     );
   }
 
-  // 3. Pre-execution Adapter Registry Validation: Ensure all enabled sources resolve to registered adapters
+  // 3. Pre-execution Adapter Registry Validation
   const unregisteredSources = sources.filter((src: any) => !SourceAdapterRegistry.getAdapter(src.adapter_key));
   if (unregisteredSources.length > 0) {
     console.error(
@@ -78,176 +77,81 @@ async function handleSync(request: NextRequest) {
     );
   }
 
-  const pipeline = new IngestionPipelineEngine();
-  const results: Array<{
-    sourceId: string;
-    sourceCode: string;
-    sourceName: string;
-    targetModule: string;
-    status: "completed" | "failed" | "skipped_locked";
-    stats?: any;
-    durationMs: number;
-    error?: string;
-  }> = [];
+  // Parse optional batch pagination controls from query params
+  const searchParams = request.nextUrl.searchParams;
+  const batchSize = parseInt(searchParams.get("batchSize") || "4", 10) || 4;
+  const startBatchIndex = parseInt(searchParams.get("batchIndex") || "0", 10) || 0;
+  const maxBatchesToRun = searchParams.get("maxBatches")
+    ? parseInt(searchParams.get("maxBatches")!, 10)
+    : undefined;
 
-  let totalInserted = 0;
-  let totalUpdated = 0;
-  let totalSkipped = 0;
-  let totalFailed = 0;
-  let totalExtracted = 0;
+  // 4. Execute with Durable Sequential Batch Orchestrator
+  const orchestrator = new BatchOrchestrator({
+    batchSize,
+    sourceTimeoutMs: 10000, // 10s per-source timeout
+    maxFunctionDurationMs: 250000, // 250s safe time-budget guard within 300s limit
+  });
 
-  // Helper to enforce maximum per-source execution timeout during cron runs
-  const runWithTimeout = async <T>(promise: Promise<T>, ms: number, fallback: T): Promise<T> => {
-    let timer: NodeJS.Timeout;
-    const timeoutPromise = new Promise<T>((resolve) => {
-      timer = setTimeout(() => resolve(fallback), ms);
-    });
-    return Promise.race([
-      promise.then((res) => {
-        clearTimeout(timer);
-        return res;
-      }),
-      timeoutPromise,
-    ]);
-  };
+  const syncSummary = await orchestrator.orchestrateSequentialSync(sources, {
+    startBatchIndex,
+    maxBatchesToRun,
+    triggerType: "scheduled",
+  });
 
-  // 4. Execute synchronization in bounded parallel batches (concurrency: 4) with per-source isolation
-  const BATCH_SIZE = 4;
-  for (let i = 0; i < sources.length; i += BATCH_SIZE) {
-    const batch = sources.slice(i, i + BATCH_SIZE);
-    const batchPromises = batch.map(async (src: any) => {
-      const sourceStart = Date.now();
-
-      // Check concurrency lock: prevent concurrent sync if this source is already in-flight
-      const isRunning = await isSourceActivelyRunning(src.id);
-      if (isRunning) {
-        return {
-          sourceId: src.id,
-          sourceCode: src.code,
-          sourceName: src.name,
-          targetModule: src.target_module,
-          status: "skipped_locked" as const,
-          durationMs: Date.now() - sourceStart,
-          error: "Source is already running an active sync job. Concurrency lock applied.",
-        };
-      }
-
-      // Create automated import_job record
-      const { data: job, error: jobErr } = await (supabase.from("import_jobs") as any)
-        .insert({
-          source_id: src.id,
-          trigger_type: "scheduled",
-          status: "running",
-          started_at: new Date().toISOString(),
-        })
-        .select("id")
-        .single();
-
-      if (jobErr || !job) {
-        return {
-          sourceId: src.id,
-          sourceCode: src.code,
-          sourceName: src.name,
-          targetModule: src.target_module,
-          status: "failed" as const,
-          durationMs: Date.now() - sourceStart,
-          error: `Failed to create job record: ${jobErr?.message}`,
-        };
-      }
-
-      const jobId = job.id;
-
-      try {
-        // Execute with safe 12-second per-source timeout
-        const stats = await runWithTimeout(
-          pipeline.executeJob(jobId),
-          12000,
-          null
-        );
-
-        const sourceDuration = Date.now() - sourceStart;
-
-        if (!stats) {
-          // Timeout occurred
-          await (supabase.from("import_jobs") as any)
-            .update({
-              status: "failed",
-              completed_at: new Date().toISOString(),
-              error_message: "Execution timed out (exceeded 12s safe threshold)",
-            })
-            .eq("id", jobId);
-
-          return {
-            sourceId: src.id,
-            sourceCode: src.code,
-            sourceName: src.name,
-            targetModule: src.target_module,
-            status: "failed" as const,
-            durationMs: sourceDuration,
-            error: "Source execution timed out",
-          };
-        }
-
-        return {
-          sourceId: src.id,
-          sourceCode: src.code,
-          sourceName: src.name,
-          targetModule: src.target_module,
-          status: "completed" as const,
-          stats,
-          durationMs: sourceDuration,
-        };
-      } catch (execErr: any) {
-        const sourceDuration = Date.now() - sourceStart;
-        return {
-          sourceId: src.id,
-          sourceCode: src.code,
-          sourceName: src.name,
-          targetModule: src.target_module,
-          status: "failed" as const,
-          durationMs: sourceDuration,
-          error: execErr?.message || "Execution exception occurred during pipeline run",
-        };
-      }
-    });
-
-    const batchResults = await Promise.all(batchPromises);
-
-    for (const res of batchResults) {
-      if (res.status === "completed" && res.stats) {
-        totalExtracted += res.stats.totalExtracted || 0;
-        totalInserted += res.stats.totalInserted || 0;
-        totalUpdated += res.stats.totalUpdated || 0;
-        totalSkipped += res.stats.totalSkipped || 0;
-        totalFailed += res.stats.totalFailed || 0;
-      } else if (res.status === "failed") {
-        totalFailed++;
-      }
-      results.push(res);
+  // 5. Trigger cache revalidation on successful ingestion
+  if (syncSummary.summary.totalInserted > 0 || syncSummary.summary.totalUpdated > 0) {
+    try {
+      revalidatePath("/jobs");
+      revalidatePath("/exams");
+      revalidatePath("/news");
+      revalidatePath("/sitemap.xml");
+      revalidatePath("/");
+    } catch (revalErr) {
+      console.warn("Revalidation notice:", revalErr);
     }
   }
 
-  const overallDurationMs = Date.now() - startTime;
   const nextSync = getNextScheduledSync();
 
+  // 6. Return response compatible with existing API contract + enhanced batch details
   return NextResponse.json({
     success: true,
-    executionType: "automated_scheduled_sync",
-    executedAt: new Date().toISOString(),
-    overallDurationMs,
-    totalSourcesEvaluated: sources.length,
+    executionType: syncSummary.executionType,
+    executedAt: syncSummary.executedAt,
+    overallDurationMs: syncSummary.overallDurationMs,
+    totalSourcesEvaluated: syncSummary.totalSources,
+    batchExecution: {
+      batchesTotal: syncSummary.batchesTotal,
+      batchesCompleted: syncSummary.batchesCompleted,
+      batchSize,
+      isComplete: syncSummary.isComplete,
+      nextBatchIndex: syncSummary.nextBatchIndex,
+      successfulSources: syncSummary.successfulSources,
+      failedSources: syncSummary.failedSources,
+      timedOutSources: syncSummary.timedOutSources,
+      skippedLockedSources: syncSummary.skippedLockedSources,
+    },
     summary: {
-      totalExtracted,
-      totalInserted,
-      totalUpdated,
-      totalSkipped,
-      totalFailed,
+      totalExtracted: syncSummary.summary.totalExtracted,
+      totalInserted: syncSummary.summary.totalInserted,
+      totalUpdated: syncSummary.summary.totalUpdated,
+      totalSkipped: syncSummary.summary.totalSkipped,
+      totalFailed: syncSummary.summary.totalFailed,
     },
     nextScheduledSync: {
       formattedIST: nextSync.formattedIST,
       timeRemaining: nextSync.timeRemaining,
       dateUTC: nextSync.date.toISOString(),
     },
-    results,
+    results: syncSummary.results.map((r) => ({
+      sourceId: r.sourceId,
+      sourceCode: r.sourceCode,
+      sourceName: r.sourceName,
+      targetModule: r.targetModule,
+      status: r.status === "SUCCESS" ? "completed" : r.status === "SKIPPED_LOCKED" ? "skipped_locked" : "failed",
+      stats: r.stats,
+      durationMs: r.durationMs,
+      error: r.error,
+    })),
   });
 }
