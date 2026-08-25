@@ -191,13 +191,53 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       }
     }
 
-    // 6. All Published News Bulletins
+    // 6. News Categories and Search Hub
+    const NEWS_CATEGORIES_SLUGS = [
+      "india", "states", "education", "governance", "business",
+      "technology", "politics", "world", "health", "sports", "entertainment"
+    ];
+    NEWS_CATEGORIES_SLUGS.forEach((catSlug) => {
+      routes.push({
+        url: `${baseUrl}/news/category/${catSlug}`,
+        lastModified: currentDate,
+        changeFrequency: "hourly",
+        priority: 0.85,
+      });
+    });
+
+    routes.push({
+      url: `${baseUrl}/news/search`,
+      lastModified: currentDate,
+      changeFrequency: "daily",
+      priority: 0.7,
+    });
+
+    // 7. All Published News Articles
+    const { data: newsArticles } = await (supabase as any)
+      .from("news_articles")
+      .select("slug, updated_at, published_at")
+      .eq("is_published", true)
+      .order("published_at", { ascending: false })
+      .limit(1000);
+
+    if (newsArticles && newsArticles.length > 0) {
+      (newsArticles as any[]).forEach((a: any) => {
+        routes.push({
+          url: `${baseUrl}/news/${a.slug}`,
+          lastModified: a.updated_at || a.published_at || currentDate,
+          changeFrequency: "daily",
+          priority: 0.8,
+        });
+      });
+    }
+
+    // 8. Legacy Bulletins (Backwards compatibility)
     const { data: bulletins } = await supabase
       .from("public_bulletins")
       .select("slug, updated_at, published_at")
       .eq("status", "published")
       .order("published_at", { ascending: false })
-      .limit(1000);
+      .limit(500);
 
     if (bulletins) {
       (bulletins as any[]).forEach((b: any) => {
@@ -205,7 +245,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
           url: `${baseUrl}/news/${b.slug}`,
           lastModified: b.updated_at || b.published_at || currentDate,
           changeFrequency: "daily",
-          priority: 0.8,
+          priority: 0.75,
         });
       });
     }

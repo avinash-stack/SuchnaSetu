@@ -1,79 +1,84 @@
 import { Metadata } from "next";
 import { notFound } from "next/navigation";
-import { getPublicBulletinBySlug, getRelatedBulletins } from "@/modules/bulletins/service";
-import { constructMetadata, buildNewsArticleJsonLd } from "@/lib/seo";
-import { getCanonicalSiteUrl } from "@/lib/constants";
-import { resolveLocalizedBulletin } from "@/lib/i18n/localize";
-import { LanguageCode } from "@/lib/i18n/config";
-import { BulletinDetailView } from "@/modules/bulletins/components/bulletin-detail-view";
+import { fetchArticleBySlug, fetchRelatedArticles } from "@/modules/news/services/news-query-service";
+import { NewsHeader } from "@/modules/news/components/news-header";
+import { NewsArticleView } from "@/modules/news/components/news-article-view";
+import { constructMetadata, buildNewsArticleJsonLd, buildBreadcrumbJsonLd } from "@/lib/seo";
 
-interface BulletinDetailPageProps {
+interface NewsArticlePageProps {
   params: Promise<{
     slug: string;
   }>;
-  searchParams?: Promise<{
-    lang?: string;
-  }>;
 }
 
-export async function generateMetadata({ params, searchParams }: BulletinDetailPageProps): Promise<Metadata> {
-  const { slug } = await params;
-  const sParams = searchParams ? await searchParams : {};
-  const requestedLang = (sParams.lang as LanguageCode) || "en";
-  const rawBulletin = await getPublicBulletinBySlug(slug);
+export const revalidate = 300; // 5 minutes ISR
 
-  if (!rawBulletin) {
+export async function generateMetadata({ params }: NewsArticlePageProps): Promise<Metadata> {
+  const { slug } = await params;
+  const article = await fetchArticleBySlug(slug);
+
+  if (!article) {
     return constructMetadata({
-      title: "Bulletin Not Found",
-      description: "The requested official bulletin could not be found.",
+      title: "News Story Not Found | SuchnaSetu News",
+      description: "The requested news story could not be found.",
     });
   }
 
-  const translations = (rawBulletin.translations || []) as any[];
-  const hasGenuineRequestedTranslation = requestedLang === "en" || translations.some((t) => t.language_code === requestedLang);
-  const isUntranslatedParameterRequest = requestedLang !== "en" && !hasGenuineRequestedTranslation;
-
-  const bulletin = resolveLocalizedBulletin(rawBulletin, requestedLang);
-
   return constructMetadata({
-    title: `${bulletin.title} | SuchnaSetu`,
-    description: bulletin.summary,
-    path: `/news/${rawBulletin.slug}`,
-    canonicalPath: `/news/${rawBulletin.slug}`,
-    noIndex: isUntranslatedParameterRequest,
+    title: `${article.title} | SuchnaSetu News`,
+    description: article.summary,
+    path: `/news/${article.slug}`,
+    canonicalPath: `/news/${article.slug}`,
   });
 }
 
-export default async function PublicBulletinDetailPage({ params }: BulletinDetailPageProps) {
+export default async function NewsArticleDetailPage({ params }: NewsArticlePageProps) {
   const { slug } = await params;
-  const bulletin = await getPublicBulletinBySlug(slug);
+  const article = await fetchArticleBySlug(slug);
 
-  if (!bulletin) {
+  if (!article) {
     notFound();
   }
 
-  const org = bulletin.organization;
-  const relatedBulletins = await getRelatedBulletins(bulletin.id, bulletin.category, 3);
+  const relatedArticles = await fetchRelatedArticles(article.id, article.category_slug, 4);
+  const articleWithRelated = {
+    ...article,
+    related_articles: relatedArticles,
+  };
 
   const jsonLd = buildNewsArticleJsonLd({
-    title: bulletin.title,
-    description: bulletin.summary,
-    url: `${getCanonicalSiteUrl()}/news/${bulletin.slug}`,
-    datePublished: bulletin.published_at,
-    dateModified: bulletin.updated_at,
-    authorName: bulletin.author || org?.name || "SuchnaSetu Civic News Desk",
+    title: article.title,
+    description: article.summary,
+    url: `/news/${article.slug}`,
+    datePublished: article.published_at,
+    dateModified: article.updated_at,
+    authorName: article.author || article.source_name || "SuchnaSetu News Desk",
   });
+
+  const breadcrumbJsonLd = buildBreadcrumbJsonLd([
+    { name: "Home", url: "/" },
+    { name: "News", url: "/news" },
+    { name: article.category?.name || article.category_slug, url: `/news/category/${article.category_slug}` },
+    { name: article.title, url: `/news/${article.slug}` },
+  ]);
 
   return (
     <>
-      {/* Inject Structured JSON-LD */}
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
       />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbJsonLd) }}
+      />
 
-      {/* Multilingual Reactive Detail View */}
-      <BulletinDetailView bulletin={bulletin} relatedBulletins={relatedBulletins} />
+      <div className="min-h-screen bg-slate-50/50 pb-16 font-sans">
+        <NewsHeader />
+        <main>
+          <NewsArticleView article={articleWithRelated} />
+        </main>
+      </div>
     </>
   );
 }
