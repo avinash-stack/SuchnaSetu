@@ -3,25 +3,29 @@
 import * as React from "react";
 import Link from "next/link";
 import { GovExamDetailed } from "../types";
+import { useLanguage } from "@/lib/i18n/context";
+import { resolveLocalizedExam } from "@/lib/i18n/localize";
 import { formatDate } from "@/lib/utils";
-import { Calendar, MapPin } from "lucide-react";
 
 export interface ExamListTableProps {
   exams: GovExamDetailed[];
 }
 
-export function ExamListTable({ exams }: ExamListTableProps) {
-  if (!exams || exams.length === 0) {
+export function ExamListTable({ exams: rawExams }: ExamListTableProps) {
+  const { language, t } = useLanguage();
+
+  if (!rawExams || rawExams.length === 0) {
     return (
       <div className="rounded-xl border border-slate-200 bg-white p-8 text-center text-sm text-slate-500">
-        No active examination schedules found matching criteria.
+        {t("common.no_results")}
       </div>
     );
   }
 
   return (
     <div className="w-full rounded-xl border border-slate-200/90 bg-white shadow-2xs divide-y divide-slate-100 overflow-hidden">
-      {exams.map((exam) => {
+      {rawExams.map((rawExam) => {
+        const exam = resolveLocalizedExam(rawExam, language);
         const orgName = exam.organization?.acronym || exam.organization?.name || "Govt";
         const examDateItem = exam.important_dates?.find(
           (d) => d.date_type === "exam_start" || d.title.toLowerCase().includes("exam")
@@ -64,11 +68,11 @@ export function ExamListTable({ exams }: ExamListTableProps) {
               {/* Exam Date */}
               {examDateItem?.event_date ? (
                 <span className="font-mono text-[11.5px] font-semibold text-slate-700 bg-slate-100/80 px-2 py-0.5 rounded whitespace-nowrap">
-                  Exam: {formatDate(examDateItem.event_date)}
+                  {t("common.exam_date")}: {formatDate(examDateItem.event_date)}
                 </span>
               ) : (
                 <span className="text-slate-500 text-[11.5px] whitespace-nowrap">
-                  Date: TBA
+                  {t("common.date_tba")}
                 </span>
               )}
             </div>

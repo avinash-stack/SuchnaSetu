@@ -203,3 +203,31 @@ export function resolveLocalizedBulletin(
     content: translation.content || bulletin.content,
   };
 }
+
+/**
+ * Resolves localized generic items (e.g. Admit Cards, Results, Answer Keys, Syllabus items)
+ */
+export function resolveLocalizedItem<T extends { title: string; translations?: any[] }>(
+  item: T,
+  lang: LanguageCode = DEFAULT_LANGUAGE
+): T {
+  if (!item || lang === "en" || !lang) return item;
+
+  const translations = item.translations;
+  let translation: any;
+
+  if (Array.isArray(translations)) {
+    translation = translations.find((t) => t.language_code === lang);
+  } else if (translations && (translations as any).language_code === lang) {
+    translation = translations;
+  }
+
+  if (!translation) return item;
+
+  return {
+    ...item,
+    title: translation.title || item.title,
+    summary: translation.summary || (item as any).summary,
+    description: translation.description || (item as any).description,
+  };
+}

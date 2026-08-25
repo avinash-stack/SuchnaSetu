@@ -22,6 +22,7 @@ import { BulletinCard } from "@/modules/bulletins/components/bulletin-card";
 import { JobListTable } from "@/modules/jobs/components/job-list-table";
 import { ExamListTable } from "@/modules/exams/components/exam-list-table";
 import { HomeHero } from "@/components/home/home-hero";
+import { HomeSectionHeader } from "@/components/home/home-section-header";
 import { RightActionPanel } from "@/components/home/right-action-panel";
 import { TodaysUpdatesSection } from "@/components/home/todays-updates-section";
 import { ComingSoonSection } from "@/components/home/coming-soon-section";
@@ -350,57 +351,40 @@ export default async function HomePage({ searchParams }: HomePageProps) {
             <div className="lg:col-span-8 space-y-6">
               {/* A. Latest Government Jobs (Single-Line Compact Rows) */}
               <div className="space-y-2">
-                <div className="flex items-center justify-between border-b border-slate-200/90 pb-1.5">
-                  <div className="flex items-center gap-2">
-                    <Briefcase className="h-4 w-4 text-[#013089]" />
-                    <h2 className="text-base sm:text-lg font-bold text-[#0F172A] font-heading">
-                      Latest Government Job Notifications
-                    </h2>
-                  </div>
-
-                  <Link href="/jobs" className="text-xs font-bold text-[#013089] hover:underline flex items-center gap-0.5">
-                    <span>View All ({latestJobs.length}+)</span>
-                    <ArrowRight className="h-3 w-3" />
-                  </Link>
-                </div>
+                <HomeSectionHeader
+                  titleKey="sections.latest_jobs"
+                  subKey="sections.latest_jobs_sub"
+                  viewAllHref="/jobs"
+                  viewAllKey="sections.view_all_jobs"
+                  iconName="briefcase"
+                  count={latestJobs.length}
+                />
 
                 <JobListTable jobs={latestJobs} />
               </div>
 
               {/* B. Active Examination Schedules (Single-Line Compact Rows) */}
               <div className="space-y-2 pt-2">
-                <div className="flex items-center justify-between border-b border-slate-200/90 pb-1.5">
-                  <div className="flex items-center gap-2">
-                    <Calendar className="h-4 w-4 text-[#013089]" />
-                    <h2 className="text-base sm:text-lg font-bold text-[#0F172A] font-heading">
-                      Official Examination Calendar &amp; Schedules
-                    </h2>
-                  </div>
-
-                  <Link href="/exams" className="text-xs font-bold text-[#013089] hover:underline flex items-center gap-0.5">
-                    <span>All Schedules</span>
-                    <ArrowRight className="h-3 w-3" />
-                  </Link>
-                </div>
+                <HomeSectionHeader
+                  titleKey="sections.exam_calendar"
+                  subKey="sections.exam_calendar_sub"
+                  viewAllHref="/exams"
+                  viewAllKey="sections.all_exams"
+                  iconName="calendar"
+                />
 
                 <ExamListTable exams={upcomingExams} />
               </div>
 
               {/* C. Rozgar Samachar & Verified Bulletins (High-Density List) */}
               <div className="space-y-2 pt-2">
-                <div className="flex items-center justify-between border-b border-slate-200/90 pb-1.5">
-                  <div className="flex items-center gap-2">
-                    <Newspaper className="h-4 w-4 text-[#013089]" />
-                    <h2 className="text-base sm:text-lg font-bold text-[#0F172A] font-heading">
-                      Rozgar Samachar &amp; Gazette Advisories
-                    </h2>
-                  </div>
-
-                  <Link href="/news" className="text-xs font-bold text-[#013089] hover:underline flex items-center gap-0.5">
-                    <span>All News</span>
-                    <ArrowRight className="h-3 w-3" />
-                  </Link>
-                </div>
+                <HomeSectionHeader
+                  titleKey="sections.rozgar_digest"
+                  subKey="sections.rozgar_digest_sub"
+                  viewAllHref="/news"
+                  viewAllKey="sections.view_all_news"
+                  iconName="newspaper"
+                />
 
                 <div className="w-full rounded-xl border border-slate-200/90 bg-white shadow-2xs divide-y divide-slate-100 overflow-hidden">
                   {latestBulletins.slice(0, 5).map((bulletin) => (

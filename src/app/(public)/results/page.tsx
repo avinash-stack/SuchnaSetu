@@ -3,6 +3,7 @@ import Link from "next/link";
 import { getPublicResults } from "@/modules/results/service";
 import { SearchBar } from "@/components/shared/search-bar";
 import { EmptyState } from "@/components/shared/empty-state";
+import { ResultTable } from "@/components/shared/result-table";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { constructMetadata, buildBreadcrumbJsonLd } from "@/lib/seo";
@@ -121,83 +122,7 @@ export default async function PublicResultsPage({ searchParams }: ResultsPagePro
       <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8 space-y-6">
         {results.length > 0 ? (
           <>
-            <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-xs">
-              <div className="overflow-x-auto">
-                <table className="w-full text-left border-collapse table-fixed">
-                  <thead>
-                    <tr className="bg-slate-100/90 border-b border-slate-200 text-xs sm:text-[13px] font-bold text-slate-700 uppercase tracking-wider">
-                      <th className="py-3.5 px-4 w-[46%]">Authority &amp; Recruitment Result</th>
-                      <th className="py-3.5 px-4 w-[20%]">State / Jurisdiction</th>
-                      <th className="py-3.5 px-4 w-[16%]">Status</th>
-                      <th className="py-3.5 px-4 w-[18%] text-right">Official Document</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-slate-100 text-slate-800">
-                    {results.map((item) => {
-                      const orgName = item.organization?.acronym || item.organization?.name || "Official Body";
-                      return (
-                        <tr key={item.id} className="hover:bg-slate-50/90 transition-colors">
-                          <td className="py-4 px-4 align-top">
-                            <div className="space-y-1.5">
-                              <div className="flex items-center gap-2 flex-wrap">
-                                <Badge variant="brand" className="text-xs font-bold py-0.5 px-2 bg-[#013089] text-white">
-                                  {orgName}
-                                </Badge>
-                                {item.code && (
-                                  <span className="font-mono text-xs text-slate-500 font-semibold">
-                                    {item.code}
-                                  </span>
-                                )}
-                              </div>
-                              <Link
-                                href={`/jobs/${item.slug}`}
-                                className="block font-bold text-slate-900 hover:text-[#013089] text-[15px] sm:text-base leading-snug transition-colors line-clamp-2"
-                              >
-                                {item.title}
-                              </Link>
-                              {item.published_at && (
-                                <p className="text-xs text-slate-400 font-mono">
-                                  Published: {formatDate(item.published_at)}
-                                </p>
-                              )}
-                            </div>
-                          </td>
-
-                          <td className="py-4 px-4 align-top text-slate-600">
-                            <div className="flex items-center gap-1.5 text-xs sm:text-sm text-slate-600 font-medium">
-                              <MapPin className="h-4 w-4 text-slate-400 shrink-0" />
-                              <span>{item.state_code || "National"}</span>
-                            </div>
-                          </td>
-
-                          <td className="py-4 px-4 align-top">
-                            <Badge variant="success" className="text-xs font-semibold bg-emerald-50 text-emerald-700 border-emerald-200">
-                              <ShieldCheck className="h-3.5 w-3.5 mr-1" />
-                              {item.status}
-                            </Badge>
-                          </td>
-
-                          <td className="py-4 px-4 align-top text-right whitespace-nowrap">
-                            {item.result_url && (
-                              <a
-                                href={item.result_url}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                className="inline-flex items-center justify-center font-bold rounded-lg h-8 px-3.5 text-xs sm:text-[13px] bg-emerald-700 hover:bg-emerald-800 text-white shadow-2xs transition-all gap-1.5"
-                              >
-                                <FileCheck2 className="h-3.5 w-3.5" />
-                                <span>View Gazette</span>
-                                <ExternalLink className="h-3 w-3" />
-                              </a>
-                            )}
-                          </td>
-                        </tr>
-                      );
-                    })}
-                  </tbody>
-                </table>
-              </div>
-            </div>
+            <ResultTable items={results} />
 
             {/* Pagination Controls */}
             {totalPages > 1 && (

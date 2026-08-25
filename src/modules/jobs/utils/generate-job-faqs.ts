@@ -1,5 +1,7 @@
 import { GovJobDetailed } from "../types";
 import { formatDate, formatINR, formatApplicationFee } from "@/lib/utils";
+import { LanguageCode } from "@/lib/i18n/config";
+import { getTranslation } from "@/lib/i18n/translations";
 
 export interface VerifiedFaqItem {
   question: string;
@@ -8,9 +10,12 @@ export interface VerifiedFaqItem {
 
 /**
  * Generates verified FAQs strictly from authentic fields in the GovJob record.
- * NEVER fabricates or infers unverified answers.
+ * Localized across supported Indic languages.
  */
-export function generateVerifiedJobFaqs(job: GovJobDetailed): VerifiedFaqItem[] {
+export function generateVerifiedJobFaqs(
+  job: GovJobDetailed,
+  lang: LanguageCode = "en"
+): VerifiedFaqItem[] {
   const faqs: VerifiedFaqItem[] = [];
   const orgName = job.organization?.name || "the recruiting authority";
   const orgAcronym = job.organization?.acronym || orgName;
@@ -19,8 +24,12 @@ export function generateVerifiedJobFaqs(job: GovJobDetailed): VerifiedFaqItem[] 
   if (job.application_end_date) {
     const formattedDate = formatDate(job.application_end_date);
     faqs.push({
-      question: `What is the last date to apply for ${job.title}?`,
-      answer: `The online application window for ${job.title} (${orgAcronym}) closes on ${formattedDate}. Candidates are advised to submit their applications well before the closing deadline.`,
+      question: getTranslation(lang, "faq.last_date_q", { title: job.title }),
+      answer: getTranslation(lang, "faq.last_date_a", {
+        title: job.title,
+        org: orgAcronym,
+        date: formattedDate,
+      }),
     });
   }
 
@@ -28,16 +37,24 @@ export function generateVerifiedJobFaqs(job: GovJobDetailed): VerifiedFaqItem[] 
   if (job.application_start_date) {
     const formattedDate = formatDate(job.application_start_date);
     faqs.push({
-      question: `When does the online application process start for ${job.title}?`,
-      answer: `The online applications for ${job.title} commence on ${formattedDate} via the official portal of ${orgName}.`,
+      question: getTranslation(lang, "faq.start_date_q", { title: job.title }),
+      answer: getTranslation(lang, "faq.start_date_a", {
+        title: job.title,
+        org: orgName,
+        date: formattedDate,
+      }),
     });
   }
 
   // 3. Total Vacancies
   if (job.total_vacancies && job.total_vacancies > 0) {
     faqs.push({
-      question: `How many vacancies are announced for ${job.title}?`,
-      answer: `A total of ${job.total_vacancies} vacancies have been notified for ${job.title} by ${orgName}.`,
+      question: getTranslation(lang, "faq.vacancies_q", { title: job.title }),
+      answer: getTranslation(lang, "faq.vacancies_a", {
+        title: job.title,
+        org: orgName,
+        count: job.total_vacancies,
+      }),
     });
   }
 
@@ -48,8 +65,11 @@ export function generateVerifiedJobFaqs(job: GovJobDetailed): VerifiedFaqItem[] 
     job.eligibility?.education_qualification;
   if (qualText) {
     faqs.push({
-      question: `What is the educational qualification required for ${job.title}?`,
-      answer: `Applicants must possess ${qualText} from a recognized board/university as specified in the official notification circular.`,
+      question: getTranslation(lang, "faq.qualification_q", { title: job.title }),
+      answer: getTranslation(lang, "faq.qualification_a", {
+        title: job.title,
+        qualification: qualText,
+      }),
     });
   }
 
@@ -61,55 +81,41 @@ export function generateVerifiedJobFaqs(job: GovJobDetailed): VerifiedFaqItem[] 
     const ageDesc =
       ageSummary ||
       (minAge && maxAge
-        ? `between ${minAge} to ${maxAge} years`
+        ? `${minAge} - ${maxAge} Years`
         : maxAge
-        ? `up to ${maxAge} years`
-        : `minimum ${minAge} years`);
+        ? `Up to ${maxAge} Years`
+        : `Minimum ${minAge} Years`);
     faqs.push({
-      question: `What is the age limit criteria for ${job.title}?`,
-      answer: `Candidates must be ${ageDesc}. Reserved categories (SC/ST/OBC/PwD/Ex-SM) are entitled to upper age relaxation as per government recruitment norms.`,
+      question: getTranslation(lang, "faq.age_limit_q", { title: job.title }),
+      answer: getTranslation(lang, "faq.age_limit_a", {
+        title: job.title,
+        ageLimit: ageDesc,
+      }),
     });
   }
 
-  // 6. Salary & Pay Scale
-  if (job.salary_min || job.salary_max || job.pay_scale_details) {
-    const salaryText =
-      job.salary_min && job.salary_max
-        ? `${formatINR(job.salary_min)} to ${formatINR(job.salary_max)} per month`
-        : job.pay_scale_details || (job.salary_min ? `Starting basic pay of ${formatINR(job.salary_min)}` : "");
-    if (salaryText) {
-      faqs.push({
-        question: `What is the salary / pay scale for ${job.title}?`,
-        answer: `The appointed candidates will receive remuneration under ${salaryText} along with standard government allowances where applicable.`,
-      });
-    }
-  }
-
-  // 7. Application Fee
+  // 6. Application Fee
   const feeObj = job.eligibility?.application_fee_details as any;
   if (feeObj) {
     const feeFormatted = formatApplicationFee(feeObj);
     faqs.push({
-      question: `What is the application fee for ${job.title}?`,
-      answer: `The application fee structure is: ${feeFormatted}. The fee can be paid online using net banking, UPI, or debit/credit card.`,
+      question: getTranslation(lang, "faq.fee_q", { title: job.title }),
+      answer: getTranslation(lang, "faq.fee_a", {
+        title: job.title,
+        fee: feeFormatted || "Refer official notification",
+      }),
     });
   }
 
-  // 8. Selection Process
+  // 7. Selection Process
   const selection = job.selection_process || job.eligibility?.selection_process;
   if (selection) {
     faqs.push({
-      question: `What is the selection process for ${job.title}?`,
-      answer: `The recruitment selection process comprises: ${selection}.`,
-    });
-  }
-
-  // 9. Official Website / Apply Online
-  if (job.official_apply_url || job.organization?.website_url) {
-    const portalUrl = job.official_apply_url || job.organization?.website_url;
-    faqs.push({
-      question: `How can I apply online for ${job.title}?`,
-      answer: `Candidates can register and submit their application online through the official portal: ${portalUrl}. Follow the official gazette instructions for document uploading and fee submission.`,
+      question: getTranslation(lang, "faq.selection_q", { title: job.title }),
+      answer: getTranslation(lang, "faq.selection_a", {
+        title: job.title,
+        process: selection || "Standard Recruitment Examination",
+      }),
     });
   }
 

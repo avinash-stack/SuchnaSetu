@@ -72,13 +72,13 @@ export function PublicFooter() {
               </li>
               <li>
                 <Link href="/admit-cards" className="hover:text-white transition-colors flex items-center justify-between">
-                  <span>Admit Cards &amp; Hall Tickets</span>
+                  <span>{t("nav.admit_cards")}</span>
                   <span className="rounded bg-[#FE8D01] px-1.5 py-0.2 text-[10px] text-white font-bold">Live</span>
                 </Link>
               </li>
               <li>
                 <Link href="/results" className="hover:text-white transition-colors flex items-center justify-between">
-                  <span>Results &amp; Merit Gazettes</span>
+                  <span>{t("nav.results")}</span>
                   <span className="rounded bg-emerald-600 px-1.5 py-0.2 text-[10px] text-white font-bold">New</span>
                 </Link>
               </li>
@@ -89,22 +89,22 @@ export function PublicFooter() {
               </li>
               <li>
                 <Link href="/answer-keys" className="hover:text-white transition-colors flex items-center justify-between">
-                  <span>Official Answer Keys</span>
+                  <span>{t("nav.answer_keys")}</span>
                 </Link>
               </li>
               <li>
                 <Link href="/syllabus" className="hover:text-white transition-colors flex items-center justify-between">
-                  <span>Exam Patterns &amp; Syllabi</span>
+                  <span>{t("nav.syllabus")}</span>
                 </Link>
               </li>
               <li>
                 <Link href="/coming-soon" className="hover:text-white transition-colors flex items-center justify-between">
-                  <span>Advance Notices / Upcoming</span>
+                  <span>{t("nav.coming_soon")}</span>
                 </Link>
               </li>
               <li>
                 <Link href="/directory" className="hover:text-white transition-colors flex items-center justify-between">
-                  <span>Verified Organization Directory</span>
+                  <span>{t("nav.directory")}</span>
                 </Link>
               </li>
             </ul>

@@ -97,7 +97,7 @@ export function ExamDetailView({ exam: rawExam }: ExamDetailViewProps) {
       : null;
 
   const applicationFee = formatApplicationFee(exam.application_fee_details);
-  const verifiedFaqs = React.useMemo(() => generateVerifiedExamFaqs(exam), [exam]);
+  const verifiedFaqs = React.useMemo(() => generateVerifiedExamFaqs(exam, language), [exam, language]);
 
   return (
     <div className="mx-auto max-w-5xl px-4 py-8 sm:px-6 lg:px-8 space-y-8 font-sans text-slate-800">

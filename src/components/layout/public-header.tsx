@@ -39,11 +39,11 @@ const MAIN_NAV_CONFIG: NavConfigItem[] = [
 ];
 
 // Additional portals for Mobile Drawer
-const MOBILE_EXTRA_PORTALS = [
-  { href: "/directory", label: "Verified Directory", icon: Building2 },
-  { href: "/answer-keys", label: "Official Answer Keys", icon: KeyRound },
-  { href: "/syllabus", label: "Exam Syllabus & Pattern", icon: BookOpen },
-  { href: "/coming-soon", label: "Advance Recruitment Notices", icon: Sparkles },
+const MOBILE_EXTRA_PORTALS: { href: string; key: TranslationKey; icon: any }[] = [
+  { href: "/directory", key: "nav.directory", icon: Building2 },
+  { href: "/answer-keys", key: "nav.answer_keys", icon: KeyRound },
+  { href: "/syllabus", key: "nav.syllabus", icon: BookOpen },
+  { href: "/coming-soon", key: "nav.coming_soon", icon: Sparkles },
 ];
 
 export function PublicHeader() {
@@ -214,7 +214,7 @@ export function PublicHeader() {
                       }`}
                     >
                       <HubIcon className="h-3.5 w-3.5 text-slate-500 shrink-0" />
-                      <span>{hub.label}</span>
+                      <span>{t(hub.key)}</span>
                     </Link>
                   );
                 })}

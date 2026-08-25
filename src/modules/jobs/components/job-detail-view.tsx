@@ -90,7 +90,7 @@ export function JobDetailView({ job: rawJob }: JobDetailViewProps) {
     null;
 
   const applicationFee = formatApplicationFee(eligibility?.application_fee_details);
-  const verifiedFaqs = React.useMemo(() => generateVerifiedJobFaqs(job), [job]);
+  const verifiedFaqs = React.useMemo(() => generateVerifiedJobFaqs(job, language), [job, language]);
 
   return (
     <div className="mx-auto max-w-5xl px-4 py-8 sm:px-6 lg:px-8 space-y-8 font-sans text-slate-800">

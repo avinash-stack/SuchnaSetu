@@ -2,6 +2,8 @@
 
 import * as React from "react";
 import Link from "next/link";
+import { useLanguage } from "@/lib/i18n/context";
+import { resolveLocalizedItem } from "@/lib/i18n/localize";
 import { AdmitCardItem } from "@/modules/admit-cards/service";
 import { ResultItem } from "@/modules/results/service";
 import { AnswerKeyItem, SyllabusItem, ComingSoonItem } from "@/modules/home/dynamic-sections";
@@ -36,6 +38,7 @@ export function RightActionPanel({
   comingSoonItems,
 }: RightActionPanelProps) {
   const [activeTab, setActiveTab] = React.useState<ActionTabKey>("all");
+  const { language, t } = useLanguage();
 
   return (
     <aside className="w-full space-y-3.5" aria-label="Quick Action Portals">
@@ -44,9 +47,9 @@ export function RightActionPanel({
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-1.5 font-bold text-xs uppercase tracking-wider text-slate-900 font-heading">
             <Flame className="h-4 w-4 text-[#FE8D01]" />
-            <span>Civic Action Portals</span>
+            <span>{t("portal.heading")}</span>
           </div>
-          <span className="text-[11px] text-slate-400 font-semibold">Direct Access</span>
+          <span className="text-[11px] text-slate-400 font-semibold">{t("portal.direct_access")}</span>
         </div>
 
         {/* Filter Tabs */}
@@ -60,7 +63,7 @@ export function RightActionPanel({
                 : "bg-slate-100 text-slate-700 hover:bg-slate-200"
             }`}
           >
-            All Portals
+            {t("portal.tab_all")}
           </button>
           <button
             type="button"
@@ -71,7 +74,7 @@ export function RightActionPanel({
                 : "bg-slate-100 text-slate-700 hover:bg-slate-200"
             }`}
           >
-            Admit Cards ({admitCards.length})
+            {t("portal.tab_admit")} ({admitCards.length})
           </button>
           <button
             type="button"
@@ -82,7 +85,7 @@ export function RightActionPanel({
                 : "bg-slate-100 text-slate-700 hover:bg-slate-200"
             }`}
           >
-            Results ({results.length})
+            {t("portal.tab_results")} ({results.length})
           </button>
           <button
             type="button"
@@ -93,7 +96,7 @@ export function RightActionPanel({
                 : "bg-slate-100 text-slate-700 hover:bg-slate-200"
             }`}
           >
-            Keys
+            {t("portal.tab_keys")}
           </button>
           <button
             type="button"
@@ -104,7 +107,7 @@ export function RightActionPanel({
                 : "bg-slate-100 text-slate-700 hover:bg-slate-200"
             }`}
           >
-            Syllabus
+            {t("portal.tab_syllabus")}
           </button>
           <button
             type="button"
@@ -115,7 +118,7 @@ export function RightActionPanel({
                 : "bg-slate-100 text-slate-700 hover:bg-slate-200"
             }`}
           >
-            Upcoming
+            {t("portal.tab_upcoming")}
           </button>
         </div>
       </div>
@@ -126,52 +129,55 @@ export function RightActionPanel({
           <div className="flex items-center justify-between border-b border-slate-100 pb-1.5">
             <div className="flex items-center gap-1.5 text-xs font-bold text-slate-900 font-heading">
               <CreditCard className="h-3.5 w-3.5 text-amber-600" />
-              <span>Admit Cards &amp; Hall Tickets</span>
+              <span>{t("portal.admit_cards_title")}</span>
             </div>
             <Link
               href="/admit-cards"
               className="text-[11px] font-bold text-[#013089] hover:underline inline-flex items-center"
             >
-              <span>View All</span>
+              <span>{t("portal.view_all")}</span>
               <ChevronRight className="h-3 w-3" />
             </Link>
           </div>
 
           <div className="divide-y divide-slate-100 text-xs">
-            {admitCards.slice(0, 5).map((ac) => (
-              <div
-                key={ac.id}
-                className="py-1.5 flex items-center justify-between gap-2 hover:bg-slate-50 rounded transition-colors px-1"
-              >
-                <div className="flex items-center gap-1.5 min-w-0 flex-1">
-                  <span className="font-bold text-[10.5px] text-[#013089] bg-blue-50 px-1.5 py-0.2 rounded shrink-0">
-                    {ac.organization?.acronym || "EXAM"}
-                  </span>
-                  <Link
-                    href={`/exams/${ac.slug}`}
-                    className="font-semibold text-slate-800 hover:text-[#013089] transition-colors truncate block"
-                    title={ac.title}
-                  >
-                    {ac.title}
-                  </Link>
+            {admitCards.slice(0, 5).map((rawAc) => {
+              const ac = resolveLocalizedItem(rawAc, language);
+              return (
+                <div
+                  key={ac.id}
+                  className="py-1.5 flex items-center justify-between gap-2 hover:bg-slate-50 rounded transition-colors px-1"
+                >
+                  <div className="flex items-center gap-1.5 min-w-0 flex-1">
+                    <span className="font-bold text-[10.5px] text-[#013089] bg-blue-50 px-1.5 py-0.2 rounded shrink-0">
+                      {ac.organization?.acronym || "EXAM"}
+                    </span>
+                    <Link
+                      href={`/exams/${ac.slug}`}
+                      className="font-semibold text-slate-800 hover:text-[#013089] transition-colors truncate block"
+                      title={ac.title}
+                    >
+                      {ac.title}
+                    </Link>
+                  </div>
+                  {ac.admit_card_url ? (
+                    <a
+                      href={ac.admit_card_url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center gap-1 text-[10.5px] font-bold text-amber-800 bg-amber-50 hover:bg-amber-100 px-2 py-0.5 rounded shrink-0"
+                    >
+                      <span>{t("common.download")}</span>
+                      <Download className="h-2.5 w-2.5" />
+                    </a>
+                  ) : (
+                    <span className="text-[10.5px] text-slate-400 font-mono shrink-0">
+                      {ac.state_code || "National"}
+                    </span>
+                  )}
                 </div>
-                {ac.admit_card_url ? (
-                  <a
-                    href={ac.admit_card_url}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="inline-flex items-center gap-1 text-[10.5px] font-bold text-amber-800 bg-amber-50 hover:bg-amber-100 px-2 py-0.5 rounded shrink-0"
-                  >
-                    <span>Download</span>
-                    <Download className="h-2.5 w-2.5" />
-                  </a>
-                ) : (
-                  <span className="text-[10.5px] text-slate-400 font-mono shrink-0">
-                    {ac.state_code || "National"}
-                  </span>
-                )}
-              </div>
-            ))}
+              );
+            })}
           </div>
         </div>
       )}
@@ -182,52 +188,55 @@ export function RightActionPanel({
           <div className="flex items-center justify-between border-b border-slate-100 pb-1.5">
             <div className="flex items-center gap-1.5 text-xs font-bold text-slate-900 font-heading">
               <FileCheck2 className="h-3.5 w-3.5 text-emerald-700" />
-              <span>Latest Results &amp; Cutoffs</span>
+              <span>{t("portal.results_title")}</span>
             </div>
             <Link
               href="/results"
               className="text-[11px] font-bold text-[#013089] hover:underline inline-flex items-center"
             >
-              <span>View All</span>
+              <span>{t("portal.view_all")}</span>
               <ChevronRight className="h-3 w-3" />
             </Link>
           </div>
 
           <div className="divide-y divide-slate-100 text-xs">
-            {results.slice(0, 5).map((res) => (
-              <div
-                key={res.id}
-                className="py-1.5 flex items-center justify-between gap-2 hover:bg-slate-50 rounded transition-colors px-1"
-              >
-                <div className="flex items-center gap-1.5 min-w-0 flex-1">
-                  <span className="font-bold text-[10.5px] text-emerald-800 bg-emerald-50 px-1.5 py-0.2 rounded shrink-0">
-                    {res.organization?.acronym || "GOVT"}
-                  </span>
-                  <Link
-                    href={`/jobs/${res.slug}`}
-                    className="font-semibold text-slate-800 hover:text-[#013089] transition-colors truncate block"
-                    title={res.title}
-                  >
-                    {res.title}
-                  </Link>
+            {results.slice(0, 5).map((rawRes) => {
+              const res = resolveLocalizedItem(rawRes, language);
+              return (
+                <div
+                  key={res.id}
+                  className="py-1.5 flex items-center justify-between gap-2 hover:bg-slate-50 rounded transition-colors px-1"
+                >
+                  <div className="flex items-center gap-1.5 min-w-0 flex-1">
+                    <span className="font-bold text-[10.5px] text-emerald-800 bg-emerald-50 px-1.5 py-0.2 rounded shrink-0">
+                      {res.organization?.acronym || "GOVT"}
+                    </span>
+                    <Link
+                      href={`/jobs/${res.slug}`}
+                      className="font-semibold text-slate-800 hover:text-[#013089] transition-colors truncate block"
+                      title={res.title}
+                    >
+                      {res.title}
+                    </Link>
+                  </div>
+                  {res.result_url ? (
+                    <a
+                      href={res.result_url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center gap-1 text-[10.5px] font-bold text-emerald-800 bg-emerald-50 hover:bg-emerald-100 px-2 py-0.5 rounded shrink-0"
+                    >
+                      <span>{t("common.gazette")}</span>
+                      <ExternalLink className="h-2.5 w-2.5" />
+                    </a>
+                  ) : (
+                    <span className="text-[10.5px] text-emerald-700 font-semibold shrink-0">
+                      {t("common.declared")}
+                    </span>
+                  )}
                 </div>
-                {res.result_url ? (
-                  <a
-                    href={res.result_url}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="inline-flex items-center gap-1 text-[10.5px] font-bold text-emerald-800 bg-emerald-50 hover:bg-emerald-100 px-2 py-0.5 rounded shrink-0"
-                  >
-                    <span>Gazette</span>
-                    <ExternalLink className="h-2.5 w-2.5" />
-                  </a>
-                ) : (
-                  <span className="text-[10.5px] text-emerald-700 font-semibold shrink-0">
-                    Declared
-                  </span>
-                )}
-              </div>
-            ))}
+              );
+            })}
           </div>
         </div>
       )}
@@ -238,52 +247,55 @@ export function RightActionPanel({
           <div className="flex items-center justify-between border-b border-slate-100 pb-1.5">
             <div className="flex items-center gap-1.5 text-xs font-bold text-slate-900 font-heading">
               <KeyRound className="h-3.5 w-3.5 text-[#013089]" />
-              <span>Official Answer Keys</span>
+              <span>{t("portal.answer_keys_title")}</span>
             </div>
             <Link
               href="/answer-keys"
               className="text-[11px] font-bold text-[#013089] hover:underline inline-flex items-center"
             >
-              <span>View All</span>
+              <span>{t("portal.view_all")}</span>
               <ChevronRight className="h-3 w-3" />
             </Link>
           </div>
 
           <div className="divide-y divide-slate-100 text-xs">
-            {answerKeys.slice(0, 5).map((item) => (
-              <div
-                key={item.id}
-                className="py-1.5 flex items-center justify-between gap-2 hover:bg-slate-50 rounded transition-colors px-1"
-              >
-                <div className="flex items-center gap-1.5 min-w-0 flex-1">
-                  <span className="font-bold text-[10.5px] text-[#013089] bg-blue-50 px-1.5 py-0.2 rounded shrink-0">
-                    {item.authorityAcronym || "KEY"}
-                  </span>
-                  <Link
-                    href={`/exams/${item.slug}`}
-                    className="font-semibold text-slate-800 hover:text-[#013089] transition-colors truncate block"
-                    title={item.title}
-                  >
-                    {item.title}
-                  </Link>
+            {answerKeys.slice(0, 5).map((rawItem) => {
+              const item = resolveLocalizedItem(rawItem, language);
+              return (
+                <div
+                  key={item.id}
+                  className="py-1.5 flex items-center justify-between gap-2 hover:bg-slate-50 rounded transition-colors px-1"
+                >
+                  <div className="flex items-center gap-1.5 min-w-0 flex-1">
+                    <span className="font-bold text-[10.5px] text-[#013089] bg-blue-50 px-1.5 py-0.2 rounded shrink-0">
+                      {item.authorityAcronym || "KEY"}
+                    </span>
+                    <Link
+                      href={`/exams/${item.slug}`}
+                      className="font-semibold text-slate-800 hover:text-[#013089] transition-colors truncate block"
+                      title={item.title}
+                    >
+                      {item.title}
+                    </Link>
+                  </div>
+                  {item.answerKeyUrl ? (
+                    <a
+                      href={item.answerKeyUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center gap-1 text-[10.5px] font-bold text-[#013089] bg-blue-50 hover:bg-blue-100 px-2 py-0.5 rounded shrink-0"
+                    >
+                      <span>{t("common.key_pdf")}</span>
+                      <ExternalLink className="h-2.5 w-2.5" />
+                    </a>
+                  ) : (
+                    <span className="text-[10.5px] text-slate-400 font-mono shrink-0">
+                      {formatDate(item.releasedAt)}
+                    </span>
+                  )}
                 </div>
-                {item.answerKeyUrl ? (
-                  <a
-                    href={item.answerKeyUrl}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="inline-flex items-center gap-1 text-[10.5px] font-bold text-[#013089] bg-blue-50 hover:bg-blue-100 px-2 py-0.5 rounded shrink-0"
-                  >
-                    <span>Key PDF</span>
-                    <ExternalLink className="h-2.5 w-2.5" />
-                  </a>
-                ) : (
-                  <span className="text-[10.5px] text-slate-400 font-mono shrink-0">
-                    {formatDate(item.releasedAt)}
-                  </span>
-                )}
-              </div>
-            ))}
+              );
+            })}
           </div>
         </div>
       )}
@@ -294,44 +306,47 @@ export function RightActionPanel({
           <div className="flex items-center justify-between border-b border-slate-100 pb-1.5">
             <div className="flex items-center gap-1.5 text-xs font-bold text-slate-900 font-heading">
               <BookOpen className="h-3.5 w-3.5 text-slate-700" />
-              <span>Exam Syllabus &amp; Scheme</span>
+              <span>{t("portal.syllabus_title")}</span>
             </div>
             <Link
               href="/syllabus"
               className="text-[11px] font-bold text-[#013089] hover:underline inline-flex items-center"
             >
-              <span>View All</span>
+              <span>{t("portal.view_all")}</span>
               <ChevronRight className="h-3 w-3" />
             </Link>
           </div>
 
           <div className="divide-y divide-slate-100 text-xs">
-            {officialSyllabi.slice(0, 5).map((item) => (
-              <div
-                key={item.id}
-                className="py-1.5 flex items-center justify-between gap-2 hover:bg-slate-50 rounded transition-colors px-1"
-              >
-                <div className="flex items-center gap-1.5 min-w-0 flex-1">
-                  <span className="font-bold text-[10.5px] text-slate-700 bg-slate-100 px-1.5 py-0.2 rounded shrink-0">
-                    {item.authorityAcronym || "PATTERN"}
-                  </span>
+            {officialSyllabi.slice(0, 5).map((rawItem) => {
+              const item = resolveLocalizedItem(rawItem, language);
+              return (
+                <div
+                  key={item.id}
+                  className="py-1.5 flex items-center justify-between gap-2 hover:bg-slate-50 rounded transition-colors px-1"
+                >
+                  <div className="flex items-center gap-1.5 min-w-0 flex-1">
+                    <span className="font-bold text-[10.5px] text-slate-700 bg-slate-100 px-1.5 py-0.2 rounded shrink-0">
+                      {item.authorityAcronym || "PATTERN"}
+                    </span>
+                    <Link
+                      href={`/syllabus/${item.slug}`}
+                      className="font-semibold text-slate-800 hover:text-[#013089] transition-colors truncate block"
+                      title={item.title}
+                    >
+                      {item.title}
+                    </Link>
+                  </div>
                   <Link
                     href={`/syllabus/${item.slug}`}
-                    className="font-semibold text-slate-800 hover:text-[#013089] transition-colors truncate block"
-                    title={item.title}
+                    className="inline-flex items-center gap-0.5 text-[10.5px] font-bold text-[#013089] hover:underline shrink-0"
                   >
-                    {item.title}
+                    <span>{t("common.syllabus")}</span>
+                    <ChevronRight className="h-2.5 w-2.5" />
                   </Link>
                 </div>
-                <Link
-                  href={`/syllabus/${item.slug}`}
-                  className="inline-flex items-center gap-0.5 text-[10.5px] font-bold text-[#013089] hover:underline shrink-0"
-                >
-                  <span>Syllabus</span>
-                  <ChevronRight className="h-2.5 w-2.5" />
-                </Link>
-              </div>
-            ))}
+              );
+            })}
           </div>
         </div>
       )}
@@ -342,40 +357,43 @@ export function RightActionPanel({
           <div className="flex items-center justify-between border-b border-purple-100 pb-1.5">
             <div className="flex items-center gap-1.5 text-xs font-bold text-purple-900 font-heading">
               <Sparkles className="h-3.5 w-3.5 text-purple-700" />
-              <span>Advance Recruitment Notices</span>
+              <span>{t("portal.coming_soon_title")}</span>
             </div>
             <Link
               href="/coming-soon"
               className="text-[11px] font-bold text-purple-800 hover:underline inline-flex items-center"
             >
-              <span>View All</span>
+              <span>{t("portal.view_all")}</span>
               <ChevronRight className="h-3 w-3" />
             </Link>
           </div>
 
           <div className="divide-y divide-purple-100 text-xs">
-            {comingSoonItems.slice(0, 4).map((item) => (
-              <div
-                key={item.id}
-                className="py-1.5 flex items-center justify-between gap-2 hover:bg-purple-100/50 rounded transition-colors px-1"
-              >
-                <div className="flex items-center gap-1.5 min-w-0 flex-1">
-                  <span className="font-bold text-[10.5px] text-purple-800 bg-purple-100 px-1.5 py-0.2 rounded shrink-0">
-                    {item.authorityAcronym || "UPCOMING"}
+            {comingSoonItems.slice(0, 4).map((rawItem) => {
+              const item = resolveLocalizedItem(rawItem, language);
+              return (
+                <div
+                  key={item.id}
+                  className="py-1.5 flex items-center justify-between gap-2 hover:bg-purple-100/50 rounded transition-colors px-1"
+                >
+                  <div className="flex items-center gap-1.5 min-w-0 flex-1">
+                    <span className="font-bold text-[10.5px] text-purple-800 bg-purple-100 px-1.5 py-0.2 rounded shrink-0">
+                      {item.authorityAcronym || "UPCOMING"}
+                    </span>
+                    <Link
+                      href={`/jobs/${item.slug}`}
+                      className="font-semibold text-slate-800 hover:text-purple-900 transition-colors truncate block"
+                      title={item.title}
+                    >
+                      {item.title}
+                    </Link>
+                  </div>
+                  <span className="text-[10.5px] font-semibold text-purple-700 shrink-0 whitespace-nowrap">
+                    {t("common.coming_soon")}
                   </span>
-                  <Link
-                    href={`/jobs/${item.slug}`}
-                    className="font-semibold text-slate-800 hover:text-purple-900 transition-colors truncate block"
-                    title={item.title}
-                  >
-                    {item.title}
-                  </Link>
                 </div>
-                <span className="text-[10.5px] font-semibold text-purple-700 shrink-0 whitespace-nowrap">
-                  Coming Soon
-                </span>
-              </div>
-            ))}
+              );
+            })}
           </div>
         </div>
       )}

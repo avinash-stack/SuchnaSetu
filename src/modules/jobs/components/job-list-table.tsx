@@ -3,25 +3,30 @@
 import * as React from "react";
 import Link from "next/link";
 import { GovJobDetailed } from "../types";
+import { useLanguage } from "@/lib/i18n/context";
+import { resolveLocalizedJob } from "@/lib/i18n/localize";
 import { formatDate } from "@/lib/utils";
-import { MapPin, Clock } from "lucide-react";
 
 export interface JobListTableProps {
   jobs: GovJobDetailed[];
 }
 
-export function JobListTable({ jobs }: JobListTableProps) {
-  if (!jobs || jobs.length === 0) {
+export function JobListTable({ jobs: rawJobs }: JobListTableProps) {
+  const { language, t } = useLanguage();
+
+  if (!rawJobs || rawJobs.length === 0) {
     return (
       <div className="rounded-xl border border-slate-200 bg-white p-8 text-center text-sm text-slate-500">
-        No active government recruitment notifications found matching criteria.
+        {t("common.no_results")}
       </div>
     );
   }
 
   return (
     <div className="w-full rounded-xl border border-slate-200/90 bg-white shadow-2xs divide-y divide-slate-100 overflow-hidden">
-      {jobs.map((job) => {
+      {rawJobs.map((rawJob) => {
+        const job = resolveLocalizedJob(rawJob, language);
+
         const isClosingSoon = job.application_end_date
           ? new Date(job.application_end_date).getTime() - Date.now() < 5 * 86400000 &&
             new Date(job.application_end_date).getTime() > Date.now()
@@ -83,11 +88,11 @@ export function JobListTable({ jobs }: JobListTableProps) {
                 </span>
               ) : isClosed ? (
                 <span className="text-[10.5px] font-semibold text-rose-700 bg-rose-50 px-1.5 py-0.5 rounded whitespace-nowrap">
-                  Closed
+                  {t("common.closed")}
                 </span>
               ) : (
                 <span className="text-emerald-700 text-[11.5px] font-semibold whitespace-nowrap">
-                  Active
+                  {t("common.active")}
                 </span>
               )}
             </div>
