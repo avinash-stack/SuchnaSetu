@@ -56,6 +56,41 @@ const fetchJobBySlugUncached = async (slug: string): Promise<GovJobDetailed | nu
   }
 
   const rawJob = job as any;
+
+  // Fetch contextual related entities in parallel for rich internal linking
+  const [relatedJobsRes, relatedExamsRes, relatedBulletinsRes, relatedNewsRes] = await Promise.all([
+    supabase
+      .from("gov_jobs")
+      .select("id, title, slug, total_vacancies, application_end_date, state_code, pay_scale_details, organization:organizations(name, acronym)")
+      .eq("status", "published")
+      .is("deleted_at", null)
+      .neq("id", rawJob.id)
+      .or(`organization_id.eq.${rawJob.organization_id},category_id.eq.${rawJob.category_id}`)
+      .order("published_at", { ascending: false })
+      .limit(4),
+    supabase
+      .from("gov_exams")
+      .select("id, title, slug, mode, exam_code, published_at, organization:organizations(name, acronym)")
+      .eq("status", "published")
+      .is("deleted_at", null)
+      .or(`related_job_id.eq.${rawJob.id},organization_id.eq.${rawJob.organization_id}`)
+      .order("published_at", { ascending: false })
+      .limit(4),
+    supabase
+      .from("public_bulletins")
+      .select("id, title, slug, category, summary, source_url, source_name, published_at")
+      .eq("status", "published")
+      .or(`related_job_id.eq.${rawJob.id},organization_id.eq.${rawJob.organization_id}`)
+      .order("published_at", { ascending: false })
+      .limit(4),
+    supabase
+      .from("news_articles")
+      .select("id, title, slug, summary, source_name, source_url, published_at, category_slug")
+      .eq("is_published", true)
+      .order("published_at", { ascending: false })
+      .limit(3),
+  ]);
+
   const detailedJob: GovJobDetailed = {
     ...rawJob,
     vacancies: (rawJob.vacancies || []) as JobVacancy[],
@@ -65,6 +100,10 @@ const fetchJobBySlugUncached = async (slug: string): Promise<GovJobDetailed | nu
     eligibility: Array.isArray(rawJob.eligibility) ? rawJob.eligibility[0] : (rawJob.eligibility as JobEligibility),
     official_documents: (rawJob.official_documents || []) as JobOfficialDocument[],
     translations: (rawJob.translations || []) as any[],
+    related_jobs: (relatedJobsRes.data || []) as any[],
+    related_exams: (relatedExamsRes.data || []) as any[],
+    related_bulletins: (relatedBulletinsRes.data || []) as any[],
+    related_news: (relatedNewsRes.data || []) as any[],
   };
 
   return detailedJob;

@@ -59,17 +59,22 @@ CREATE TABLE IF NOT EXISTS news_sources (
 -- Seed Verified News Sources
 INSERT INTO news_sources (code, name, website_url, feed_url, source_type, default_category, state_code, is_enabled, priority, fetch_interval_minutes)
 VALUES
-  ('pib_national', 'Press Information Bureau (PIB)', 'https://pib.gov.in', 'https://pib.gov.in/RssMain.aspx', 'rss', 'governance', NULL, true, 1, 15),
+  ('google_news_india', 'Google News India', 'https://news.google.com', 'https://news.google.com/rss?hl=en-IN&gl=IN&ceid=IN:en', 'rss', 'india', NULL, true, 1, 15),
   ('dd_news', 'DD News National', 'https://ddnews.gov.in', 'https://ddnews.gov.in/rss-feeds', 'rss', 'india', NULL, true, 1, 30),
+  ('zee_news_india', 'Zee News National', 'https://zeenews.india.com', 'https://zeenews.india.com/rss/india-national-news.xml', 'rss', 'india', NULL, true, 2, 30),
+  ('abp_news', 'ABP News', 'https://news.abplive.com', 'https://news.abplive.com/home/feed', 'rss', 'india', NULL, true, 2, 30),
+  ('ndtv_india', 'NDTV National News', 'https://ndtv.com', 'https://feeds.feedburner.com/ndtvnews-india-news', 'rss', 'india', NULL, true, 2, 30),
   ('the_hindu_national', 'The Hindu (National Feed)', 'https://thehindu.com', 'https://www.thehindu.com/news/national/feeder/default.rss', 'rss', 'india', NULL, true, 2, 30),
   ('indian_express_edu', 'Indian Express Education', 'https://indianexpress.com', 'https://indianexpress.com/section/education/feed/', 'rss', 'education', NULL, true, 2, 30),
-  ('ndtv_india', 'NDTV National News', 'https://ndtv.com', 'https://feeds.feedburner.com/ndtvnews-india-news', 'rss', 'india', NULL, true, 3, 30),
-  ('times_tech', 'ET Tech & Digital India', 'https://economictimes.indiatimes.com', 'https://economictimes.indiatimes.com/tech/rssfeeds/13357270.cms', 'rss', 'technology', NULL, true, 3, 45)
+  ('times_tech', 'ET Tech & Digital India', 'https://economictimes.indiatimes.com', 'https://economictimes.indiatimes.com/tech/rssfeeds/13357270.cms', 'rss', 'technology', NULL, true, 3, 45),
+  ('pib_national', 'Press Information Bureau (PIB)', 'https://pib.gov.in', 'https://pib.gov.in/RssMain.aspx', 'rss', 'governance', NULL, false, 9, 60),
+  ('aaj_tak', 'Aaj Tak', 'https://aajtak.in', 'https://aajtak.in/rssfeeds/latest-news.xml', 'rss', 'india', NULL, false, 9, 60)
 ON CONFLICT (code) DO UPDATE SET
   name = EXCLUDED.name,
   website_url = EXCLUDED.website_url,
   feed_url = EXCLUDED.feed_url,
-  default_category = EXCLUDED.default_category;
+  default_category = EXCLUDED.default_category,
+  is_enabled = EXCLUDED.is_enabled;
 
 -- 3. NEWS ARTICLES
 CREATE TABLE IF NOT EXISTS news_articles (

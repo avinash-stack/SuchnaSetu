@@ -15,7 +15,7 @@ export const en = {
   "nav.exams": "Exams",
   "nav.admit_cards": "Admit Cards",
   "nav.results": "Results",
-  "nav.news": "Employment News",
+  "nav.news": "News",
   "nav.directory": "Directory",
   "nav.answer_keys": "Answer Keys",
   "nav.syllabus": "Syllabus",

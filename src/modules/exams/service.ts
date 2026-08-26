@@ -74,6 +74,45 @@ const fetchExamBySlugUncached = async (slug: string): Promise<GovExamDetailed | 
     });
   }
 
+  // Fetch contextual related entities in parallel for rich internal linking
+  const [relatedExamsRes, relatedJobsRes, relatedBulletinsRes, relatedNewsRes] = await Promise.all([
+    supabase
+      .from("gov_exams")
+      .select("id, title, slug, mode, exam_code, published_at, organization:organizations(name, acronym)")
+      .eq("status", "published")
+      .is("deleted_at", null)
+      .neq("id", detailed.id)
+      .eq("organization_id", detailed.organization_id)
+      .order("published_at", { ascending: false })
+      .limit(4),
+    supabase
+      .from("gov_jobs")
+      .select("id, title, slug, total_vacancies, application_end_date, state_code, pay_scale_details, organization:organizations(name, acronym)")
+      .eq("status", "published")
+      .is("deleted_at", null)
+      .or(`organization_id.eq.${detailed.organization_id}${detailed.category_id ? `,category_id.eq.${detailed.category_id}` : ""}`)
+      .order("published_at", { ascending: false })
+      .limit(4),
+    supabase
+      .from("public_bulletins")
+      .select("id, title, slug, category, summary, source_url, source_name, published_at")
+      .eq("status", "published")
+      .or(`organization_id.eq.${detailed.organization_id}${detailed.related_job_id ? `,related_job_id.eq.${detailed.related_job_id}` : ""}`)
+      .order("published_at", { ascending: false })
+      .limit(4),
+    supabase
+      .from("news_articles")
+      .select("id, title, slug, summary, source_name, source_url, published_at, category_slug")
+      .eq("is_published", true)
+      .order("published_at", { ascending: false })
+      .limit(3),
+  ]);
+
+  detailed.related_exams = (relatedExamsRes.data || []) as any[];
+  detailed.related_jobs = (relatedJobsRes.data || []) as any[];
+  detailed.related_bulletins = (relatedBulletinsRes.data || []) as any[];
+  detailed.related_news = (relatedNewsRes.data || []) as any[];
+
   return detailed;
 };
 

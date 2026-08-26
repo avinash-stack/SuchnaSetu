@@ -56,6 +56,11 @@ export function PublicHeader() {
     setMobileMenuOpen(false);
   }, [pathname]);
 
+  // Completely omit the main header on News pages (News has its own dedicated header)
+  if (pathname === "/news" || pathname.startsWith("/news/")) {
+    return null;
+  }
+
   return (
     <header className="fixed top-3 left-0 right-0 z-50 pointer-events-none px-3 sm:px-6 lg:px-8">
       <div className="mx-auto max-w-7xl pointer-events-auto">
@@ -92,6 +97,7 @@ export function PublicHeader() {
           {/* ================================================================= */}
           <nav className="hidden lg:flex items-center bg-slate-100/80 border border-slate-200/70 rounded-full p-1 shadow-2xs gap-0.5 shrink-0" aria-label="Main Navigation">
             {MAIN_NAV_CONFIG.map((item) => {
+              const isNews = item.href === "/news";
               const isActive =
                 item.href === "/"
                   ? pathname === "/"
@@ -101,6 +107,8 @@ export function PublicHeader() {
                 <Link
                   key={item.href}
                   href={item.href}
+                  target={isNews ? "_blank" : undefined}
+                  rel={isNews ? "noopener noreferrer" : undefined}
                   className={`relative px-3.5 py-1 rounded-full text-xs xl:text-[13px] font-bold transition-all whitespace-nowrap flex items-center gap-1.5 shrink-0 ${
                     isActive
                       ? "bg-white text-[#013089] shadow-xs font-extrabold"
@@ -161,6 +169,7 @@ export function PublicHeader() {
             {/* Main Navigation Links */}
             <div className="space-y-1">
               {MAIN_NAV_CONFIG.map((item) => {
+                const isNews = item.href === "/news";
                 const isActive =
                   item.href === "/"
                     ? pathname === "/"
@@ -170,6 +179,8 @@ export function PublicHeader() {
                   <Link
                     key={item.href}
                     href={item.href}
+                    target={isNews ? "_blank" : undefined}
+                    rel={isNews ? "noopener noreferrer" : undefined}
                     className={`flex items-center justify-between px-3.5 py-2.5 text-[14px] sm:text-[15px] font-bold rounded-2xl transition-colors ${
                       isActive
                         ? "bg-[#013089] text-white"

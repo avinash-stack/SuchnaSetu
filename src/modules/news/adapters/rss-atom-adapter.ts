@@ -12,7 +12,7 @@ export class RssAtomAdapter implements NewsSourceAdapter {
     try {
       const res = await fetch(this.source.feed_url, {
         headers: {
-          "User-Agent": "SuchnaSetu-NewsBot/1.0 (+https://suchnasetu.in/about)",
+          "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36 SuchnaSetu-NewsBot/1.0 (+https://suchnasetu.in/about)",
           "Accept": "application/rss+xml, application/xml, text/xml, application/atom+xml, */*",
         },
         signal: controller.signal,
@@ -86,26 +86,42 @@ export class RssAtomAdapter implements NewsSourceAdapter {
   async normalize(rawItem: RawNewsFeedItem): Promise<NormalizedNewsPayload | null> {
     if (!rawItem.title || !rawItem.link) return null;
 
-    const cleanTitle = sanitizeHtml(rawItem.title);
-    const summaryText = rawItem.summary || rawItem.content || cleanTitle;
-    const cleanSummary = truncateSummary(summaryText, 300);
-    const imageUrl = extractImageUrl(rawItem);
+    let cleanTitle = sanitizeHtml(rawItem.title);
+    let author = rawItem.author ? sanitizeHtml(rawItem.author) : null;
 
-    let publishedAt = new Date().toISOString();
-    if (rawItem.pubDate) {
-      const parsed = new Date(rawItem.pubDate);
-      if (!isNaN(parsed.getTime())) {
-        publishedAt = parsed.toISOString();
+    // 1. Clean Google News / Aggregator Titles ("Headline - Publisher")
+    const lastDashIndex = cleanTitle.lastIndexOf(" - ");
+    if (lastDashIndex > 10) {
+      const potentialHeadline = cleanTitle.slice(0, lastDashIndex).trim();
+      const potentialPublisher = cleanTitle.slice(lastDashIndex + 3).trim();
+
+      if (
+        potentialPublisher.length > 0 &&
+        potentialPublisher.length <= 45 &&
+        !/[.!?]$/.test(potentialPublisher)
+      ) {
+        cleanTitle = potentialHeadline;
+        if (!author) {
+          author = potentialPublisher;
+        }
       }
     }
+
+    // 2. Parse Publication Date with support for Indian regional formats
+    const publishedAt = this.parsePublicationDate(rawItem.pubDate);
+
+    // 3. Clean Summary & Content
+    const summaryText = rawItem.summary || rawItem.content || cleanTitle;
+    const cleanSummary = truncateSummary(summaryText, 350);
+    const imageUrl = extractImageUrl(rawItem);
 
     return {
       title: cleanTitle,
       summary: cleanSummary,
-      content: rawItem.content ? truncateSummary(rawItem.content, 1200) : null,
+      content: rawItem.content ? truncateSummary(rawItem.content, 1500) : null,
       sourceUrl: rawItem.link,
       canonicalUrl: rawItem.link,
-      author: rawItem.author || null,
+      author: author || this.source.name,
       imageUrl,
       publishedAt,
       categorySlug: this.source.default_category || "india",
@@ -113,5 +129,35 @@ export class RssAtomAdapter implements NewsSourceAdapter {
       tags: rawItem.categories || [],
       rawItem,
     };
+  }
+
+  private parsePublicationDate(pubDateStr?: string): string {
+    if (!pubDateStr) return new Date().toISOString();
+    const trimmed = pubDateStr.trim();
+
+    // 1. DD News format: "26-08-2026 | 11:14 pm" or "26-08-2026 23:14:00"
+    const ddNewsMatch = trimmed.match(/^(\d{1,2})-(\d{1,2})-(\d{4})\s*\|\s*(\d{1,2}):(\d{2})\s*(am|pm)?$/i);
+    if (ddNewsMatch) {
+      const [, day, month, year, hoursStr, minutesStr, ampm] = ddNewsMatch;
+      let hours = parseInt(hoursStr, 10);
+      const minutes = parseInt(minutesStr, 10);
+      if (ampm) {
+        if (ampm.toLowerCase() === "pm" && hours < 12) hours += 12;
+        if (ampm.toLowerCase() === "am" && hours === 12) hours = 0;
+      }
+      const pad = (n: number | string) => String(n).padStart(2, "0");
+      const istDate = new Date(`${year}-${pad(month)}-${pad(day)}T${pad(hours)}:${pad(minutes)}:00+05:30`);
+      if (!isNaN(istDate.getTime())) {
+        return istDate.toISOString();
+      }
+    }
+
+    // 2. Standard ISO / RFC-2822 date parse
+    const standardDate = new Date(trimmed);
+    if (!isNaN(standardDate.getTime())) {
+      return standardDate.toISOString();
+    }
+
+    return new Date().toISOString();
   }
 }

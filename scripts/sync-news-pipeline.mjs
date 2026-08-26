@@ -2,6 +2,7 @@ import fs from "fs";
 import crypto from "crypto";
 import { createClient } from "@supabase/supabase-js";
 
+// Read environment variables
 const envContent = fs.readFileSync(".env.local", "utf8");
 const env = {};
 envContent.split("\n").forEach((line) => {
@@ -14,11 +15,163 @@ envContent.split("\n").forEach((line) => {
   }
 });
 
-const supabase = createClient(
-  env.NEXT_PUBLIC_SUPABASE_URL,
-  env.SUPABASE_SERVICE_ROLE_KEY || env.NEXT_PUBLIC_SUPABASE_ANON_KEY
-);
+const supabaseUrl = env.NEXT_PUBLIC_SUPABASE_URL;
+const supabaseKey = env.SUPABASE_SERVICE_ROLE_KEY || env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+const openRouterKey = env.OPENROUTER_API_KEY;
+const aiModel = env.NEWS_AI_MODEL || "google/gemini-2.5-flash";
 
+if (!supabaseUrl || !supabaseKey) {
+  console.error("❌ Missing NEXT_PUBLIC_SUPABASE_URL or SUPABASE_SERVICE_ROLE_KEY in .env.local");
+  process.exit(1);
+}
+
+const supabase = createClient(supabaseUrl, supabaseKey);
+
+// Canonical Sources Registry
+const DEFAULT_NEWS_SOURCES = [
+  {
+    code: "google_news_india",
+    name: "Google News India",
+    website_url: "https://news.google.com",
+    feed_url: "https://news.google.com/rss?hl=en-IN&gl=IN&ceid=IN:en",
+    source_type: "rss",
+    default_category: "india",
+    state_code: null,
+    country: "IN",
+    is_enabled: true,
+    priority: 1,
+    fetch_interval_minutes: 15,
+    failure_count: 0,
+  },
+  {
+    code: "dd_news",
+    name: "DD News National",
+    website_url: "https://ddnews.gov.in",
+    feed_url: "https://ddnews.gov.in/rss-feeds",
+    source_type: "rss",
+    default_category: "india",
+    state_code: null,
+    country: "IN",
+    is_enabled: true,
+    priority: 1,
+    fetch_interval_minutes: 30,
+    failure_count: 0,
+  },
+  {
+    code: "zee_news_india",
+    name: "Zee News National",
+    website_url: "https://zeenews.india.com",
+    feed_url: "https://zeenews.india.com/rss/india-national-news.xml",
+    source_type: "rss",
+    default_category: "india",
+    state_code: null,
+    country: "IN",
+    is_enabled: true,
+    priority: 2,
+    fetch_interval_minutes: 30,
+    failure_count: 0,
+  },
+  {
+    code: "abp_news",
+    name: "ABP News",
+    website_url: "https://news.abplive.com",
+    feed_url: "https://news.abplive.com/home/feed",
+    source_type: "rss",
+    default_category: "india",
+    state_code: null,
+    country: "IN",
+    is_enabled: true,
+    priority: 2,
+    fetch_interval_minutes: 30,
+    failure_count: 0,
+  },
+  {
+    code: "ndtv_india",
+    name: "NDTV India News",
+    website_url: "https://ndtv.com",
+    feed_url: "https://feeds.feedburner.com/ndtvnews-india-news",
+    source_type: "rss",
+    default_category: "india",
+    state_code: null,
+    country: "IN",
+    is_enabled: true,
+    priority: 2,
+    fetch_interval_minutes: 30,
+    failure_count: 0,
+  },
+  {
+    code: "the_hindu_national",
+    name: "The Hindu National",
+    website_url: "https://thehindu.com",
+    feed_url: "https://www.thehindu.com/news/national/feeder/default.rss",
+    source_type: "rss",
+    default_category: "india",
+    state_code: null,
+    country: "IN",
+    is_enabled: true,
+    priority: 2,
+    fetch_interval_minutes: 30,
+    failure_count: 0,
+  },
+  {
+    code: "indian_express_edu",
+    name: "Indian Express Education",
+    website_url: "https://indianexpress.com",
+    feed_url: "https://indianexpress.com/section/education/feed/",
+    source_type: "rss",
+    default_category: "education",
+    state_code: null,
+    country: "IN",
+    is_enabled: true,
+    priority: 2,
+    fetch_interval_minutes: 30,
+    failure_count: 0,
+  },
+  {
+    code: "times_tech",
+    name: "ET Tech & Digital India",
+    website_url: "https://economictimes.indiatimes.com",
+    feed_url: "https://economictimes.indiatimes.com/tech/rssfeeds/13357270.cms",
+    source_type: "rss",
+    default_category: "technology",
+    state_code: null,
+    country: "IN",
+    is_enabled: true,
+    priority: 3,
+    fetch_interval_minutes: 45,
+    failure_count: 0,
+  },
+  {
+    code: "pib_national",
+    name: "Press Information Bureau (PIB)",
+    website_url: "https://pib.gov.in",
+    feed_url: "https://pib.gov.in/RssMain.aspx",
+    source_type: "rss",
+    default_category: "governance",
+    state_code: null,
+    country: "IN",
+    is_enabled: false, // Disabled: current endpoint returns HTML portal page
+    priority: 9,
+    fetch_interval_minutes: 60,
+    failure_count: 0,
+  },
+  {
+    code: "aaj_tak",
+    name: "Aaj Tak",
+    website_url: "https://aajtak.in",
+    feed_url: "https://aajtak.in/rssfeeds/latest-news.xml",
+    source_type: "rss",
+    default_category: "india",
+    state_code: null,
+    country: "IN",
+    is_enabled: false, // Disabled: current endpoint returns 'Invalid Request'
+    priority: 9,
+    fetch_interval_minutes: 60,
+    failure_count: 0,
+  },
+];
+
+// Utility functions
 function sanitizeHtml(rawHtml) {
   if (!rawHtml) return "";
   return rawHtml
@@ -35,7 +188,7 @@ function sanitizeHtml(rawHtml) {
     .trim();
 }
 
-function truncate(text, maxLength = 260) {
+function truncate(text, maxLength = 350) {
   if (!text) return "";
   const cleaned = sanitizeHtml(text);
   if (cleaned.length <= maxLength) return cleaned;
@@ -60,7 +213,7 @@ function generateSlug(title, dateStr) {
   return `${base}-${hash}`;
 }
 
-function computeHash(title, text) {
+function computeContentHash(title, text) {
   const clean = (title + text)
     .toLowerCase()
     .replace(/\s+/g, "")
@@ -68,196 +221,314 @@ function computeHash(title, text) {
   return crypto.createHash("sha256").update(clean).digest("hex");
 }
 
-const CANONICAL_NEWS_SEED = [
-  {
-    title: "Union Cabinet Approves Nationwide Modernization of National Career Service (NCS) Portal",
-    slug: "union-cabinet-approves-modernization-of-national-career-service-portal",
-    summary: "The Union Cabinet chaired by the Prime Minister has approved the comprehensive technological upgrade of the National Career Service (NCS) portal to integrate AI-driven job-matching for youth.",
-    content: "The Union Cabinet approved the Phase-III modernization initiative of the National Career Service (NCS) project under the Ministry of Labour & Employment. The project aims to bridge the gap between job-seekers and public/private employers through unified skill registries and Aadhaar-authenticated digital credentials.",
-    sourceName: "Press Information Bureau (PIB)",
-    sourceUrl: "https://pib.gov.in/PressReleasePage.aspx?PRID=2049102",
-    author: "PIB Delhi",
-    categorySlug: "governance",
-    importance: "breaking",
-    publishedAt: "2026-08-25T11:30:00.000Z",
-    tags: ["Union Cabinet", "NCS Portal", "Governance", "Employment"],
-    translations: [
-      {
-        languageCode: "hi",
-        title: "केंद्रीय मंत्रिमंडल ने नेशनल करियर सर्विस (NCS) पोर्टल के देशव्यापी आधुनिकीकरण को दी मंजूरी",
-        summary: "प्रधानमंत्री की अध्यक्षता में केंद्रीय मंत्रिमंडल ने युवाओं के लिए एआई-संचालित रोजगार मिलान को एकीकृत करने हेतु नेशनल करियर सर्विस (NCS) पोर्टल के व्यापक तकनीकी उन्नयन को मंजूरी दी है।",
-      },
-    ],
-  },
-  {
-    title: "ISRO Finalizes Launch Window for Chandrayaan-4 Sample Return Mission",
-    slug: "isro-finalizes-launch-window-chandrayaan-4-sample-return-mission",
-    summary: "Indian Space Research Organisation announces key milestone preparations for the lunar sample return mission scheduled with multi-module docking architecture.",
-    content: "ISRO Chairman confirmed that design configurations for Chandrayaan-4 have completed critical design review. The ambitious mission will collect lunar soil and rock samples from the southern polar region and return them to Earth.",
-    sourceName: "DD News National",
-    sourceUrl: "https://ddnews.gov.in/chandrayaan-4-launch-window-finalized",
-    author: "DD News Science Desk",
-    categorySlug: "technology",
-    importance: "high",
-    publishedAt: "2026-08-24T08:15:00.000Z",
-    tags: ["ISRO", "Chandrayaan-4", "Space Technology", "Science"],
-    translations: [
-      {
-        languageCode: "hi",
-        title: "इसरो ने चंद्रयान-4 सैंपल रिटर्न मिशन के लिए लॉन्च विंडो को दिया अंतिम रूप",
-        summary: "भारतीय अंतरिक्ष अनुसंधान संगठन (ISRO) ने मल्टी-मॉड्यूल डॉकिंग तकनीक के साथ निर्धारित चंद्र नमूना वापसी मिशन के लिए महत्वपूर्ण मील के पत्थर की घोषणा की।",
-      },
-    ],
-  },
-  {
-    title: "UGC Issues Mandatory Advisory on Equivalence of Degrees for All State & Central Recruitments",
-    slug: "ugc-mandatory-advisory-degree-equivalence-state-central-recruitment",
-    summary: "University Grants Commission directs all public recruiting commissions that degrees conferred by recognized universities under Section 22 must be accepted without secondary validation.",
-    content: "To prevent arbitrary rejection of candidates during document verification, the UGC has issued a comprehensive directive to all central ministries and state recruitment boards clarifying standard degree equivalencies and distance education norms.",
-    sourceName: "The Hindu (National)",
-    sourceUrl: "https://www.thehindu.com/news/national/ugc-degree-equivalence-directive",
-    author: "National Bureau",
-    categorySlug: "education",
-    importance: "high",
-    publishedAt: "2026-08-23T14:20:00.000Z",
-    tags: ["UGC", "Higher Education", "Degree Equivalence", "Advisories"],
-    translations: [
-      {
-        languageCode: "hi",
-        title: "यूजीसी ने सभी केंद्रीय एवं राज्य भर्तियों हेतु डिग्री समकक्षता पर जारी की अनिवार्य एडवाइजरी",
-        summary: "विश्वविद्यालय अनुदान आयोग (UGC) ने भर्ती आयोगों को निर्देश दिया है कि मान्यता प्राप्त विश्वविद्यालयों द्वारा प्रदान की गई डिग्रियों को बिना किसी अतिरिक्त सत्यापन के स्वीकार किया जाए।",
-      },
-    ],
-  },
-  {
-    title: "Reserve Bank of India Keeps Repo Rate Steady at 6.50% Amid Robust GDP Growth",
-    slug: "rbi-monetary-policy-keeps-repo-rate-steady-6-50",
-    summary: "Monetary Policy Committee (MPC) unanimously decides to maintain the policy repo rate with a focus on sustainable disinflation and economic growth.",
-    content: "The Reserve Bank of India Governor announced the bi-monthly monetary policy resolution, forecasting India's real GDP growth at 7.2% for the fiscal year while sustaining retail price stability.",
-    sourceName: "Press Information Bureau (PIB)",
-    sourceUrl: "https://pib.gov.in/PressReleasePage.aspx?PRID=2048991",
-    author: "PIB Mumbai",
-    categorySlug: "business",
-    importance: "standard",
-    publishedAt: "2026-08-22T06:45:00.000Z",
-    tags: ["RBI", "Economy", "Repo Rate", "GDP Growth"],
-    translations: [
-      {
-        languageCode: "hi",
-        title: "मजबूत जीडीपी वृद्धि के बीच भारतीय रिजर्व बैंक ने रेपो दर को 6.50% पर स्थिर रखा",
-        summary: "मौद्रिक नीति समिति (MPC) ने सतत मुद्रास्फीति नियंत्रण और मजबूत आर्थिक विकास को समर्थन देने के लिए नीतिगत रेपो दर को अपरिवर्तित रखने का निर्णय लिया।",
-      },
-    ],
-  },
-  {
-    title: "National Testing Agency (NTA) Implements Dual Biometric Verification at All Exam Centers",
-    slug: "nta-implements-dual-biometric-verification-exam-centers",
-    summary: "To reinforce security and prevent impersonation, NTA mandates real-time facial recognition and fingerprint registration at all national testing venues.",
-    content: "The National Testing Agency has issued updated standard operating procedures for all computer-based tests and entrance exams across India, establishing secure digital auditing protocols.",
-    sourceName: "Indian Express Education",
-    sourceUrl: "https://indianexpress.com/article/education/nta-dual-biometric-protocol-2026",
-    author: "Express News Service",
-    categorySlug: "education",
-    importance: "standard",
-    publishedAt: "2026-08-21T09:00:00.000Z",
-    tags: ["NTA", "Exam Security", "CBT", "Biometric"],
-    translations: [
-      {
-        languageCode: "hi",
-        title: "राष्ट्रीय परीक्षा एजेंसी (NTA) ने सभी परीक्षा केंद्रों पर दोहरी बायोमेट्रिक सत्यापन प्रणाली लागू की",
-        summary: "परीक्षाओं में पारदर्शिता सुनिश्चित करने और प्रतिरूपण रोकने के लिए एनटीए ने सभी राष्ट्रीय परीक्षा केंद्रों पर रियल-टाइम फेस रिकग्निशन अनिवार्य किया।",
-      },
-    ],
-  },
-  {
-    title: "Ministry of Health Expands Ayushman Bharat Digital Mission to 500 New District Hospitals",
-    slug: "health-ministry-expands-ayushman-bharat-digital-mission-district-hospitals",
-    summary: "Health Ministry connects electronic health records and ABHA digital IDs across 500 additional district hospitals for paperless citizen healthcare.",
-    content: "The Union Health Ministry announced the nationwide expansion of digital health infrastructure, allowing citizens to securely store diagnostic reports and medical history in verified digital health lockers.",
-    sourceName: "Press Information Bureau (PIB)",
-    sourceUrl: "https://pib.gov.in/PressReleasePage.aspx?PRID=2048700",
-    author: "PIB Delhi",
-    categorySlug: "health",
-    importance: "standard",
-    publishedAt: "2026-08-20T10:30:00.000Z",
-    tags: ["Ayushman Bharat", "Healthcare", "Digital India", "Health"],
-    translations: [
-      {
-        languageCode: "hi",
-        title: "स्वास्थ्य मंत्रालय ने आयुष्मान भारत डिजिटल मिशन का 500 नए जिला अस्पतालों में किया विस्तार",
-        summary: "स्वास्थ्य मंत्रालय ने नागरिकों को पेपरलेस स्वास्थ्य सेवाएं प्रदान करने हेतु 500 अतिरिक्त जिला अस्पतालों में डिजिटल हेल्थ रिकॉर्ड और आभा आईडी को जोड़ा।",
-      },
-    ],
-  },
-];
+function parsePublicationDate(pubDateStr) {
+  if (!pubDateStr) return new Date().toISOString();
+  const trimmed = pubDateStr.trim();
 
-async function seedCanonicalNews() {
-  console.log("Ingesting canonical verified news articles...");
-  let inserted = 0;
-
-  for (const item of CANONICAL_NEWS_SEED) {
-    const contentHash = computeHash(item.title, item.summary);
-
-    const { data: existing } = await supabase
-      .from("news_articles")
-      .select("id")
-      .or(`slug.eq.${item.slug},content_hash.eq.${contentHash}`)
-      .limit(1);
-
-    let articleId = existing?.[0]?.id;
-
-    if (!articleId) {
-      const { data: newArticle, error } = await supabase
-        .from("news_articles")
-        .insert({
-          slug: item.slug,
-          title: item.title,
-          summary: item.summary,
-          content: item.content,
-          source_name: item.sourceName,
-          source_url: item.sourceUrl,
-          canonical_url: item.sourceUrl,
-          author: item.author,
-          category_slug: item.categorySlug,
-          importance: item.importance,
-          ai_status: "enriched",
-          tags: item.tags,
-          content_hash: contentHash,
-          published_at: item.publishedAt,
-          is_published: true,
-          views_count: 0,
-        })
-        .select("id")
-        .single();
-
-      if (!error && newArticle) {
-        articleId = newArticle.id;
-        inserted++;
-      }
+  // 1. DD News format: "26-08-2026 | 11:14 pm" or "26-08-2026 23:14:00"
+  const ddNewsMatch = trimmed.match(/^(\d{1,2})-(\d{1,2})-(\d{4})\s*\|\s*(\d{1,2}):(\d{2})\s*(am|pm)?$/i);
+  if (ddNewsMatch) {
+    const [, day, month, year, hoursStr, minutesStr, ampm] = ddNewsMatch;
+    let hours = parseInt(hoursStr, 10);
+    const minutes = parseInt(minutesStr, 10);
+    if (ampm) {
+      if (ampm.toLowerCase() === "pm" && hours < 12) hours += 12;
+      if (ampm.toLowerCase() === "am" && hours === 12) hours = 0;
     }
-
-    if (articleId && item.translations) {
-      for (const t of item.translations) {
-        await supabase.from("news_translations").upsert(
-          {
-            article_id: articleId,
-            language_code: t.languageCode,
-            title: t.title,
-            summary: t.summary,
-          },
-          { onConflict: "article_id,language_code" }
-        );
-      }
+    const pad = (n) => String(n).padStart(2, "0");
+    const istDate = new Date(`${year}-${pad(month)}-${pad(day)}T${pad(hours)}:${pad(minutes)}:00+05:30`);
+    if (!isNaN(istDate.getTime())) {
+      return istDate.toISOString();
     }
   }
 
-  console.log(`✅ ${inserted} canonical news articles inserted/updated.`);
+  // 2. Standard ISO / RFC-2822 date parse
+  const standardDate = new Date(trimmed);
+  if (!isNaN(standardDate.getTime())) {
+    return standardDate.toISOString();
+  }
+
+  return new Date().toISOString();
+}
+
+function parseXmlFeed(xml) {
+  const items = [];
+  const itemRegex = /<(?:item|entry)[\s>]([\s\S]*?)<\/(?:item|entry)>/gi;
+  let match;
+
+  while ((match = itemRegex.exec(xml)) !== null && items.length < 25) {
+    const itemXml = match[1];
+
+    const getTag = (tag) => {
+      const tMatch = itemXml.match(new RegExp(`<(?:[a-zA-Z0-9_-]+:)?${tag}[^>]*>([\\s\\S]*?)<\\/(?:[a-zA-Z0-9_-]+:)?${tag}>`, "i"));
+      if (!tMatch) return "";
+      let val = tMatch[1].trim();
+      if (val.startsWith("<![CDATA[") && val.endsWith("]]>")) {
+        val = val.slice(9, -3).trim();
+      }
+      return val;
+    };
+
+    const getAttr = (tag, attr) => {
+      const aMatch = itemXml.match(new RegExp(`<(?:[a-zA-Z0-9_-]+:)?${tag}[^>]*${attr}=["']([^"']+)["']`, "i"));
+      return aMatch ? aMatch[1] : "";
+    };
+
+    const title = getTag("title");
+    const link = getTag("link") || getAttr("link", "href");
+    const pubDate = getTag("pubDate") || getTag("published") || getTag("updated") || getTag("date");
+    const description = getTag("description") || getTag("summary");
+    const content = getTag("encoded") || getTag("content") || description;
+    const author = getTag("author") || getTag("creator");
+    const enclosureUrl = getAttr("enclosure", "url");
+    const mediaThumbnail = getAttr("thumbnail", "url");
+
+    if (title && link) {
+      items.push({
+        title: sanitizeHtml(title),
+        link: link.trim(),
+        pubDate,
+        summary: sanitizeHtml(description),
+        content: sanitizeHtml(content),
+        author: sanitizeHtml(author),
+        imageUrl: enclosureUrl || mediaThumbnail || null,
+      });
+    }
+  }
+
+  return items;
+}
+
+async function syncSourcesRegistry() {
+  console.log("Synchronizing news sources registry into database...");
+  for (const src of DEFAULT_NEWS_SOURCES) {
+    await supabase.from("news_sources").upsert(
+      {
+        code: src.code,
+        name: src.name,
+        website_url: src.website_url,
+        feed_url: src.feed_url,
+        source_type: src.source_type,
+        default_category: src.default_category,
+        state_code: src.state_code,
+        is_enabled: src.is_enabled,
+        priority: src.priority,
+        fetch_interval_minutes: src.fetch_interval_minutes,
+      },
+      { onConflict: "code" }
+    );
+  }
+}
+
+async function processSource(source) {
+  const startTime = Date.now();
+  console.log(`\n▶ [SYNC] ${source.name} (${source.code}) | Feed: ${source.feed_url}`);
+
+  let fetched = 0;
+  let inserted = 0;
+  let duplicates = 0;
+  let failed = 0;
+  let lastError = null;
+
+  try {
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 12000);
+
+    const res = await fetch(source.feed_url, {
+      headers: {
+        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36 SuchnaSetu-NewsBot/1.0 (+https://suchnasetu.in/about)",
+        "Accept": "application/rss+xml, application/xml, text/xml, application/atom+xml, */*",
+      },
+      signal: controller.signal,
+    });
+    clearTimeout(timeout);
+
+    if (!res.ok) {
+      throw new Error(`HTTP ${res.status}: ${res.statusText}`);
+    }
+
+    const xml = await res.text();
+    const rawItems = parseXmlFeed(xml);
+    fetched = rawItems.length;
+    console.log(`   Fetched ${fetched} raw articles from XML feed.`);
+
+    for (const raw of rawItems) {
+      try {
+        let cleanTitle = raw.title;
+        let author = raw.author || source.name;
+
+        // Clean Google News Aggregator Title ("Headline - Publisher")
+        const lastDash = cleanTitle.lastIndexOf(" - ");
+        if (lastDash > 10) {
+          const potentialHeadline = cleanTitle.slice(0, lastDash).trim();
+          const potentialPublisher = cleanTitle.slice(lastDash + 3).trim();
+          if (potentialPublisher.length > 0 && potentialPublisher.length <= 45 && !/[.!?]$/.test(potentialPublisher)) {
+            cleanTitle = potentialHeadline;
+            if (!raw.author || raw.author === source.name) {
+              author = potentialPublisher;
+            }
+          }
+        }
+
+        const summaryText = raw.summary || raw.content || cleanTitle;
+        const cleanSummary = truncate(summaryText, 350);
+        const publishedAt = parsePublicationDate(raw.pubDate);
+        const contentHash = computeContentHash(cleanTitle, cleanSummary);
+        const slug = generateSlug(cleanTitle, publishedAt);
+
+        // Deduplication Check
+        const { data: existing } = await supabase
+          .from("news_articles")
+          .select("id")
+          .or(`content_hash.eq.${contentHash},source_url.eq.${raw.link}`)
+          .limit(1);
+
+        if (existing && existing.length > 0) {
+          duplicates++;
+          continue;
+        }
+
+        // Insert new article
+        const { error: insErr } = await supabase.from("news_articles").insert({
+          slug,
+          title: cleanTitle,
+          summary: cleanSummary,
+          content: raw.content ? truncate(raw.content, 1500) : null,
+          source_id: source.id,
+          source_name: source.name,
+          source_url: raw.link,
+          canonical_url: raw.link,
+          author: author,
+          image_url: raw.imageUrl,
+          category_slug: source.default_category || "india",
+          state_code: source.state_code || null,
+          tags: [source.default_category || "India News"],
+          importance: "standard",
+          ai_status: "pending",
+          content_hash: contentHash,
+          published_at: publishedAt,
+          is_published: true,
+          views_count: 0,
+        });
+
+        if (insErr) {
+          console.warn(`   ⚠️ Insert error for "${cleanTitle.slice(0, 40)}":`, insErr.message);
+          failed++;
+        } else {
+          inserted++;
+        }
+      } catch (itemErr) {
+        failed++;
+      }
+    }
+
+    await supabase
+      .from("news_sources")
+      .update({
+        last_synced_at: new Date().toISOString(),
+        last_error: null,
+        failure_count: 0,
+        updated_at: new Date().toISOString(),
+      })
+      .eq("id", source.id);
+
+  } catch (err) {
+    lastError = err.message;
+    console.error(`   ❌ Source sync failed:`, lastError);
+
+    await supabase
+      .from("news_sources")
+      .update({
+        last_synced_at: new Date().toISOString(),
+        last_error: lastError,
+        failure_count: (source.failure_count || 0) + 1,
+        updated_at: new Date().toISOString(),
+      })
+      .eq("id", source.id);
+  }
+
+  const durationMs = Date.now() - startTime;
+  const status = lastError && inserted === 0 ? "failed" : lastError ? "partial" : "success";
+
+  await supabase.from("news_ingestion_logs").insert({
+    source_id: source.id,
+    status,
+    fetched_count: fetched,
+    inserted_count: inserted,
+    duplicate_count: duplicates,
+    error_message: lastError,
+    duration_ms: durationMs,
+  });
+
+  console.log(`   Status: ${status} | Fetched: ${fetched} | Inserted: ${inserted} | Duplicates: ${duplicates} | Duration: ${durationMs}ms`);
+
+  return {
+    sourceCode: source.code,
+    sourceName: source.name,
+    status,
+    fetched,
+    inserted,
+    duplicates,
+    failed,
+    lastError,
+    durationMs,
+  };
 }
 
 async function main() {
-  console.log("=== SuchnaSetu News Pipeline Starting ===");
-  await seedCanonicalNews();
-  console.log("\n=== SuchnaSetu News Pipeline Finished ===");
+  console.log("=================================================");
+  console.log("=== SuchnaSetu Production News Pipeline Sync ===");
+  console.log("=================================================");
+
+  // 1. Sync registry to DB
+  await syncSourcesRegistry();
+
+  // 2. Fetch enabled sources from DB
+  const { data: sources, error } = await supabase
+    .from("news_sources")
+    .select("*")
+    .eq("is_enabled", true)
+    .order("priority", { ascending: true });
+
+  if (error || !sources || sources.length === 0) {
+    console.error("❌ No enabled news sources found:", error?.message);
+    return;
+  }
+
+  console.log(`Found ${sources.length} enabled news sources to process.`);
+
+  const results = [];
+  for (const src of sources) {
+    const res = await processSource(src);
+    results.push(res);
+  }
+
+  // 3. Query newest article
+  const { data: latestArticles } = await supabase
+    .from("news_articles")
+    .select("title, source_name, published_at")
+    .order("published_at", { ascending: false })
+    .limit(3);
+
+  const successful = results.filter((r) => r.status === "success" || r.status === "partial").length;
+  const failedSources = results.filter((r) => r.status === "failed").length;
+  const totalFetched = results.reduce((acc, r) => acc + r.fetched, 0);
+  const totalInserted = results.reduce((acc, r) => acc + r.inserted, 0);
+  const totalDuplicates = results.reduce((acc, r) => acc + r.duplicates, 0);
+
+  console.log("\n=================================================");
+  console.log("=== NEWS PIPELINE EXECUTION SUMMARY ===");
+  console.log("=================================================");
+  console.log(`- Sources Attempted:     ${sources.length}`);
+  console.log(`- Successful Sources:    ${successful}`);
+  console.log(`- Failed Sources:        ${failedSources}`);
+  console.log(`- Articles Fetched:      ${totalFetched}`);
+  console.log(`- New Articles Inserted: ${totalInserted}`);
+  console.log(`- Duplicates Skipped:    ${totalDuplicates}`);
+  if (latestArticles && latestArticles.length > 0) {
+    console.log(`- Newest Article Pub:    ${latestArticles[0].published_at} ("${latestArticles[0].title.slice(0, 60)}..." by ${latestArticles[0].source_name})`);
+  }
+  console.log("=================================================\n");
 }
 
 main().catch(console.error);

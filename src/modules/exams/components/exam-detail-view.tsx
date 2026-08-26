@@ -7,6 +7,7 @@ import { useLanguage } from "@/lib/i18n/context";
 import { resolveLocalizedExam } from "@/lib/i18n/localize";
 import { formatDate, formatApplicationFee } from "@/lib/utils";
 import { Badge } from "@/components/ui/badge";
+import { Table, TableHeader, TableBody, TableHead, TableRow, TableCell } from "@/components/ui/table";
 import { generateVerifiedExamFaqs } from "../utils/generate-exam-faqs";
 import {
   trackNotificationClicked,
@@ -31,6 +32,11 @@ import {
   FileSearch,
   ListOrdered,
   Award,
+  ArrowRight,
+  Bell,
+  CheckCircle2,
+  FileSpreadsheet,
+  MapPinCheck,
 } from "lucide-react";
 
 interface ExamDetailViewProps {
@@ -48,8 +54,12 @@ export function ExamDetailView({ exam: rawExam }: ExamDetailViewProps) {
   const schedules = exam.schedules || [];
   const eligibility = exam.eligibility;
   const dates = exam.important_dates || [];
+  const centers = exam.centers || [];
   const documents = exam.official_documents || [];
   const relatedJob = exam.related_job;
+  const relatedExams = exam.related_exams || [];
+  const relatedJobs = exam.related_jobs || [];
+  const relatedBulletins = exam.related_bulletins || [];
 
   const appEndDate = dates.find(
     (d) => d.date_type === "application_end" || d.title.toLowerCase().includes("last") || d.title.toLowerCase().includes("closing")
@@ -99,10 +109,55 @@ export function ExamDetailView({ exam: rawExam }: ExamDetailViewProps) {
   const applicationFee = formatApplicationFee(exam.application_fee_details);
   const verifiedFaqs = React.useMemo(() => generateVerifiedExamFaqs(exam, language), [exam, language]);
 
+  // Aggregate verified source-backed updates and notices
+  const examUpdates = React.useMemo(() => {
+    const list: Array<{ date: string | null; title: string; type: string; url?: string | null }> = [];
+
+    // 1. Documents
+    documents.forEach((doc) => {
+      let docLabel = "Official Notice";
+      if (doc.document_type === "timetable") docLabel = "Exam Timetable";
+      else if (doc.document_type === "syllabus") docLabel = "Syllabus Notice";
+      else if (doc.document_type === "circular") docLabel = "Official Circular";
+      else if (doc.document_type === "instructions") docLabel = "Exam Instructions";
+      else if (doc.document_type === "press_release") docLabel = "Press Release";
+      else if (doc.document_type === "gazette") docLabel = "Gazette Notification";
+
+      list.push({
+        date: doc.published_date || exam.published_at,
+        title: doc.title,
+        type: docLabel,
+        url: doc.file_url,
+      });
+    });
+
+    // 2. Linked bulletins
+    relatedBulletins.forEach((b) => {
+      list.push({
+        date: b.published_at,
+        title: b.title,
+        type: "Exam Advisory",
+        url: b.source_url || `/news/${b.slug}`,
+      });
+    });
+
+    // 3. Fallback to notification release
+    if (list.length === 0 && exam.published_at) {
+      list.push({
+        date: exam.published_at,
+        title: `Official Examination Notification (${exam.exam_code || "Schedule"}) Released`,
+        type: "Notification Release",
+        url: exam.official_notification_url,
+      });
+    }
+
+    return list;
+  }, [documents, relatedBulletins, exam.published_at, exam.exam_code, exam.official_notification_url]);
+
   return (
     <div className="mx-auto max-w-5xl px-4 py-8 sm:px-6 lg:px-8 space-y-8 font-sans text-slate-800">
       {/* Breadcrumb Navigation */}
-      <nav className="flex items-center flex-wrap gap-1.5 text-xs sm:text-[13px] text-slate-500 font-medium">
+      <nav className="flex items-center flex-wrap gap-1.5 text-xs sm:text-[13px] text-slate-500 font-medium" aria-label="Breadcrumb">
         <Link href="/" className="hover:text-[#013089] transition-colors">
           {t("nav.home")}
         </Link>
@@ -189,7 +244,7 @@ export function ExamDetailView({ exam: rawExam }: ExamDetailViewProps) {
           )}
         </div>
 
-        {/* Key Examination Highlights Ledger (Clean Structured Grid) */}
+        {/* Key Examination Highlights Ledger */}
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 pt-2">
           <div className="bg-slate-50 p-4 rounded-xl border border-slate-200/80">
             <div className="text-xs font-medium text-slate-500 flex items-center gap-1.5 mb-1">
@@ -214,7 +269,7 @@ export function ExamDetailView({ exam: rawExam }: ExamDetailViewProps) {
           <div className="bg-slate-50 p-4 rounded-xl border border-slate-200/80">
             <div className="text-xs font-medium text-slate-500 flex items-center gap-1.5 mb-1">
               <GraduationCap className="h-4 w-4 text-blue-600" />
-              <span>Eligibility</span>
+              <span>Eligibility Criteria</span>
             </div>
             <div className="text-[14px] sm:text-[15px] font-bold text-slate-900 truncate" title={educationalQualification || "Refer Notification"}>
               {educationalQualification || "Refer Notification"}
@@ -306,7 +361,7 @@ export function ExamDetailView({ exam: rawExam }: ExamDetailViewProps) {
                 )}
                 <tr className="hover:bg-slate-50/50">
                   <th scope="row" className="py-3 px-4 sm:px-5 font-semibold text-slate-600 bg-slate-50/70 text-left">
-                    Official Exam Name
+                    Official Examination Name
                   </th>
                   <td className="py-3 px-4 sm:px-5 font-semibold text-slate-900">
                     {exam.title}
@@ -349,30 +404,38 @@ export function ExamDetailView({ exam: rawExam }: ExamDetailViewProps) {
                         className="font-bold text-[#013089] hover:underline inline-flex items-center gap-1.5"
                       >
                         <span>{relatedJob.title}</span>
-                        <ExternalLink className="h-3.5 w-3.5" />
+                        <ArrowRight className="h-3.5 w-3.5" />
                       </Link>
                     </td>
                   </tr>
                 )}
+                <tr className="hover:bg-slate-50/50">
+                  <th scope="row" className="py-3 px-4 sm:px-5 font-semibold text-slate-600 bg-slate-50/70 text-left">
+                    Jurisdiction
+                  </th>
+                  <td className="py-3 px-4 sm:px-5 text-slate-900">
+                    {exam.state?.name ? `${exam.state.name} State` : "All India (National Level Examination)"}
+                  </td>
+                </tr>
               </tbody>
             </table>
           </div>
         </section>
 
-        {/* SECTION 2: IMPORTANT DATES & EXAMINATION CALENDAR */}
-        {dates.length > 0 && (
-          <section className="p-6 sm:p-8 space-y-4">
-            <div className="flex items-center gap-2.5">
-              <Calendar className="h-5 w-5 text-[#013089]" />
-              <h2 className="text-xl sm:text-2xl font-bold text-slate-900 tracking-tight">
-                2. Official Examination Calendar
-              </h2>
-            </div>
+        {/* SECTION 2: IMPORTANT EXAMINATION DATES */}
+        <section className="p-6 sm:p-8 space-y-4">
+          <div className="flex items-center gap-2.5">
+            <Calendar className="h-5 w-5 text-[#013089]" />
+            <h2 className="text-xl sm:text-2xl font-bold text-slate-900 tracking-tight">
+              2. Important Examination Dates
+            </h2>
+          </div>
 
-            <div className="overflow-x-auto rounded-xl border border-slate-200">
-              <table className="w-full text-[14px] sm:text-[15px] text-slate-800 border-collapse">
-                <tbody className="divide-y divide-slate-100">
-                  {dates.map((d, idx) => (
+          <div className="overflow-x-auto rounded-xl border border-slate-200">
+            <table className="w-full text-[14px] sm:text-[15px] text-slate-800 border-collapse">
+              <tbody className="divide-y divide-slate-100">
+                {dates.length > 0 ? (
+                  dates.map((d, idx) => (
                     <tr key={idx} className="hover:bg-slate-50/50">
                       <th scope="row" className="py-3 px-4 sm:px-5 font-semibold text-slate-600 w-1/2 bg-slate-50/70 text-left flex items-center gap-2">
                         <span>{d.title}</span>
@@ -382,8 +445,75 @@ export function ExamDetailView({ exam: rawExam }: ExamDetailViewProps) {
                           </span>
                         )}
                       </th>
-                      <td className="py-3 px-4 sm:px-5 font-mono font-medium text-slate-900">
+                      <td className="py-3 px-4 sm:px-5 font-mono text-slate-900">
                         {d.event_date ? formatDate(d.event_date) : "To Be Announced"}
+                        {d.event_time && <span className="text-xs text-slate-500 ml-2">({d.event_time})</span>}
+                      </td>
+                    </tr>
+                  ))
+                ) : (
+                  <tr className="hover:bg-slate-50/50">
+                    <th scope="row" className="py-3 px-4 sm:px-5 font-semibold text-slate-600 w-1/2 bg-slate-50/70 text-left">
+                      Examination Notification &amp; Schedule
+                    </th>
+                    <td className="py-3 px-4 sm:px-5 font-mono text-slate-900">
+                      {exam.published_at ? formatDate(exam.published_at) : "Refer Notification"}
+                    </td>
+                  </tr>
+                )}
+              </tbody>
+            </table>
+          </div>
+        </section>
+
+        {/* SECTION 3: LATEST EXAM UPDATES & NOTICES */}
+        {examUpdates.length > 0 && (
+          <section className="p-6 sm:p-8 space-y-4 bg-blue-50/20">
+            <div className="flex items-center justify-between flex-wrap gap-2">
+              <div className="flex items-center gap-2.5">
+                <Bell className="h-5 w-5 text-[#013089]" />
+                <h2 className="text-xl sm:text-2xl font-bold text-slate-900 tracking-tight">
+                  3. Latest Examination Updates &amp; Notices
+                </h2>
+              </div>
+              <Badge variant="brand" className="text-xs font-semibold px-2.5 py-0.5">
+                Official Commission Updates
+              </Badge>
+            </div>
+
+            <div className="overflow-x-auto rounded-xl border border-slate-200 bg-white">
+              <table className="w-full text-[14px] sm:text-[15px] text-slate-800 border-collapse">
+                <thead className="bg-slate-50 border-b border-slate-200 text-xs font-bold uppercase tracking-wider text-slate-600">
+                  <tr>
+                    <th className="py-3 px-4 sm:px-5 text-left w-36 sm:w-44">Date</th>
+                    <th className="py-3 px-4 sm:px-5 text-left">Update / Announcement</th>
+                    <th className="py-3 px-4 sm:px-5 text-right w-36">Source Document</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-100">
+                  {examUpdates.map((item, idx) => (
+                    <tr key={idx} className="hover:bg-slate-50/70">
+                      <td className="py-3 px-4 sm:px-5 font-mono text-xs sm:text-sm text-slate-600">
+                        {item.date ? formatDate(item.date) : "Recent"}
+                      </td>
+                      <td className="py-3 px-4 sm:px-5">
+                        <div className="font-semibold text-slate-900">{item.title}</div>
+                        <div className="text-xs text-slate-500 capitalize">{item.type}</div>
+                      </td>
+                      <td className="py-3 px-4 sm:px-5 text-right">
+                        {item.url ? (
+                          <a
+                            href={item.url}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="inline-flex items-center gap-1 text-xs font-bold text-[#013089] hover:underline bg-[#013089]/10 px-2.5 py-1.5 rounded-md"
+                          >
+                            <span>View Document</span>
+                            <ExternalLink className="h-3 w-3" />
+                          </a>
+                        ) : (
+                          <span className="text-xs text-slate-400">Official Notice</span>
+                        )}
                       </td>
                     </tr>
                   ))}
@@ -393,132 +523,122 @@ export function ExamDetailView({ exam: rawExam }: ExamDetailViewProps) {
           </section>
         )}
 
-        {/* SECTION 3: EXAM STAGES & TIMELINE */}
-        {stages.length > 0 && (
-          <section className="p-6 sm:p-8 space-y-4">
+        {/* SECTION 4: EXAM STAGES, PATTERN & MARKING SCHEME */}
+        <section className="p-6 sm:p-8 space-y-4">
+          <div className="flex items-center justify-between flex-wrap gap-2">
             <div className="flex items-center gap-2.5">
               <ListOrdered className="h-5 w-5 text-[#013089]" />
               <h2 className="text-xl sm:text-2xl font-bold text-slate-900 tracking-tight">
-                3. Examination Stages &amp; Progression
-              </h2>
-            </div>
-
-            <div className="space-y-3.5">
-              {stages.map((st, idx) => (
-                <div key={idx} className="p-5 rounded-xl border border-slate-200 bg-slate-50/60 space-y-3">
-                  <div className="flex flex-wrap items-center justify-between gap-2">
-                    <div className="flex items-center gap-2.5">
-                      <span className="flex h-6 w-6 items-center justify-center rounded-full bg-[#013089] text-white font-bold text-xs">
-                        {st.stage_order || idx + 1}
-                      </span>
-                      <span className="font-bold text-slate-900 text-base sm:text-lg">{st.stage_name}</span>
-                    </div>
-                    <Badge variant="outline" className="text-xs uppercase font-mono px-2.5 py-0.5">
-                      {st.stage_type.replace("_", " ")}
-                    </Badge>
-                  </div>
-
-                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-xs sm:text-[13px] text-slate-600 pt-1">
-                    <div>
-                      <span className="block text-slate-400 text-xs">Mode:</span>
-                      <span className="font-semibold text-slate-900">{st.mode || formatMode(exam.mode)}</span>
-                    </div>
-                    <div>
-                      <span className="block text-slate-400 text-xs">Duration:</span>
-                      <span className="font-semibold text-slate-900">{st.duration_minutes ? `${st.duration_minutes} Mins` : "As per circular"}</span>
-                    </div>
-                    <div>
-                      <span className="block text-slate-400 text-xs">Total Marks:</span>
-                      <span className="font-semibold text-slate-900">{st.total_marks ? `${st.total_marks} Marks` : "As per circular"}</span>
-                    </div>
-                    <div>
-                      <span className="block text-slate-400 text-xs">Qualifying Cutoff:</span>
-                      <span className="font-semibold text-slate-900">{st.qualifying_marks ? `${st.qualifying_marks}%` : "Category Standard"}</span>
-                    </div>
-                  </div>
-
-                  {st.description && (
-                    <p className="text-[14px] sm:text-[15px] text-slate-700 pt-2 leading-relaxed border-t border-slate-200">
-                      {st.description}
-                    </p>
-                  )}
-                </div>
-              ))}
-            </div>
-          </section>
-        )}
-
-        {/* SECTION 4: EXAM PATTERN & MARKING SCHEME */}
-        {(exam.marking_scheme || exam.pattern_description) && (
-          <section className="p-6 sm:p-8 space-y-4">
-            <div className="flex items-center gap-2.5">
-              <FileSearch className="h-5 w-5 text-[#013089]" />
-              <h2 className="text-xl sm:text-2xl font-bold text-slate-900 tracking-tight">
-                4. Exam Pattern &amp; Marking Scheme
-              </h2>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {exam.pattern_description && (
-                <div className="p-5 rounded-xl border border-slate-200 bg-slate-50/60 space-y-2">
-                  <div className="text-xs font-bold uppercase tracking-wider text-slate-600">Question Paper Structure</div>
-                  <p className="text-[14px] sm:text-[15px] text-slate-900 leading-relaxed font-medium">
-                    {exam.pattern_description}
-                  </p>
-                </div>
-              )}
-
-              {exam.marking_scheme && (
-                <div className="p-5 rounded-xl border border-slate-200 bg-slate-50/60 space-y-2">
-                  <div className="text-xs font-bold uppercase tracking-wider text-slate-600">Marking &amp; Negative Marking</div>
-                  <p className="text-[14px] sm:text-[15px] text-slate-900 leading-relaxed font-medium">
-                    {exam.marking_scheme}
-                  </p>
-                </div>
-              )}
-            </div>
-          </section>
-        )}
-
-        {/* SECTION 5: SUBJECT-WISE SYLLABUS HIGHLIGHT */}
-        <section className="p-6 sm:p-8 space-y-4 bg-blue-50/30">
-          <div className="flex items-center justify-between flex-wrap gap-2">
-            <div className="flex items-center gap-2.5">
-              <BookOpen className="h-5 w-5 text-[#013089]" />
-              <h2 className="text-xl sm:text-2xl font-bold text-slate-900 tracking-tight">
-                5. Syllabus &amp; Curriculum Breakdown
+                4. Examination Stages &amp; Marking Pattern
               </h2>
             </div>
             <Link
               href={`/syllabus/${exam.slug || exam.id}`}
-              onClick={() => trackSyllabusClicked(exam.title, org?.name || "Govt")}
               className="text-xs sm:text-sm font-bold text-[#013089] hover:underline inline-flex items-center gap-1"
             >
-              <span>Open Dedicated Syllabus Page</span>
-              <ChevronRight className="h-4 w-4" />
+              <span>View Full Syllabus &amp; Subject Topics</span>
+              <ArrowRight className="h-3.5 w-3.5" />
             </Link>
           </div>
 
-          <p className="text-[14px] sm:text-[15px] text-slate-800 leading-relaxed">
-            {exam.syllabus_summary ||
-              `The official curriculum includes General Studies, Quantitative Aptitude, Reasoning Ability, English/Hindi Comprehension, and Subject-Specific domains prescribed by ${org?.name}.`}
-          </p>
+          {stages.length > 0 ? (
+            <div className="overflow-x-auto rounded-xl border border-slate-200">
+              <Table>
+                <TableHeader className="bg-slate-100/90">
+                  <TableRow>
+                    <TableHead className="font-bold text-slate-900 text-xs sm:text-sm py-3.5">Stage Order</TableHead>
+                    <TableHead className="font-bold text-slate-900 text-xs sm:text-sm py-3.5">Stage Name</TableHead>
+                    <TableHead className="font-bold text-slate-900 text-xs sm:text-sm text-center py-3.5">Mode</TableHead>
+                    <TableHead className="font-bold text-slate-900 text-xs sm:text-sm text-center py-3.5">Duration</TableHead>
+                    <TableHead className="font-bold text-slate-900 text-xs sm:text-sm text-center py-3.5">Total Marks</TableHead>
+                    <TableHead className="font-bold text-slate-900 text-xs sm:text-sm text-center py-3.5">Qualifying Marks</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody className="text-[14px] sm:text-[15px] divide-y divide-slate-100">
+                  {stages.map((s, idx) => (
+                    <TableRow key={idx} className="hover:bg-slate-50/80">
+                      <TableCell className="font-bold text-[#013089] py-3">Stage {s.stage_order || idx + 1}</TableCell>
+                      <TableCell className="font-semibold text-slate-900 py-3">{s.stage_name}</TableCell>
+                      <TableCell className="text-center text-slate-700 capitalize py-3">{s.mode || formatMode(exam.mode)}</TableCell>
+                      <TableCell className="text-center font-mono text-slate-700 py-3">{s.duration_minutes ? `${s.duration_minutes} Mins` : "As Notified"}</TableCell>
+                      <TableCell className="text-center font-bold text-slate-900 py-3">{s.total_marks ?? "—"}</TableCell>
+                      <TableCell className="text-center text-slate-700 py-3">{s.qualifying_marks ?? "As Per Cutoff"}</TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </div>
+          ) : (
+            <div className="p-5 rounded-xl border border-slate-200 bg-slate-50/60 space-y-2">
+              <p className="text-[14px] sm:text-[15px] text-slate-800 leading-relaxed">
+                {exam.pattern_description || "The examination is conducted as per the official scheme of examination and syllabus specified in the commission notification."}
+              </p>
+              {exam.marking_scheme && (
+                <div className="pt-2 text-xs sm:text-sm text-slate-600">
+                  <span className="font-bold text-slate-800">Marking Scheme: </span>
+                  <span>{exam.marking_scheme}</span>
+                </div>
+              )}
+            </div>
+          )}
         </section>
 
-        {/* SECTION 6: ELIGIBILITY CRITERIA & AGE LIMITS */}
-        {(educationalQualification || ageLimits || eligibility?.attempts_limit || eligibility?.physical_standards) && (
+        {/* SECTION 5: DETAILED EXAM SCHEDULES & PAPERS */}
+        {schedules.length > 0 && (
+          <section className="p-6 sm:p-8 space-y-4">
+            <div className="flex items-center gap-2.5">
+              <Clock className="h-5 w-5 text-[#013089]" />
+              <h2 className="text-xl sm:text-2xl font-bold text-slate-900 tracking-tight">
+                5. Paper Schedule &amp; Shift Timings
+              </h2>
+            </div>
+
+            <div className="overflow-x-auto rounded-xl border border-slate-200">
+              <Table>
+                <TableHeader className="bg-slate-100/90">
+                  <TableRow>
+                    <TableHead className="font-bold text-slate-900 text-xs sm:text-sm py-3.5">Paper / Subject</TableHead>
+                    <TableHead className="font-bold text-slate-900 text-xs sm:text-sm py-3.5">Exam Date</TableHead>
+                    <TableHead className="font-bold text-slate-900 text-xs sm:text-sm text-center py-3.5">Shift</TableHead>
+                    <TableHead className="font-bold text-slate-900 text-xs sm:text-sm text-center py-3.5">Reporting Time</TableHead>
+                    <TableHead className="font-bold text-slate-900 text-xs sm:text-sm text-center py-3.5">Exam Timing</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody className="text-[14px] sm:text-[15px] divide-y divide-slate-100">
+                  {schedules.map((sch, idx) => (
+                    <TableRow key={idx} className="hover:bg-slate-50/80">
+                      <TableCell className="font-semibold text-slate-900 py-3">{sch.paper_name}</TableCell>
+                      <TableCell className="font-mono text-slate-800 py-3">{formatDate(sch.exam_date)}</TableCell>
+                      <TableCell className="text-center text-slate-700 py-3">{sch.shift_name || "Single Shift"}</TableCell>
+                      <TableCell className="text-center font-mono text-slate-700 py-3">{sch.reporting_time || "—"}</TableCell>
+                      <TableCell className="text-center font-mono font-semibold text-slate-900 py-3">
+                        {sch.start_time && sch.end_time ? `${sch.start_time} - ${sch.end_time}` : sch.start_time || "As on Admit Card"}
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </div>
+          </section>
+        )}
+
+        {/* SECTION 6: ELIGIBILITY & AGE LIMIT */}
+        {(educationalQualification || ageLimits || eligibility?.nationality_criteria || eligibility?.physical_standards) && (
           <section className="p-6 sm:p-8 space-y-4">
             <div className="flex items-center gap-2.5">
               <GraduationCap className="h-5 w-5 text-[#013089]" />
               <h2 className="text-xl sm:text-2xl font-bold text-slate-900 tracking-tight">
-                6. Eligibility Criteria &amp; Age Limits
+                6. Eligibility Criteria &amp; Age Limit
               </h2>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               {educationalQualification && (
                 <div className="p-5 rounded-xl border border-slate-200 bg-slate-50/60 space-y-2">
-                  <div className="text-xs font-bold uppercase tracking-wider text-slate-600">Educational Qualification</div>
+                  <div className="text-xs font-bold uppercase tracking-wider text-slate-600 flex items-center gap-1.5">
+                    <BookOpen className="h-4 w-4 text-[#013089]" />
+                    <span>Educational Qualification</span>
+                  </div>
                   <p className="text-[15px] sm:text-base text-slate-900 leading-relaxed font-semibold">
                     {educationalQualification}
                   </p>
@@ -527,25 +647,39 @@ export function ExamDetailView({ exam: rawExam }: ExamDetailViewProps) {
 
               {ageLimits && (
                 <div className="p-5 rounded-xl border border-slate-200 bg-slate-50/60 space-y-2">
-                  <div className="text-xs font-bold uppercase tracking-wider text-slate-600">Prescribed Age Limits</div>
+                  <div className="text-xs font-bold uppercase tracking-wider text-slate-600 flex items-center gap-1.5">
+                    <Clock className="h-4 w-4 text-[#013089]" />
+                    <span>Age Limit</span>
+                  </div>
                   <p className="text-[15px] sm:text-base text-slate-900 leading-relaxed font-semibold">
                     {ageLimits}
                   </p>
+                  {eligibility?.age_relaxation_rules && (
+                    <p className="text-xs text-slate-600 pt-1">
+                      {eligibility.age_relaxation_rules}
+                    </p>
+                  )}
                 </div>
               )}
 
-              {eligibility?.attempts_limit && (
+              {eligibility?.nationality_criteria && (
                 <div className="p-5 rounded-xl border border-slate-200 bg-slate-50/60 space-y-2">
-                  <div className="text-xs font-bold uppercase tracking-wider text-slate-600">Allowed Attempts Limit</div>
+                  <div className="text-xs font-bold uppercase tracking-wider text-slate-600 flex items-center gap-1.5">
+                    <Globe className="h-4 w-4 text-[#013089]" />
+                    <span>Nationality Criteria</span>
+                  </div>
                   <p className="text-[14px] sm:text-[15px] text-slate-900 leading-relaxed">
-                    Maximum {eligibility.attempts_limit} attempts for General candidates (relaxations as per reservation norms).
+                    {eligibility.nationality_criteria}
                   </p>
                 </div>
               )}
 
               {eligibility?.physical_standards && (
                 <div className="p-5 rounded-xl border border-slate-200 bg-slate-50/60 space-y-2">
-                  <div className="text-xs font-bold uppercase tracking-wider text-slate-600">Physical Standards &amp; Fitness</div>
+                  <div className="text-xs font-bold uppercase tracking-wider text-slate-600 flex items-center gap-1.5">
+                    <ShieldCheck className="h-4 w-4 text-emerald-700" />
+                    <span>Physical Standards / Measurement</span>
+                  </div>
                   <p className="text-[14px] sm:text-[15px] text-slate-900 leading-relaxed">
                     {eligibility.physical_standards}
                   </p>
@@ -555,13 +689,13 @@ export function ExamDetailView({ exam: rawExam }: ExamDetailViewProps) {
           </section>
         )}
 
-        {/* SECTION 7: APPLICATION & EXAM FEE */}
+        {/* SECTION 7: APPLICATION FEE DETAILS */}
         {applicationFee && (
           <section className="p-6 sm:p-8 space-y-4">
             <div className="flex items-center gap-2.5">
               <CreditCard className="h-5 w-5 text-[#013089]" />
               <h2 className="text-xl sm:text-2xl font-bold text-slate-900 tracking-tight">
-                7. Examination Fee Structure
+                7. Application Fee &amp; Payment Details
               </h2>
             </div>
 
@@ -570,56 +704,19 @@ export function ExamDetailView({ exam: rawExam }: ExamDetailViewProps) {
                 {applicationFee}
               </div>
               <div className="text-xs sm:text-sm text-slate-600 pt-3 border-t border-slate-200/80">
-                <span className="font-semibold text-slate-800">Fee Payment Channels: </span>
-                <span>Online Net Banking, UPI, Credit Card, Debit Card or Bank Challan.</span>
+                <span className="font-semibold text-slate-800">Accepted Payment Modes: </span>
+                <span>Net Banking, Debit Card, Credit Card, UPI, or State Bank of India Challan as authorized by the commission.</span>
               </div>
             </div>
           </section>
         )}
 
-        {/* SECTION 8: SHIFTS & SCHEDULES */}
-        {schedules.length > 0 && (
-          <section className="p-6 sm:p-8 space-y-4">
-            <div className="flex items-center gap-2.5">
-              <Clock className="h-5 w-5 text-[#013089]" />
-              <h2 className="text-xl sm:text-2xl font-bold text-slate-900 tracking-tight">
-                8. Examination Shifts &amp; Reporting Timings
-              </h2>
-            </div>
-
-            <div className="overflow-x-auto rounded-xl border border-slate-200">
-              <table className="w-full text-[14px] sm:text-[15px] text-slate-800 border-collapse">
-                <thead className="bg-slate-100 text-slate-900 font-bold">
-                  <tr>
-                    <th className="py-3 px-4 sm:px-5 text-left">Paper / Subject</th>
-                    <th className="py-3 px-4 sm:px-5 text-left">Exam Date</th>
-                    <th className="py-3 px-4 sm:px-5 text-left">Shift</th>
-                    <th className="py-3 px-4 sm:px-5 text-left">Reporting Time</th>
-                    <th className="py-3 px-4 sm:px-5 text-left">Exam Timing</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-slate-100">
-                  {schedules.map((sc, idx) => (
-                    <tr key={idx} className="hover:bg-slate-50/50">
-                      <td className="py-3 px-4 sm:px-5 font-semibold text-slate-900">{sc.paper_name}</td>
-                      <td className="py-3 px-4 sm:px-5 font-mono">{formatDate(sc.exam_date)}</td>
-                      <td className="py-3 px-4 sm:px-5">{sc.shift_name || "General"}</td>
-                      <td className="py-3 px-4 sm:px-5 font-mono text-rose-700 font-bold">{sc.reporting_time || "1 Hour Prior"}</td>
-                      <td className="py-3 px-4 sm:px-5 font-mono">{sc.start_time && sc.end_time ? `${sc.start_time} - ${sc.end_time}` : "As on Admit Card"}</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          </section>
-        )}
-
-        {/* SECTION 9: OFFICIAL LINKS */}
+        {/* SECTION 8: IMPORTANT OFFICIAL LINKS HUB */}
         <section className="p-6 sm:p-8 space-y-4 bg-slate-50/50">
           <div className="flex items-center gap-2.5">
             <FileCheck2 className="h-5 w-5 text-[#013089]" />
             <h2 className="text-xl sm:text-2xl font-bold text-slate-900 tracking-tight">
-              9. Important Official Links &amp; Gateways
+              8. Important Official Examination Links
             </h2>
           </div>
 
@@ -628,16 +725,15 @@ export function ExamDetailView({ exam: rawExam }: ExamDetailViewProps) {
               <tbody className="divide-y divide-slate-100">
                 <tr className="hover:bg-slate-50/80">
                   <td className="py-3.5 px-4 sm:px-5 font-bold text-slate-900 w-1/3">
-                    Complete Exam Syllabus
+                    Exam Syllabus &amp; Subject Topics
                   </td>
                   <td className="py-3.5 px-4 sm:px-5">
                     <Link
                       href={`/syllabus/${exam.slug || exam.id}`}
-                      onClick={() => trackSyllabusClicked(exam.title, org?.name || "Govt")}
                       className="inline-flex items-center gap-2 font-bold text-white bg-[#013089] hover:bg-[#01276E] px-4 py-2 rounded-lg shadow-xs transition-colors text-xs sm:text-sm"
                     >
-                      <span>View Detailed Syllabus</span>
-                      <ChevronRight className="h-4 w-4" />
+                      <BookOpen className="h-4 w-4" />
+                      <span>View Complete Syllabus</span>
                     </Link>
                   </td>
                 </tr>
@@ -645,7 +741,7 @@ export function ExamDetailView({ exam: rawExam }: ExamDetailViewProps) {
                 {exam.official_notification_url && (
                   <tr className="hover:bg-slate-50/80">
                     <td className="py-3.5 px-4 sm:px-5 font-bold text-slate-900">
-                      Official Exam Notification PDF
+                      Official Notification PDF
                     </td>
                     <td className="py-3.5 px-4 sm:px-5">
                       <a
@@ -656,7 +752,7 @@ export function ExamDetailView({ exam: rawExam }: ExamDetailViewProps) {
                         className="inline-flex items-center gap-2 font-bold text-[#013089] bg-[#013089]/10 hover:bg-[#013089]/20 px-4 py-2 rounded-lg border border-[#013089]/20 transition-colors text-xs sm:text-sm"
                       >
                         <FileText className="h-4 w-4 text-[#013089]" />
-                        <span>Download Notification</span>
+                        <span>Download Notification PDF</span>
                         <ExternalLink className="h-3.5 w-3.5 text-slate-400" />
                       </a>
                     </td>
@@ -666,7 +762,7 @@ export function ExamDetailView({ exam: rawExam }: ExamDetailViewProps) {
                 {org?.website_url && (
                   <tr className="hover:bg-slate-50/80">
                     <td className="py-3.5 px-4 sm:px-5 font-bold text-slate-900">
-                      Official Examination Portal
+                      Official Commission Portal
                     </td>
                     <td className="py-3.5 px-4 sm:px-5">
                       <a
@@ -676,47 +772,131 @@ export function ExamDetailView({ exam: rawExam }: ExamDetailViewProps) {
                         className="inline-flex items-center gap-1.5 text-xs sm:text-sm font-semibold text-slate-700 hover:text-[#013089] hover:underline"
                       >
                         <Building2 className="h-4 w-4 text-slate-500" />
-                        <span>{org.name} Official Website</span>
+                        <span>{org.name} Portal</span>
                         <ExternalLink className="h-3.5 w-3.5 text-slate-400" />
                       </a>
                     </td>
                   </tr>
                 )}
+
+                {/* Direct Cross-Module Gateways */}
+                <tr className="hover:bg-slate-50/80">
+                  <td className="py-3.5 px-4 sm:px-5 font-bold text-slate-900">
+                    Admit Card / Hall Ticket
+                  </td>
+                  <td className="py-3.5 px-4 sm:px-5">
+                    <Link
+                      href="/admit-cards"
+                      className="inline-flex items-center gap-1.5 text-xs sm:text-sm font-semibold text-[#013089] hover:underline"
+                    >
+                      <Layers className="h-4 w-4 text-slate-500" />
+                      <span>Check Admit Card Status</span>
+                      <ArrowRight className="h-3.5 w-3.5" />
+                    </Link>
+                  </td>
+                </tr>
+
+                <tr className="hover:bg-slate-50/80">
+                  <td className="py-3.5 px-4 sm:px-5 font-bold text-slate-900">
+                    Answer Key &amp; Objections
+                  </td>
+                  <td className="py-3.5 px-4 sm:px-5">
+                    <Link
+                      href="/answer-keys"
+                      className="inline-flex items-center gap-1.5 text-xs sm:text-sm font-semibold text-[#013089] hover:underline"
+                    >
+                      <FileSpreadsheet className="h-4 w-4 text-slate-500" />
+                      <span>Check Official Answer Key</span>
+                      <ArrowRight className="h-3.5 w-3.5" />
+                    </Link>
+                  </td>
+                </tr>
+
+                <tr className="hover:bg-slate-50/80">
+                  <td className="py-3.5 px-4 sm:px-5 font-bold text-slate-900">
+                    Examination Results &amp; Cutoff
+                  </td>
+                  <td className="py-3.5 px-4 sm:px-5">
+                    <Link
+                      href="/results"
+                      className="inline-flex items-center gap-1.5 text-xs sm:text-sm font-semibold text-[#013089] hover:underline"
+                    >
+                      <Award className="h-4 w-4 text-slate-500" />
+                      <span>Check Exam Results</span>
+                      <ArrowRight className="h-3.5 w-3.5" />
+                    </Link>
+                  </td>
+                </tr>
               </tbody>
             </table>
           </div>
-
-          {/* Attached Circular Documents if present */}
-          {documents.length > 0 && (
-            <div className="pt-3 space-y-2.5">
-              <div className="text-xs font-bold text-slate-700 uppercase tracking-wider">
-                Official Examination Circulars &amp; Annexures
-              </div>
-              <div className="space-y-2">
-                {documents.map((doc, idx) => (
-                  <div
-                    key={idx}
-                    className="flex items-center justify-between p-3 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 text-[14px]"
-                  >
-                    <span className="font-semibold text-slate-900 truncate max-w-md">{doc.title}</span>
-                    {doc.file_url && (
-                      <a
-                        href={doc.file_url}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="inline-flex items-center gap-1.5 text-xs font-bold text-[#013089] hover:underline bg-[#013089]/10 px-3 py-1.5 rounded"
-                      >
-                        <FileText className="h-3.5 w-3.5" />
-                        <span>Open Document</span>
-                        <ExternalLink className="h-3 w-3 text-slate-400" />
-                      </a>
-                    )}
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
         </section>
+
+        {/* SECTION 9: CONTEXTUAL RELATED EXAMS & RECRUITMENTS */}
+        {(relatedExams.length > 0 || relatedJobs.length > 0) && (
+          <section className="p-6 sm:p-8 space-y-6">
+            <div className="flex items-center gap-2.5">
+              <Layers className="h-5 w-5 text-[#013089]" />
+              <h2 className="text-xl sm:text-2xl font-bold text-slate-900 tracking-tight">
+                9. Related Examinations &amp; Recruitment Notices
+              </h2>
+            </div>
+
+            {relatedExams.length > 0 && (
+              <div className="space-y-3">
+                <h3 className="text-xs font-bold uppercase tracking-wider text-slate-600">
+                  More Examinations by {org?.name || "this Authority"}
+                </h3>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  {relatedExams.map((re, idx) => (
+                    <Link
+                      key={idx}
+                      href={`/exams/${re.slug}`}
+                      className="p-4 rounded-xl border border-slate-200 bg-white hover:border-[#013089] hover:shadow-xs transition-all group"
+                    >
+                      <div className="text-[14px] sm:text-[15px] font-bold text-slate-900 group-hover:text-[#013089] line-clamp-2">
+                        {re.title}
+                      </div>
+                      <div className="flex items-center justify-between text-xs text-slate-500 pt-2 mt-2 border-t border-slate-100">
+                        <span className="capitalize">{re.mode ? re.mode.replace("_", " ") : "Exam Schedule"}</span>
+                        <span className="font-semibold text-[#013089] group-hover:translate-x-0.5 transition-transform flex items-center gap-1">
+                          View Exam <ArrowRight className="h-3 w-3" />
+                        </span>
+                      </div>
+                    </Link>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {relatedJobs.length > 0 && (
+              <div className="space-y-3 pt-2">
+                <h3 className="text-xs font-bold uppercase tracking-wider text-slate-600">
+                  Related Government Job Notices
+                </h3>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  {relatedJobs.map((rj, idx) => (
+                    <Link
+                      key={idx}
+                      href={`/jobs/${rj.slug}`}
+                      className="p-4 rounded-xl border border-slate-200 bg-slate-50/60 hover:border-[#013089] hover:bg-white transition-all group"
+                    >
+                      <div className="text-[14px] sm:text-[15px] font-bold text-slate-900 group-hover:text-[#013089] line-clamp-2">
+                        {rj.title}
+                      </div>
+                      <div className="flex items-center justify-between text-xs text-slate-500 pt-2 mt-2 border-t border-slate-200/60">
+                        <span>{rj.total_vacancies ? `${rj.total_vacancies} Posts` : "Govt Post"}</span>
+                        <span className="font-semibold text-[#013089] flex items-center gap-1">
+                          Apply Details <ArrowRight className="h-3 w-3" />
+                        </span>
+                      </div>
+                    </Link>
+                  ))}
+                </div>
+              </div>
+            )}
+          </section>
+        )}
 
         {/* SECTION 10: VERIFIED EXAMINATION FAQS */}
         {verifiedFaqs.length > 0 && (
@@ -744,14 +924,15 @@ export function ExamDetailView({ exam: rawExam }: ExamDetailViewProps) {
         )}
       </main>
 
-      {/* FOOTER: OFFICIAL PROVENANCE */}
+      {/* FOOTER: OFFICIAL PROVENANCE & TRANSPARENCY */}
       <footer className="rounded-2xl border border-slate-200 bg-slate-50 p-5 text-xs sm:text-[13px] text-slate-600 flex items-start gap-3.5">
         <ShieldCheck className="h-5 w-5 text-emerald-700 shrink-0 mt-0.5" />
         <div className="space-y-1">
-          <div className="font-bold text-slate-900">Official Government Provenance &amp; Verification</div>
+          <div className="font-bold text-slate-900">Official Examination Provenance &amp; Verification</div>
           <p className="leading-relaxed">
-            This examination schedule is published directly from the official gazette notices of <strong>{org?.name}</strong>.
-            Candidates are advised to consult the official commission website for real-time exam center allotments, admit card releases, and official updates.
+            This examination schedule is published directly from the official gazette of <strong>{org?.name}</strong>.
+            Candidates are strongly advised to regularly verify updates on the commission portal.
+            SuchnaSetu provides verified public notifications free of cost for citizen convenience.
           </p>
         </div>
       </footer>

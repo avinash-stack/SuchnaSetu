@@ -27,6 +27,10 @@ export interface GovExamDetailed extends GovExam {
   official_documents?: ExamOfficialDocument[];
   eligibility_summary?: string | null;
   translations?: any[];
+  related_exams?: any[];
+  related_jobs?: any[];
+  related_bulletins?: any[];
+  related_news?: any[];
 }
 
 export interface ExamFilterParams {

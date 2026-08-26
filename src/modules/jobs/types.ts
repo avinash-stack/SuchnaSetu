@@ -26,6 +26,10 @@ export interface GovJobDetailed extends GovJob {
   selection_process?: string | null;
   description?: string | null;
   translations?: any[];
+  related_exams?: any[];
+  related_jobs?: any[];
+  related_bulletins?: any[];
+  related_news?: any[];
 }
 
 export interface JobFilterParams {
