@@ -5,7 +5,7 @@ import { NewsArticle } from "../types/article";
 import { NewsSourceBadge } from "./news-source-badge";
 import { formatDate } from "@/lib/utils";
 import { Clock, Tag, Sparkles, Languages } from "lucide-react";
-import { detectArticleLanguage } from "../services/translation-service";
+import { detectArticleLanguage } from "../utils/language";
 import { resolveLocalizedNewsArticle } from "../utils/localize";
 
 interface NewsListViewItemProps {

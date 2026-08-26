@@ -6,7 +6,7 @@ import { NewsArticleDetailed } from "../types/article";
 import { NewsSourceBadge } from "./news-source-badge";
 import { RelatedNewsStrip } from "./related-news-strip";
 import { formatDate } from "@/lib/utils";
-import { detectArticleLanguage } from "../services/translation-service";
+import { detectArticleLanguage } from "../utils/language";
 import {
   Clock,
   ExternalLink,

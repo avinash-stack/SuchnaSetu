@@ -1,16 +1,9 @@
 import { createAdminClient } from "@/lib/supabase/admin";
 import { getAiConfig } from "@/modules/ai/config";
 import { NewsArticle, NewsTranslation } from "../types/article";
+import { detectArticleLanguage } from "../utils/language";
 
-/**
- * Detects whether a piece of text is predominantly in Hindi (Devanagari script)
- * or English (Latin script).
- */
-export function detectArticleLanguage(text: string): "hi" | "en" {
-  if (!text) return "en";
-  const devanagariCount = (text.match(/[\u0900-\u097F]/g) || []).length;
-  return devanagariCount > 5 ? "hi" : "en";
-}
+export { detectArticleLanguage };
 
 /**
  * Translates and caches a news article between English and Hindi.

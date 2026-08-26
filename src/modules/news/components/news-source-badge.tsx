@@ -26,7 +26,6 @@ export function NewsSourceBadge({ name, sourceUrl, className = "" }: NewsSourceB
         target="_blank"
         rel="noopener noreferrer"
         className="inline-block hover:opacity-95"
-        onClick={(e) => e.stopPropagation()}
       >
         {content}
       </a>
