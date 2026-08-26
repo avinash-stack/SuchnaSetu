@@ -1,4 +1,4 @@
-import { createClient } from "@/lib/supabase/server";
+import { createPublicClient } from "@/lib/supabase/public";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { NewsArticle, NewsArticleDetailed, NewsFilterParams } from "../types/article";
 import { CANONICAL_NEWS_ARTICLES } from "../constants/seed-articles";
@@ -7,7 +7,7 @@ export async function getNewsArticles(
   filter: NewsFilterParams = {}
 ): Promise<{ articles: NewsArticle[]; total: number; totalPages: number }> {
   try {
-    const supabase = await createClient();
+    const supabase = createPublicClient();
     const page = filter.page && filter.page > 0 ? filter.page : 1;
     const limit = filter.limit && filter.limit > 0 ? filter.limit : 20;
     const from = (page - 1) * limit;
@@ -83,7 +83,7 @@ export async function getNewsArticles(
 
 export async function getTopStories(limit = 7): Promise<NewsArticle[]> {
   try {
-    const supabase = await createClient();
+    const supabase = createPublicClient();
     const { data, error } = await (supabase as any)
       .from("news_articles")
       .select("*, translations:news_translations(*)")
@@ -103,7 +103,7 @@ export async function getTopStories(limit = 7): Promise<NewsArticle[]> {
 
 export async function getNewsArticleBySlug(slug: string): Promise<NewsArticleDetailed | null> {
   try {
-    const supabase = await createClient();
+    const supabase = createPublicClient();
     const { data, error } = await (supabase as any)
       .from("news_articles")
       .select("*, translations:news_translations(*), category:news_categories(*), source:news_sources(*)")
@@ -127,7 +127,7 @@ export async function getRelatedNewsArticles(
   limit = 4
 ): Promise<NewsArticle[]> {
   try {
-    const supabase = await createClient();
+    const supabase = createPublicClient();
     const { data, error } = await (supabase as any)
       .from("news_articles")
       .select("*, translations:news_translations(*)")

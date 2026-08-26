@@ -1,10 +1,10 @@
-import { createClient } from "@/lib/supabase/server";
+import { createPublicClient } from "@/lib/supabase/public";
 import { NewsCategory } from "../types/category";
 import { NEWS_CATEGORIES } from "../constants/categories";
 
 export async function getActiveNewsCategories(): Promise<NewsCategory[]> {
   try {
-    const supabase = await createClient();
+    const supabase = createPublicClient();
     const { data, error } = await (supabase as any)
       .from("news_categories")
       .select("*")
