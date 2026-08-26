@@ -1,16 +1,15 @@
 import { Metadata } from "next";
 import { notFound } from "next/navigation";
-import Link from "next/link";
 import {
   fetchNewsFeed,
   fetchCategoryBySlug,
-  fetchCategoryList,
 } from "@/modules/news/services/news-query-service";
 import { NewsHeader } from "@/modules/news/components/news-header";
-import { NewsFeedCard } from "@/modules/news/components/news-feed-card";
+import { NewsListViewItem } from "@/modules/news/components/news-list-view-item";
+import { NewsPagination } from "@/modules/news/components/news-pagination";
+import { NewsLanguageFilter } from "@/modules/news/components/news-language-filter";
 import { EmptyState } from "@/components/shared/empty-state";
 import { constructMetadata, buildBreadcrumbJsonLd } from "@/lib/seo";
-import { ChevronLeft, ChevronRight } from "lucide-react";
 
 interface CategoryPageProps {
   params: Promise<{
@@ -18,13 +17,17 @@ interface CategoryPageProps {
   }>;
   searchParams: Promise<{
     page?: string;
+    limit?: string;
+    lang?: string;
   }>;
 }
 
 export const revalidate = 180;
 
-export async function generateMetadata({ params }: CategoryPageProps): Promise<Metadata> {
+export async function generateMetadata({ params, searchParams }: CategoryPageProps): Promise<Metadata> {
   const { category: rawCategory } = await params;
+  const sParams = await searchParams;
+  const isHindi = sParams.lang === "hi";
   const category = await fetchCategoryBySlug(rawCategory);
 
   if (!category) {
@@ -35,8 +38,12 @@ export async function generateMetadata({ params }: CategoryPageProps): Promise<M
   }
 
   return constructMetadata({
-    title: `${category.name} News & Updates — SuchnaSetu News`,
-    description: `Latest verified news, policy decisions, and developments in ${category.name}.`,
+    title: isHindi
+      ? `${category.name_hi || category.name} समाचार एवं अपडेट — SuchnaSetu News`
+      : `${category.name} News & Policy Updates — SuchnaSetu News`,
+    description: isHindi
+      ? `${category.name_hi || category.name} से संबंधित नवीनतम सत्यापित समाचार एवं नीतियां।`
+      : `Latest verified news, policy decisions, and national developments in ${category.name}.`,
     path: `/news/category/${category.slug}`,
     canonicalPath: `/news/category/${category.slug}`,
   });
@@ -51,12 +58,18 @@ export default async function NewsCategoryPage({ params, searchParams }: Categor
     notFound();
   }
 
-  const currentPage = parseInt(sParams.page || "1", 10) || 1;
+  const currentPage = Math.max(1, parseInt(sParams.page || "1", 10) || 1);
+  const rawLimit = parseInt(sParams.limit || "20", 10);
+  const limit = [20, 50, 100].includes(rawLimit) ? rawLimit : 20;
+  const lang = sParams.lang === "hi" ? "hi" : "en";
+  const isHindi = lang === "hi";
+
   const { articles, total, totalPages } = await fetchNewsFeed({
     category: category.slug,
     page: currentPage,
-    limit: 15,
+    limit,
     sort: "latest",
+    lang,
   });
 
   const breadcrumbJsonLd = buildBreadcrumbJsonLd([
@@ -75,66 +88,61 @@ export default async function NewsCategoryPage({ params, searchParams }: Categor
       <div className="min-h-screen bg-slate-50/50 pb-16 font-sans">
         <NewsHeader />
 
-        <main className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-8 space-y-6">
+        <main className="mx-auto max-w-5xl px-4 sm:px-6 lg:px-8 py-6 space-y-6">
           {/* Header Banner */}
-          <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-2xs space-y-2">
-            <span className="text-xs font-bold uppercase tracking-wider text-[#013089]">
-              News Category
-            </span>
+          <div className="rounded-2xl border border-slate-200 bg-white p-5 sm:p-6 shadow-2xs space-y-3">
+            <div className="flex items-center justify-between gap-3 flex-wrap">
+              <span className="text-xs font-bold uppercase tracking-wider text-[#013089]">
+                {isHindi ? "समाचार श्रेणी" : "News Desk"}
+              </span>
+              <NewsLanguageFilter currentLang={lang} />
+            </div>
+
             <div className="flex items-baseline justify-between flex-wrap gap-2">
               <h1 className="text-2xl sm:text-3xl font-extrabold text-slate-900 font-heading">
-                {category.name} <span className="text-slate-400 font-normal text-lg">({category.name_hi})</span>
+                {isHindi ? (category.name_hi || category.name) : category.name}{" "}
+                <span className="text-slate-400 font-normal text-lg">
+                  ({isHindi ? category.name : category.name_hi})
+                </span>
               </h1>
               <span className="text-xs text-slate-500 font-mono font-medium">
-                {total} Articles Total
+                {total} {isHindi ? "लेख उपलब्ध" : "Articles Indexed"}
               </span>
             </div>
             {category.description && (
-              <p className="text-sm text-slate-600 max-w-2xl">{category.description}</p>
+              <p className="text-sm text-slate-600 max-w-2xl leading-relaxed">{category.description}</p>
             )}
           </div>
 
-          {/* Articles Stream */}
-          {articles.length > 0 ? (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-              {articles.map((article) => (
-                <NewsFeedCard key={article.id} article={article} />
-              ))}
-            </div>
-          ) : (
-            <EmptyState
-              title={`No articles yet in ${category.name}`}
-              description="New stories will appear here as soon as they are published by our verified sources."
+          {/* Articles Stream in List View */}
+          <section className="space-y-3" aria-label="Category Articles">
+            {articles.length > 0 ? (
+              <div className="space-y-3">
+                {articles.map((article) => (
+                  <NewsListViewItem key={article.id} article={article} lang={lang} />
+                ))}
+              </div>
+            ) : (
+              <EmptyState
+                title={isHindi ? `${category.name_hi || category.name} में अभी कोई लेख नहीं है` : `No articles yet in ${category.name}`}
+                description={
+                  isHindi
+                    ? "जैसे ही नए लेख सत्यापित स्रोतों द्वारा प्रकाशित होंगे, वे यहाँ प्रदर्शित होंगे।"
+                    : "New stories will appear here as soon as they are published by our verified sources."
+                }
+              />
+            )}
+          </section>
+
+          {/* Server-Side Pagination */}
+          {total > 0 && (
+            <NewsPagination
+              currentPage={currentPage}
+              totalPages={totalPages}
+              totalItems={total}
+              currentLimit={limit}
+              lang={lang}
             />
-          )}
-
-          {/* Pagination */}
-          {totalPages > 1 && (
-            <div className="flex items-center justify-center gap-2 pt-6">
-              {currentPage > 1 && (
-                <Link
-                  href={`/news/category/${category.slug}?page=${currentPage - 1}`}
-                  className="px-4 py-2 rounded-lg bg-white border border-slate-200 text-xs font-bold text-slate-700 hover:bg-slate-50 inline-flex items-center gap-1 shadow-2xs"
-                >
-                  <ChevronLeft className="h-4 w-4" />
-                  <span>Previous</span>
-                </Link>
-              )}
-
-              <span className="text-xs font-bold text-slate-600 px-3">
-                Page {currentPage} of {totalPages}
-              </span>
-
-              {currentPage < totalPages && (
-                <Link
-                  href={`/news/category/${category.slug}?page=${currentPage + 1}`}
-                  className="px-4 py-2 rounded-lg bg-white border border-slate-200 text-xs font-bold text-slate-700 hover:bg-slate-50 inline-flex items-center gap-1 shadow-2xs"
-                >
-                  <span>Next</span>
-                  <ChevronRight className="h-4 w-4" />
-                </Link>
-              )}
-            </div>
           )}
         </main>
       </div>

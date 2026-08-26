@@ -72,4 +72,5 @@ export interface NewsFilterParams {
   page?: number;
   limit?: number;
   sort?: "latest" | "popular" | "importance";
+  lang?: "en" | "hi";
 }
