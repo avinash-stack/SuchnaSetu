@@ -1,30 +1,32 @@
 "use client";
 
 import * as React from "react";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useRouter } from "next/navigation";
 import { Search, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 interface NewsSearchBarProps {
   placeholder?: string;
   initialQuery?: string;
+  lang?: "en" | "hi";
 }
 
 export function NewsSearchBar({
   placeholder = "Search headlines, topics, states, or publishers...",
   initialQuery = "",
+  lang = "en",
 }: NewsSearchBarProps) {
   const router = useRouter();
-  const searchParams = useSearchParams();
-  const [query, setQuery] = React.useState(initialQuery || searchParams.get("q") || "");
+  const [query, setQuery] = React.useState(initialQuery);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     const trimmed = query.trim();
+    const langParam = lang === "hi" ? "&lang=hi" : "";
     if (trimmed) {
-      router.push(`/news/search?q=${encodeURIComponent(trimmed)}`);
+      router.push(`/news/search?q=${encodeURIComponent(trimmed)}${langParam}`);
     } else {
-      router.push("/news/search");
+      router.push(`/news/search${lang === "hi" ? "?lang=hi" : ""}`);
     }
   };
 

@@ -87,7 +87,11 @@ export default async function StateNewsPage({ params, searchParams }: StateNewsP
                 <MapPin className="h-4 w-4 text-[#FE8D01]" />
                 <span>{isHindi ? "राज्य एवं प्रादेशिक डेस्क" : "State & Regional News Desk"}</span>
               </div>
-              <NewsLanguageFilter currentLang={lang} />
+              <NewsLanguageFilter
+                currentLang={lang}
+                pathname={`/news/state/${rawState.toLowerCase()}`}
+                searchParams={sParams}
+              />
             </div>
 
             <div className="flex items-baseline justify-between flex-wrap gap-2">
@@ -136,6 +140,8 @@ export default async function StateNewsPage({ params, searchParams }: StateNewsP
               totalItems={total}
               currentLimit={limit}
               lang={lang}
+              pathname={`/news/state/${rawState.toLowerCase()}`}
+              searchParams={sParams}
             />
           )}
         </main>

@@ -78,10 +78,14 @@ export default async function NewsSearchPage({ searchParams }: NewsSearchPagePro
                   {isHindi ? "समाचार एवं सार्वजनिक मामले खोजें" : "Search News & Public Affairs"}
                 </h1>
               </div>
-              <NewsLanguageFilter currentLang={lang} />
+              <NewsLanguageFilter
+                currentLang={lang}
+                pathname="/news/search"
+                searchParams={params}
+              />
             </div>
 
-            <NewsSearchBar initialQuery={query} />
+            <NewsSearchBar initialQuery={query} lang={lang} />
 
             {/* Quick Category Filters */}
             <div className="flex items-center gap-1.5 overflow-x-auto pt-2 no-scrollbar text-xs font-semibold">
@@ -157,6 +161,8 @@ export default async function NewsSearchPage({ searchParams }: NewsSearchPagePro
             totalItems={total}
             currentLimit={limit}
             lang={lang}
+            pathname="/news/search"
+            searchParams={params}
           />
         )}
       </main>

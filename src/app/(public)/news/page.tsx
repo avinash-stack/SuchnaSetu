@@ -101,7 +101,7 @@ export default async function NewsPortalPage({ searchParams }: NewsPortalPagePro
             </div>
 
             {/* Language Switcher */}
-            <NewsLanguageFilter currentLang={lang} />
+            <NewsLanguageFilter currentLang={lang} pathname="/news" searchParams={sParams} />
           </div>
 
           {/* Top Stories Highlights Strip (Only on Page 1) */}
@@ -163,6 +163,8 @@ export default async function NewsPortalPage({ searchParams }: NewsPortalPagePro
               totalItems={total}
               currentLimit={limit}
               lang={lang}
+              pathname="/news"
+              searchParams={sParams}
             />
           )}
 

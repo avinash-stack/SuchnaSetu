@@ -1,24 +1,27 @@
-"use client";
-
 import * as React from "react";
 import Link from "next/link";
-import { usePathname, useSearchParams } from "next/navigation";
 import { Languages } from "lucide-react";
 
 interface NewsLanguageFilterProps {
   currentLang?: "en" | "hi";
+  pathname?: string;
+  searchParams?: Record<string, string | undefined>;
 }
 
-export function NewsLanguageFilter({ currentLang = "en" }: NewsLanguageFilterProps) {
-  const pathname = usePathname();
-  const searchParams = useSearchParams();
-
+export function NewsLanguageFilter({
+  currentLang = "en",
+  pathname = "/news",
+  searchParams = {},
+}: NewsLanguageFilterProps) {
   const createLangUrl = (lang: "en" | "hi") => {
-    const params = new URLSearchParams(searchParams ? searchParams.toString() : "");
-    if (lang === "en") {
-      params.delete("lang");
-    } else {
-      params.set("lang", lang);
+    const params = new URLSearchParams();
+    Object.entries(searchParams).forEach(([key, val]) => {
+      if (val !== undefined && val !== null && val !== "" && key !== "lang") {
+        params.set(key, val);
+      }
+    });
+    if (lang === "hi") {
+      params.set("lang", "hi");
     }
     const qs = params.toString();
     return qs ? `${pathname}?${qs}` : pathname;

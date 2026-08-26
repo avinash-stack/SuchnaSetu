@@ -95,7 +95,11 @@ export default async function NewsCategoryPage({ params, searchParams }: Categor
               <span className="text-xs font-bold uppercase tracking-wider text-[#013089]">
                 {isHindi ? "समाचार श्रेणी" : "News Desk"}
               </span>
-              <NewsLanguageFilter currentLang={lang} />
+              <NewsLanguageFilter
+                currentLang={lang}
+                pathname={`/news/category/${category.slug}`}
+                searchParams={sParams}
+              />
             </div>
 
             <div className="flex items-baseline justify-between flex-wrap gap-2">
@@ -142,6 +146,8 @@ export default async function NewsCategoryPage({ params, searchParams }: Categor
               totalItems={total}
               currentLimit={limit}
               lang={lang}
+              pathname={`/news/category/${category.slug}`}
+              searchParams={sParams}
             />
           )}
         </main>

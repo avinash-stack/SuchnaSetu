@@ -1,8 +1,5 @@
-"use client";
-
 import * as React from "react";
 import Link from "next/link";
-import { usePathname, useSearchParams, useRouter } from "next/navigation";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 
 interface NewsPaginationProps {
@@ -11,6 +8,8 @@ interface NewsPaginationProps {
   totalItems: number;
   currentLimit: number;
   lang?: "en" | "hi";
+  pathname?: string;
+  searchParams?: Record<string, string | undefined>;
 }
 
 export function NewsPagination({
@@ -19,37 +18,31 @@ export function NewsPagination({
   totalItems,
   currentLimit,
   lang = "en",
+  pathname = "/news",
+  searchParams = {},
 }: NewsPaginationProps) {
-  const pathname = usePathname();
-  const searchParams = useSearchParams();
-  const router = useRouter();
-
   const isHindi = lang === "hi";
 
   const createPageUrl = (page: number, limit = currentLimit) => {
-    const params = new URLSearchParams(searchParams ? searchParams.toString() : "");
+    const params = new URLSearchParams();
+    Object.entries(searchParams).forEach(([key, val]) => {
+      if (val !== undefined && val !== null && val !== "" && key !== "page" && key !== "limit") {
+        params.set(key, val);
+      }
+    });
     params.set("page", page.toString());
     params.set("limit", limit.toString());
-    if (lang && lang !== "en") {
-      params.set("lang", lang);
+    if (lang === "hi") {
+      params.set("lang", "hi");
     }
-    return `${pathname}?${params.toString()}`;
-  };
-
-  const handleLimitChange = (newLimit: number) => {
-    const params = new URLSearchParams(searchParams ? searchParams.toString() : "");
-    params.set("page", "1");
-    params.set("limit", newLimit.toString());
-    if (lang && lang !== "en") {
-      params.set("lang", lang);
-    }
-    router.push(`${pathname}?${params.toString()}`);
+    const qs = params.toString();
+    return qs ? `${pathname}?${qs}` : pathname;
   };
 
   // Generate compact page range (e.g. 1 ... 4 5 6 ... 10)
   const getVisiblePages = () => {
     const pages: (number | string)[] = [];
-    const delta = 1; // Number of pages to show around current page
+    const delta = 1; // Number of pages around current
 
     if (totalPages <= 5) {
       for (let i = 1; i <= totalPages; i++) pages.push(i);
@@ -90,20 +83,22 @@ export function NewsPagination({
           {isHindi ? "प्रति पृष्ठ लेख:" : "Articles per page:"}
         </span>
         <div className="inline-flex rounded-lg border border-slate-200 bg-slate-50 p-0.5">
-          {[20, 50, 100].map((size) => (
-            <button
-              key={size}
-              type="button"
-              onClick={() => handleLimitChange(size)}
-              className={`px-2.5 py-1 text-xs font-bold rounded-md transition-all ${
-                currentLimit === size
-                  ? "bg-[#013089] text-white shadow-2xs"
-                  : "text-slate-600 hover:text-slate-900 hover:bg-slate-200/60"
-              }`}
-            >
-              {size}
-            </button>
-          ))}
+          {[20, 50, 100].map((size) => {
+            const isSelected = currentLimit === size;
+            return (
+              <Link
+                key={size}
+                href={createPageUrl(1, size)}
+                className={`px-2.5 py-1 text-xs font-bold rounded-md transition-all ${
+                  isSelected
+                    ? "bg-[#013089] text-white shadow-2xs"
+                    : "text-slate-600 hover:text-slate-900 hover:bg-slate-200/60"
+                }`}
+              >
+                {size}
+              </Link>
+            );
+          })}
         </div>
       </div>
 
