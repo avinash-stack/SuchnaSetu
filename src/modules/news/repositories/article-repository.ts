@@ -115,7 +115,7 @@ export async function getNewsArticleBySlug(slug: string): Promise<NewsArticleDet
     const supabase = createPublicClient();
     const { data, error } = await (supabase as any)
       .from("news_articles")
-      .select("*, translations:news_translations(*), category:news_categories(*), source:news_sources(*)")
+      .select("*, translations:news_translations(*)")
       .eq("slug", slug)
       .maybeSingle();
 

@@ -2,12 +2,15 @@
 
 import Link from "next/link";
 import Image from "next/image";
+import { usePathname } from "next/navigation";
 import { SITE_CONFIG } from "@/lib/constants";
 import { useLanguage } from "@/lib/i18n/context";
 import { ShieldAlert, ExternalLink, ShieldCheck } from "lucide-react";
 
 export function PublicFooter() {
   const { t } = useLanguage();
+  const pathname = usePathname();
+  const isNewsSection = pathname?.startsWith("/news");
 
   return (
     <footer className="border-t border-slate-200 bg-[#0F172A] text-slate-400">
@@ -203,29 +206,31 @@ export function PublicFooter() {
           </div>
         </div>
 
-        {/* Legal & Compliance Links Strip */}
-        <div className="mt-10 border-t border-slate-800/80 pt-6 grid grid-cols-1 md:grid-cols-2 gap-4 text-xs text-slate-400">
-          <div className="flex flex-wrap items-center gap-x-4 gap-y-1.5">
-            <span className="font-bold text-slate-300 uppercase tracking-wider text-[11px]">Jobs Legal:</span>
-            <Link href="/jobs/privacy-policy" className="hover:text-white transition-colors underline-offset-2 hover:underline">
-              Jobs Privacy Policy
-            </Link>
-            <span className="text-slate-600">•</span>
-            <Link href="/jobs/terms-and-conditions" className="hover:text-white transition-colors underline-offset-2 hover:underline">
-              Jobs Terms &amp; Conditions
-            </Link>
-          </div>
-
-          <div className="flex flex-wrap items-center gap-x-4 gap-y-1.5 md:justify-end">
-            <span className="font-bold text-slate-300 uppercase tracking-wider text-[11px]">News Legal:</span>
-            <Link href="/news/privacy-policy" className="hover:text-white transition-colors underline-offset-2 hover:underline">
-              News Privacy Policy
-            </Link>
-            <span className="text-slate-600">•</span>
-            <Link href="/news/terms-and-conditions" className="hover:text-white transition-colors underline-offset-2 hover:underline">
-              News Terms &amp; Conditions
-            </Link>
-          </div>
+        {/* Legal & Compliance Links Strip (Separated per portal) */}
+        <div className="mt-10 border-t border-slate-800/80 pt-6 flex flex-wrap items-center justify-between gap-4 text-xs text-slate-400">
+          {isNewsSection ? (
+            <div className="flex flex-wrap items-center gap-x-4 gap-y-1.5">
+              <span className="font-bold text-slate-300 uppercase tracking-wider text-[11px]">News Legal:</span>
+              <Link href="/news/privacy-policy" className="hover:text-white transition-colors underline-offset-2 hover:underline">
+                News Privacy Policy
+              </Link>
+              <span className="text-slate-600">•</span>
+              <Link href="/news/terms-and-conditions" className="hover:text-white transition-colors underline-offset-2 hover:underline">
+                News Terms &amp; Conditions
+              </Link>
+            </div>
+          ) : (
+            <div className="flex flex-wrap items-center gap-x-4 gap-y-1.5">
+              <span className="font-bold text-slate-300 uppercase tracking-wider text-[11px]">Jobs Legal:</span>
+              <Link href="/jobs/privacy-policy" className="hover:text-white transition-colors underline-offset-2 hover:underline">
+                Jobs Privacy Policy
+              </Link>
+              <span className="text-slate-600">•</span>
+              <Link href="/jobs/terms-and-conditions" className="hover:text-white transition-colors underline-offset-2 hover:underline">
+                Jobs Terms &amp; Conditions
+              </Link>
+            </div>
+          )}
         </div>
 
         {/* Bottom Bar */}

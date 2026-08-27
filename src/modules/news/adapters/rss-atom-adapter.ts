@@ -1,6 +1,7 @@
 import { NewsSource, RawNewsFeedItem } from "../types/source";
 import { NewsSourceAdapter, NormalizedNewsPayload } from "./base-adapter";
 import { sanitizeHtml, truncateSummary, extractImageUrl } from "../utils/content-sanitizer";
+import { ArticleContentExtractor } from "../services/article-content-extractor";
 
 export class RssAtomAdapter implements NewsSourceAdapter {
   constructor(public source: NewsSource) {}
@@ -115,10 +116,23 @@ export class RssAtomAdapter implements NewsSourceAdapter {
     const cleanSummary = truncateSummary(summaryText, 350);
     const imageUrl = extractImageUrl(rawItem);
 
+    // If RSS does not provide multi-paragraph content, fetch from the original page
+    let fullContent = rawItem.content && rawItem.content.length > 250 ? rawItem.content : null;
+    if (!fullContent && rawItem.link) {
+      try {
+        const extracted = await ArticleContentExtractor.extractFullContent(rawItem.link);
+        if (extracted && extracted.length > 150) {
+          fullContent = extracted;
+        }
+      } catch {
+        // Continue gracefully
+      }
+    }
+
     return {
       title: cleanTitle,
       summary: cleanSummary,
-      content: rawItem.content ? truncateSummary(rawItem.content, 4000) : null,
+      content: fullContent ? truncateSummary(fullContent, 6000) : null,
       sourceUrl: rawItem.link,
       canonicalUrl: rawItem.link,
       author: author || this.source.name,

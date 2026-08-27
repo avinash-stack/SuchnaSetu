@@ -58,31 +58,44 @@ const fetchJobBySlugUncached = async (slug: string): Promise<GovJobDetailed | nu
   const rawJob = job as any;
 
   // Fetch contextual related entities in parallel for rich internal linking
+  const jobFilters: string[] = [];
+  if (rawJob.organization_id) jobFilters.push(`organization_id.eq.${rawJob.organization_id}`);
+  if (rawJob.category_id) jobFilters.push(`category_id.eq.${rawJob.category_id}`);
+
+  const examFilters: string[] = [`related_job_id.eq.${rawJob.id}`];
+  if (rawJob.organization_id) examFilters.push(`organization_id.eq.${rawJob.organization_id}`);
+
   const [relatedJobsRes, relatedExamsRes, relatedBulletinsRes, relatedNewsRes] = await Promise.all([
-    supabase
-      .from("gov_jobs")
-      .select("id, title, slug, total_vacancies, application_end_date, state_code, pay_scale_details, organization:organizations(name, acronym)")
-      .eq("status", "published")
-      .is("deleted_at", null)
-      .neq("id", rawJob.id)
-      .or(`organization_id.eq.${rawJob.organization_id},category_id.eq.${rawJob.category_id}`)
-      .order("published_at", { ascending: false })
-      .limit(4),
-    supabase
-      .from("gov_exams")
-      .select("id, title, slug, mode, exam_code, published_at, organization:organizations(name, acronym)")
-      .eq("status", "published")
-      .is("deleted_at", null)
-      .or(`related_job_id.eq.${rawJob.id},organization_id.eq.${rawJob.organization_id}`)
-      .order("published_at", { ascending: false })
-      .limit(4),
-    supabase
-      .from("public_bulletins")
-      .select("id, title, slug, category, summary, source_url, source_name, published_at")
-      .eq("status", "published")
-      .or(`related_job_id.eq.${rawJob.id},organization_id.eq.${rawJob.organization_id}`)
-      .order("published_at", { ascending: false })
-      .limit(4),
+    jobFilters.length > 0
+      ? supabase
+          .from("gov_jobs")
+          .select("id, title, slug, total_vacancies, application_end_date, state_code, pay_scale_details, organization:organizations(name, acronym)")
+          .eq("status", "published")
+          .is("deleted_at", null)
+          .neq("id", rawJob.id)
+          .or(jobFilters.join(","))
+          .order("published_at", { ascending: false })
+          .limit(4)
+      : Promise.resolve({ data: [] }),
+    examFilters.length > 0
+      ? supabase
+          .from("gov_exams")
+          .select("id, title, slug, mode, exam_code, published_at, organization:organizations(name, acronym)")
+          .eq("status", "published")
+          .is("deleted_at", null)
+          .or(examFilters.join(","))
+          .order("published_at", { ascending: false })
+          .limit(4)
+      : Promise.resolve({ data: [] }),
+    examFilters.length > 0
+      ? supabase
+          .from("public_bulletins")
+          .select("id, title, slug, category, summary, source_url, source_name, published_at")
+          .eq("status", "published")
+          .or(examFilters.join(","))
+          .order("published_at", { ascending: false })
+          .limit(4)
+      : Promise.resolve({ data: [] }),
     supabase
       .from("news_articles")
       .select("id, title, slug, summary, source_name, source_url, published_at, category_slug")

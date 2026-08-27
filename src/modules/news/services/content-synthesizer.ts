@@ -26,19 +26,51 @@ export class NewsContentSynthesizer {
     const sourceName = article.source_name || "Official Public Notice";
     const category = article.category_slug ? article.category_slug.toUpperCase() : "NATIONAL";
 
-    // 1. If detailed content is already available and multi-paragraph, return it directly
-    if (article.content && article.content.length > 250) {
-      const paras = article.content
+    // 1. If detailed content is already available, format it cleanly into paragraphs
+    if (article.content && article.content.trim().length > 180) {
+      const explicitParas = article.content
         .split(/\n\s*\n/)
         .map((p) => p.trim())
         .filter((p) => p.length > 0);
 
-      if (paras.length >= 2) {
+      if (explicitParas.length >= 2) {
         return {
           summary: article.summary,
-          paragraphs: paras,
+          paragraphs: explicitParas,
         };
       }
+
+      // If single long paragraph, chunk into multi-sentence paragraphs
+      const sentences = article.content
+        .replace(/\n+/g, " ")
+        .split(/(?<=[.!?।])\s+/)
+        .map((s) => s.trim())
+        .filter((s) => s.length > 0);
+
+      if (sentences.length >= 3) {
+        const chunkedParas: string[] = [];
+        let currentChunk: string[] = [];
+
+        for (let i = 0; i < sentences.length; i++) {
+          currentChunk.push(sentences[i]);
+          if (currentChunk.join(" ").length >= 180 || i === sentences.length - 1) {
+            chunkedParas.push(currentChunk.join(" "));
+            currentChunk = [];
+          }
+        }
+
+        if (chunkedParas.length > 0) {
+          return {
+            summary: article.summary,
+            paragraphs: chunkedParas,
+          };
+        }
+      }
+
+      return {
+        summary: article.summary,
+        paragraphs: [article.content.trim()],
+      };
     }
 
     // 2. Synthesize flowing, complete journalistic narrative
