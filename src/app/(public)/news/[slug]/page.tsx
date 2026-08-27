@@ -72,6 +72,7 @@ export default async function NewsArticleDetailPage({ params, searchParams }: Ne
     title: article.title,
     description: article.summary,
     url: `/news/${article.slug}${requestedLang === "hi" ? "?lang=hi" : ""}`,
+    imageUrl: article.image_url,
     datePublished: article.published_at,
     dateModified: article.updated_at,
     authorName: article.author || article.source_name || "SuchnaSetu News Desk",

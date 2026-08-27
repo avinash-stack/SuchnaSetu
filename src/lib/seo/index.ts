@@ -660,6 +660,7 @@ export function buildNewsArticleJsonLd({
   title,
   description,
   url,
+  imageUrl,
   datePublished,
   dateModified,
   authorName = "SuchnaSetu Civic News Desk",
@@ -667,6 +668,7 @@ export function buildNewsArticleJsonLd({
   title: string;
   description: string;
   url: string;
+  imageUrl?: string | null;
   datePublished?: string | null;
   dateModified?: string | null;
   authorName?: string;
@@ -678,6 +680,7 @@ export function buildNewsArticleJsonLd({
     headline: title,
     description,
     url,
+    ...(imageUrl ? { image: [imageUrl] } : {}),
     datePublished: datePublished || new Date().toISOString(),
     dateModified: dateModified || new Date().toISOString(),
     author: {

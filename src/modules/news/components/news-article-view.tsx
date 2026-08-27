@@ -2,6 +2,7 @@
 
 import * as React from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { NewsArticleDetailed } from "../types/article";
 import { NewsSourceBadge } from "./news-source-badge";
 import { RelatedNewsStrip } from "./related-news-strip";
@@ -167,6 +168,24 @@ export function NewsArticleView({
           </div>
         </div>
       </header>
+
+      {/* 2.5 AI-Generated Featured News Image (Story-Specific) */}
+      {article.image_url && (
+        <figure className="rounded-2xl overflow-hidden border border-slate-200/80 shadow-xs bg-slate-100 relative group aspect-[16/9] w-full">
+          <Image
+            src={article.image_url}
+            alt={article.title}
+            fill
+            priority
+            sizes="(max-width: 768px) 100vw, (max-width: 1200px) 90vw, 850px"
+            className="object-cover transition-transform duration-500 group-hover:scale-102"
+          />
+          <figcaption className="sr-only">{article.title}</figcaption>
+          <div className="absolute bottom-3 right-3 rounded-md bg-slate-900/70 backdrop-blur-xs px-2.5 py-1 text-[11px] font-medium text-slate-200 tracking-wide pointer-events-none shadow-xs">
+            {isHindi ? "AI दृश्य प्रस्तुति" : "AI Visual Representation"}
+          </div>
+        </figure>
+      )}
 
       {/* 3. AI Summary at Top */}
       <section className="rounded-2xl border border-blue-200/90 bg-gradient-to-r from-blue-50/70 to-indigo-50/40 p-5 sm:p-6 space-y-2.5 shadow-2xs">

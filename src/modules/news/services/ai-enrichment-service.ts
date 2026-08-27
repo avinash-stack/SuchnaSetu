@@ -58,32 +58,41 @@ export async function enrichNewsArticleWithAi(
 
   const model = process.env.NEWS_AI_MODEL || config.searchModel || "google/gemini-2.5-flash";
 
-  const prompt = `You are an official Indian News intelligence reporter for SuchnaSetu. Analyze this news item and produce a structured, comprehensive news report along with metadata:
-Title: ${payload.title}
-Text: ${payload.summary} ${payload.content ? payload.content.slice(0, 800) : ""}
+  const prompt = `You are a factual, objective news editor for SuchnaSetu. Process this authentic news report and output a structured editorial report along with taxonomy metadata:
 
-Strict Reporting Guidelines:
-1. Generate an informative, factual multi-paragraph article body (at least 3-4 paragraphs) covering:
-   - What Happened: The core announcement or event.
-   - Key Details: Specific facts, figures, dates, quotas, and participating authorities.
-   - Important Context & Significance: Why this update matters to students, jobseekers, or citizens.
-2. DO NOT invent facts. Strictly preserve names, numbers, dates, and official terms.
-3. Allowed categories (must be exactly one of): india, states, education, governance, business, technology, politics, world, health, sports, entertainment.
+Title: ${payload.title}
+Source: ${payload.author || "News Desk"}
+Raw Story Text:
+${payload.content ? payload.content.slice(0, 3500) : payload.summary}
+
+Strict Editorial Directives:
+1. "summary": A crisp 2-sentence factual executive summary of what happened.
+2. "content": Write a thorough, multi-paragraph factual news article (at least 3-4 distinct paragraphs separated by double newlines \\n\\n) based strictly on the provided real news text:
+   - Paragraph 1: The core announcement or event, key individuals/authorities involved, and primary context.
+   - Paragraph 2: Specific figures, numbers, dates, locations, quotes, and operational decisions mentioned in the story.
+   - Paragraph 3: Background context, affected citizens/stakeholders, and procedural details.
+   - DO NOT invent or hallucinate any facts.
+   - DO NOT generate generic template filler or repetitive platitudes.
+   - DO NOT repeat the headline as the body.
+   - Preserve all specific names, dates, numbers, and locations from the source text.
+3. "category_slug": Must be exactly one of: india, states, education, governance, business, technology, politics, world, health, sports, entertainment.
+4. "state_code": 2-letter state code if state-specific (e.g. BR, UP, MH, DL, TN, KA, WB, PB, RJ, MP, GJ, KL) or null.
+5. "tags": 3 to 5 relevant topic tags.
 
 Respond with a single raw JSON object matching:
 {
-  "summary": "Crisp 2-sentence objective factual summary in English",
-  "content": "Full multi-paragraph structured article text with paragraphs separated by double newlines",
-  "category_slug": "one of the allowed category slugs",
+  "summary": "Crisp 2-sentence factual summary",
+  "content": "Paragraph 1\\n\\nParagraph 2\\n\\nParagraph 3",
+  "category_slug": "india",
   "subcategory": "specific topic",
-  "state_code": "2-letter state code if state-specific (e.g. BR, UP, MH, DL) or null",
-  "tags": ["3 to 5 relevant tags"],
-  "organizations": ["mentioned organizations (e.g. UPSC, UGC, ISRO, High Court)"],
+  "state_code": null,
+  "tags": ["Tag1", "Tag2", "Tag3"],
+  "organizations": ["Org1", "Org2"],
   "importance": "breaking | high | standard"
 }`;
 
   const controller = new AbortController();
-  const timeoutId = setTimeout(() => controller.abort(), 8000);
+  const timeoutId = setTimeout(() => controller.abort(), 12000);
 
   try {
     const res = await fetch("https://openrouter.ai/api/v1/chat/completions", {
@@ -92,14 +101,14 @@ Respond with a single raw JSON object matching:
         "Authorization": `Bearer ${config.apiKey}`,
         "Content-Type": "application/json",
         "HTTP-Referer": "https://suchnasetu.in",
-        "X-Title": "SuchnaSetu News AI Classifier",
+        "X-Title": "SuchnaSetu News AI Intelligence",
       },
       body: JSON.stringify({
         model,
         messages: [
           {
             role: "system",
-            content: "You are a news classification engine. Return only a valid JSON object without markdown fences.",
+            content: "You are a professional factual news classifier and editor. Return only a valid JSON object without markdown fences.",
           },
           {
             role: "user",
@@ -108,7 +117,7 @@ Respond with a single raw JSON object matching:
         ],
         response_format: { type: "json_object" },
         temperature: 0.1,
-        max_tokens: 450,
+        max_tokens: 1200,
       }),
       signal: controller.signal,
     });
@@ -116,37 +125,40 @@ Respond with a single raw JSON object matching:
     clearTimeout(timeoutId);
 
     if (!res.ok) {
-      console.warn(`[News AI Enrichment HTTP ${res.status}] using fallback`);
+      console.warn(`[News AI Enrichment HTTP ${res.status}] using fallback metadata`);
       return defaultMetadata;
     }
 
     const data = await res.json();
-    const rawContent = data?.choices?.[0]?.message?.content?.trim();
-    if (!rawContent) return defaultMetadata;
+    const rawContent = data.choices?.[0]?.message?.content;
+    if (!rawContent) {
+      return defaultMetadata;
+    }
 
     const parsed = JSON.parse(rawContent);
 
-    const category = (parsed.category_slug || "").toLowerCase();
-    const validCategory = ALLOWED_CATEGORIES.includes(category) ? category : defaultMetadata.categorySlug;
+    const categorySlug = ALLOWED_CATEGORIES.includes(parsed.category_slug?.toLowerCase())
+      ? parsed.category_slug.toLowerCase()
+      : defaultMetadata.categorySlug;
 
     return {
-      summary: parsed.summary || payload.summary,
-      content: parsed.content || payload.content || null,
-      categorySlug: validCategory,
+      summary: parsed.summary?.trim() || defaultMetadata.summary,
+      content: parsed.content?.trim() || defaultMetadata.content,
+      categorySlug,
       subcategory: parsed.subcategory || null,
-      stateCode: parsed.state_code || payload.stateCode || null,
+      stateCode: parsed.state_code || defaultMetadata.stateCode,
       tags: Array.isArray(parsed.tags) && parsed.tags.length > 0 ? parsed.tags : defaultMetadata.tags,
       entities: {
         organizations: Array.isArray(parsed.organizations) ? parsed.organizations : [],
       },
-      importance: (["breaking", "high", "standard"].includes(parsed.importance)
+      importance: ["breaking", "high", "standard"].includes(parsed.importance)
         ? parsed.importance
-        : "standard") as NewsImportance,
+        : "standard",
       aiStatus: "enriched",
       aiModel: model,
     };
-  } catch {
-    clearTimeout(timeoutId);
+  } catch (err: any) {
+    console.warn(`[News AI Enrichment Warning]: ${err.message}, preserving extracted content`);
     return defaultMetadata;
   }
 }
