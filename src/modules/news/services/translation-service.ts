@@ -1,13 +1,56 @@
 import { createAdminClient } from "@/lib/supabase/admin";
-import { getAiConfig } from "@/modules/ai/config";
 import { NewsArticle, NewsTranslation } from "../types/article";
 import { detectArticleLanguage } from "../utils/language";
 
 export { detectArticleLanguage };
 
 /**
- * Translates and caches a news article between English and Hindi.
- * Strictly preserves names, numbers, dates, government department names, official designations, and URLs.
+ * Translates text reliably using Google Translate API with chunking and timeout protection.
+ */
+async function translateWithGoogle(text: string, targetLang: "hi" | "en"): Promise<string> {
+  if (!text || text.trim().length === 0) return text;
+
+  // Split into paragraphs to preserve structure and prevent query length truncation
+  const paragraphs = text.split(/\n\s*\n/);
+  const translatedParas: string[] = [];
+
+  for (const para of paragraphs) {
+    const trimmed = para.trim();
+    if (!trimmed) {
+      translatedParas.push("");
+      continue;
+    }
+
+    try {
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 6000);
+
+      const url = `https://translate.googleapis.com/translate_a/single?client=gtx&sl=auto&tl=${targetLang}&dt=t&q=${encodeURIComponent(trimmed)}`;
+      const res = await fetch(url, { signal: controller.signal });
+      clearTimeout(timeoutId);
+
+      if (res.ok) {
+        const data = await res.json();
+        if (Array.isArray(data) && Array.isArray(data[0])) {
+          const translated = data[0].map((item: any) => (item && item[0] ? item[0] : "")).join("");
+          translatedParas.push(translated || trimmed);
+        } else {
+          translatedParas.push(trimmed);
+        }
+      } else {
+        translatedParas.push(trimmed);
+      }
+    } catch {
+      translatedParas.push(trimmed);
+    }
+  }
+
+  return translatedParas.join("\n\n");
+}
+
+/**
+ * Translates and caches a news article between English and Hindi using Google Translate.
+ * Translates full content, headline, and summary.
  */
 export async function translateAndCacheNewsArticle(
   article: NewsArticle,
@@ -15,7 +58,7 @@ export async function translateAndCacheNewsArticle(
 ): Promise<NewsTranslation | null> {
   const sourceLang = detectArticleLanguage(article.title + " " + article.summary);
 
-  // If the target language is identical to the source language, no AI translation is required
+  // If the target language is identical to the source language, return as-is
   if (sourceLang === targetLang) {
     return {
       id: `${article.id}-${targetLang}`,
@@ -46,63 +89,15 @@ export async function translateAndCacheNewsArticle(
     console.warn("Could not check cached news translation:", err);
   }
 
-  // 2. Generate on-demand via server-side AI
-  const config = getAiConfig();
-  if (!config.isEnabled || !config.apiKey) return null;
-
-  const model = process.env.NEWS_AI_MODEL || config.searchModel || "google/gemini-2.5-flash";
-  const targetLanguageName = targetLang === "hi" ? "Hindi" : "English";
-  const sourceLanguageName = sourceLang === "hi" ? "Hindi" : "English";
-
-  const prompt = `Translate this Indian news story headline and summary from ${sourceLanguageName} into ${targetLanguageName}:
-Title: ${article.title}
-Summary: ${article.summary}
-${article.content ? `Content: ${article.content.slice(0, 1200)}` : ""}
-
-Strict Editorial Rules:
-1. Maintain journalistic precision and factual accuracy.
-2. DO NOT translate or alter proper nouns, abbreviations (e.g. PIB, ISRO, RBI, UPSC, CSBC, SSC, CBSE, UGC, AIIMS, DRDO, etc.), numbers, dates, official department names, and URLs.
-3. DO NOT translate official scheme names (e.g. PM-KISAN, Ayushman Bharat, Digital India).
-4. Output valid JSON only with keys: "title", "summary"${article.content ? ', "content"' : ""}.`;
-
-  const controller = new AbortController();
-  const timeoutId = setTimeout(() => controller.abort(), 7000);
-
+  // 2. Translate full content via Google Translate
   try {
-    const res = await fetch("https://openrouter.ai/api/v1/chat/completions", {
-      method: "POST",
-      headers: {
-        "Authorization": `Bearer ${config.apiKey}`,
-        "Content-Type": "application/json",
-        "HTTP-Referer": "https://suchnasetu.in",
-        "X-Title": "SuchnaSetu News Translator",
-      },
-      body: JSON.stringify({
-        model,
-        messages: [
-          {
-            role: "system",
-            content: `You are a professional ${targetLanguageName} news translator for SuchnaSetu. Output valid JSON only.`,
-          },
-          {
-            role: "user",
-            content: prompt,
-          },
-        ],
-        response_format: { type: "json_object" },
-        temperature: 0.1,
-      }),
-      signal: controller.signal,
-    });
+    const [title, summary, content] = await Promise.all([
+      translateWithGoogle(article.title, targetLang),
+      translateWithGoogle(article.summary, targetLang),
+      article.content ? translateWithGoogle(article.content, targetLang) : Promise.resolve(null),
+    ]);
 
-    clearTimeout(timeoutId);
-
-    if (!res.ok) return null;
-
-    const data = await res.json();
-    const parsed = JSON.parse(data?.choices?.[0]?.message?.content || "{}");
-
-    if (!parsed.title || !parsed.summary) return null;
+    if (!title || !summary) return null;
 
     const supabase = createAdminClient();
     const { data: saved, error } = await (supabase as any)
@@ -111,9 +106,9 @@ Strict Editorial Rules:
         {
           article_id: article.id,
           language_code: targetLang,
-          title: parsed.title,
-          summary: parsed.summary,
-          content: parsed.content || null,
+          title,
+          summary,
+          content: content || null,
           updated_at: new Date().toISOString(),
         },
         { onConflict: "article_id,language_code" }
@@ -122,14 +117,14 @@ Strict Editorial Rules:
       .single();
 
     if (error) {
-      console.warn("Failed to persist news translation:", error);
+      console.warn("Failed to persist news translation:", error.message);
       return {
         id: `${article.id}-${targetLang}`,
         article_id: article.id,
         language_code: targetLang,
-        title: parsed.title,
-        summary: parsed.summary,
-        content: parsed.content || null,
+        title,
+        summary,
+        content: content || null,
         created_at: new Date().toISOString(),
         updated_at: new Date().toISOString(),
       };
@@ -137,8 +132,7 @@ Strict Editorial Rules:
 
     return saved as NewsTranslation;
   } catch (err) {
-    clearTimeout(timeoutId);
-    console.warn("News AI translation error:", err);
+    console.warn("Google Translation error:", err);
     return null;
   }
 }
@@ -183,7 +177,7 @@ export async function getOrTranslateNewsArticle<T extends NewsArticle>(
     };
   }
 
-  // Otherwise, translate on-demand and cache in DB
+  // Otherwise, translate on-demand via Google Translate and cache in DB
   const translation = await translateAndCacheNewsArticle(article, targetLang);
   if (translation) {
     return {

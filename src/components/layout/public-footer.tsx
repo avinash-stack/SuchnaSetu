@@ -203,8 +203,33 @@ export function PublicFooter() {
           </div>
         </div>
 
+        {/* Legal & Compliance Links Strip */}
+        <div className="mt-10 border-t border-slate-800/80 pt-6 grid grid-cols-1 md:grid-cols-2 gap-4 text-xs text-slate-400">
+          <div className="flex flex-wrap items-center gap-x-4 gap-y-1.5">
+            <span className="font-bold text-slate-300 uppercase tracking-wider text-[11px]">Jobs Legal:</span>
+            <Link href="/jobs/privacy-policy" className="hover:text-white transition-colors underline-offset-2 hover:underline">
+              Jobs Privacy Policy
+            </Link>
+            <span className="text-slate-600">•</span>
+            <Link href="/jobs/terms-and-conditions" className="hover:text-white transition-colors underline-offset-2 hover:underline">
+              Jobs Terms &amp; Conditions
+            </Link>
+          </div>
+
+          <div className="flex flex-wrap items-center gap-x-4 gap-y-1.5 md:justify-end">
+            <span className="font-bold text-slate-300 uppercase tracking-wider text-[11px]">News Legal:</span>
+            <Link href="/news/privacy-policy" className="hover:text-white transition-colors underline-offset-2 hover:underline">
+              News Privacy Policy
+            </Link>
+            <span className="text-slate-600">•</span>
+            <Link href="/news/terms-and-conditions" className="hover:text-white transition-colors underline-offset-2 hover:underline">
+              News Terms &amp; Conditions
+            </Link>
+          </div>
+        </div>
+
         {/* Bottom Bar */}
-        <div className="mt-12 border-t border-slate-800 pt-6 flex flex-col md:flex-row items-center justify-between text-sm text-slate-500 gap-4">
+        <div className="mt-6 border-t border-slate-800/60 pt-6 flex flex-col md:flex-row items-center justify-between text-xs sm:text-sm text-slate-500 gap-4">
           <p>{t("footer.rights")}</p>
           <div className="flex items-center space-x-6 text-xs sm:text-sm">
             <Link href="/robots.txt" className="hover:text-slate-300 transition-colors">

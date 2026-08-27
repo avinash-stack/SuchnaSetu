@@ -118,7 +118,7 @@ export class RssAtomAdapter implements NewsSourceAdapter {
     return {
       title: cleanTitle,
       summary: cleanSummary,
-      content: rawItem.content ? truncateSummary(rawItem.content, 1500) : null,
+      content: rawItem.content ? truncateSummary(rawItem.content, 4000) : null,
       sourceUrl: rawItem.link,
       canonicalUrl: rawItem.link,
       author: author || this.source.name,

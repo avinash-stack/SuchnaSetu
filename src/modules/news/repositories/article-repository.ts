@@ -49,6 +49,9 @@ export async function getNewsArticles(
       if (filter.category && filter.category !== "all") {
         filtered = filtered.filter((a) => a.category_slug === filter.category!.toLowerCase());
       }
+      if (filter.state && filter.state !== "all") {
+        filtered = filtered.filter((a) => a.state_code?.toUpperCase() === filter.state!.toUpperCase());
+      }
       if (filter.search && filter.search.trim()) {
         const q = filter.search.trim().toLowerCase();
         filtered = filtered.filter(
@@ -76,6 +79,12 @@ export async function getNewsArticles(
     };
   } catch (err) {
     let filtered = [...CANONICAL_NEWS_ARTICLES];
+    if (filter.category && filter.category !== "all") {
+      filtered = filtered.filter((a) => a.category_slug === filter.category!.toLowerCase());
+    }
+    if (filter.state && filter.state !== "all") {
+      filtered = filtered.filter((a) => a.state_code?.toUpperCase() === filter.state!.toUpperCase());
+    }
     const limit = filter.limit && filter.limit > 0 ? filter.limit : 20;
     return { articles: filtered.slice(0, limit), total: filtered.length, totalPages: Math.ceil(filtered.length / limit) || 1 };
   }
