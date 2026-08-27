@@ -4,6 +4,7 @@ import { NormalizedNewsPayload } from "../adapters/base-adapter";
 
 export interface EnrichedNewsMetadata {
   summary: string;
+  content?: string | null;
   categorySlug: string;
   subcategory?: string | null;
   stateCode?: string | null;
@@ -39,6 +40,7 @@ export async function enrichNewsArticleWithAi(
   const fallbackCategory = (payload.categorySlug || "india").toLowerCase();
   const defaultMetadata: EnrichedNewsMetadata = {
     summary: payload.summary,
+    content: payload.content || null,
     categorySlug: ALLOWED_CATEGORIES.includes(fallbackCategory) ? fallbackCategory : "india",
     subcategory: null,
     stateCode: payload.stateCode || null,
@@ -56,31 +58,27 @@ export async function enrichNewsArticleWithAi(
 
   const model = process.env.NEWS_AI_MODEL || config.searchModel || "google/gemini-2.5-flash";
 
-  const prompt = `You are an official Indian News intelligence classifier. Analyze this article and extract structured metadata:
+  const prompt = `You are an official Indian News intelligence reporter for SuchnaSetu. Analyze this news item and produce a structured, comprehensive news report along with metadata:
 Title: ${payload.title}
-Text: ${payload.summary}
+Text: ${payload.summary} ${payload.content ? payload.content.slice(0, 800) : ""}
 
-Allowed categories (must be exactly one of):
-- india (national general/defense/culture)
-- states (state government/regional)
-- education (admissions, exams, academic reforms, universities)
-- governance (cabinet decisions, schemes, policy, administrative circulars)
-- business (economy, markets, banking, trade)
-- technology (science, ISRO, AI, IT, digital India)
-- politics (parliament, elections, policy)
-- world (international affairs, diplomacy)
-- health (public healthcare, wellness, hospitals)
-- sports (cricket, athletics, tournaments)
-- entertainment (arts, cinema, cultural festivals)
+Strict Reporting Guidelines:
+1. Generate an informative, factual multi-paragraph article body (at least 3-4 paragraphs) covering:
+   - What Happened: The core announcement or event.
+   - Key Details: Specific facts, figures, dates, quotas, and participating authorities.
+   - Important Context & Significance: Why this update matters to students, jobseekers, or citizens.
+2. DO NOT invent facts. Strictly preserve names, numbers, dates, and official terms.
+3. Allowed categories (must be exactly one of): india, states, education, governance, business, technology, politics, world, health, sports, entertainment.
 
 Respond with a single raw JSON object matching:
 {
   "summary": "Crisp 2-sentence objective factual summary in English",
+  "content": "Full multi-paragraph structured article text with paragraphs separated by double newlines",
   "category_slug": "one of the allowed category slugs",
-  "subcategory": "specific topic (e.g. Higher Education, Railway Infrastructure, Space Mission)",
-  "state_code": "2-letter state code if state-specific (e.g. BR, UP, MH, DL, RJ, WB, TN) or null if national/central",
+  "subcategory": "specific topic",
+  "state_code": "2-letter state code if state-specific (e.g. BR, UP, MH, DL) or null",
   "tags": ["3 to 5 relevant tags"],
-  "organizations": ["mentioned organizations (e.g. ISRO, UGC, RBI, Supreme Court)"],
+  "organizations": ["mentioned organizations (e.g. UPSC, UGC, ISRO, High Court)"],
   "importance": "breaking | high | standard"
 }`;
 
@@ -133,6 +131,7 @@ Respond with a single raw JSON object matching:
 
     return {
       summary: parsed.summary || payload.summary,
+      content: parsed.content || payload.content || null,
       categorySlug: validCategory,
       subcategory: parsed.subcategory || null,
       stateCode: parsed.state_code || payload.stateCode || null,

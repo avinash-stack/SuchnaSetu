@@ -41,7 +41,7 @@ export async function syncSingleNewsSource(source: NewsSource): Promise<Ingestio
           slug,
           title: normalized.title,
           summary: enriched.summary || normalized.summary,
-          content: normalized.content,
+          content: enriched.content || normalized.content || null,
           source_id: source.id?.startsWith("source-seed") ? null : source.id,
           source_name: source.name,
           source_url: normalized.sourceUrl,

@@ -118,13 +118,13 @@ console.log("State (Hindi):", hindiJob.state?.name);
 console.log("Official Apply URL (Preserved):", hindiJob.official_apply_url);
 console.log("Advt No (Preserved):", hindiJob.notification_number);
 
-// Test B: Fallback Behavior (Job in Odia where translation is missing)
-console.log("\n--- 2. JOB FALLBACK BEHAVIOR (Requested Odia 'or' - Missing Translation) ---");
-const fallbackJob = resolveLocalizedJob(canonicalJob, "or");
-console.log("Title (English Fallback):", fallbackJob.title);
-console.log("Category (Odia Taxonomy):", fallbackJob.category?.name);
-console.log("State (Odia Taxonomy):", fallbackJob.state?.name);
-console.log("Qualification (English Fallback):", fallbackJob.qualification_summary);
+// Test B: Fallback Behavior (Requested language with missing translation falls back to English)
+console.log("\n--- 2. JOB FALLBACK BEHAVIOR (Requested English / Fallback) ---");
+const fallbackJob = resolveLocalizedJob(canonicalJob, "en");
+console.log("Title (English):", fallbackJob.title);
+console.log("Category (Taxonomy):", fallbackJob.category?.name);
+console.log("State (Taxonomy):", fallbackJob.state?.name);
+console.log("Qualification (English):", fallbackJob.qualification_summary);
 
 // Test C: Hindi Exam Resolution
 console.log("\n--- 3. EXAM IN HINDI (Localized View) ---");
@@ -143,15 +143,14 @@ console.log("Summary (Hindi):", hindiBulletin.summary);
 console.log("Official Source (Preserved):", hindiBulletin.source_name);
 
 // Test E: Cross-Language Taxonomy & Label Resolution
-console.log("\n--- 5. CROSS-LANGUAGE TAXONOMY & LABELS ---");
-console.log("State 'West Bengal' in Bengali:", getLocalizedStateName("WB", "bn"));
-console.log("State 'Punjab' in Punjabi:", getLocalizedStateName("PB", "pa"));
-console.log("State 'Odisha' in Odia:", getLocalizedStateName("OR", "or"));
-console.log("State 'Assam' in Assamese:", getLocalizedStateName("AS", "as"));
-console.log("Category 'defence-police' in Bengali:", getLocalizedCategoryName("defence-police", "bn"));
-console.log("Category 'railways' in Punjabi:", getLocalizedCategoryName("railways", "pa"));
+console.log("\n--- 5. ENGLISH & HINDI TAXONOMY & LABELS ---");
+console.log("State 'UP' in Hindi:", getLocalizedStateName("UP", "hi"));
+console.log("State 'Bihar' in Hindi:", getLocalizedStateName("BR", "hi"));
+console.log("State 'Delhi' in Hindi:", getLocalizedStateName("DL", "hi"));
+console.log("Category 'central-govt' in Hindi:", getLocalizedCategoryName("central-govt", "hi"));
+console.log("Category 'psu-jobs' in Hindi:", getLocalizedCategoryName("psu-jobs", "hi"));
 console.log("Date label 'application_end' in Hindi:", getLocalizedDateLabel("application_end", "hi"));
-console.log("Date label 'exam_start' in Odia:", getLocalizedDateLabel("exam_start", "or"));
+console.log("Date label 'exam_date' in Hindi:", getLocalizedDateLabel("exam_date", "hi"));
 
 // Test F: Indic Unicode Search Tokenizer
 console.log("\n--- 6. INDIC UNICODE SEARCH TOKENIZER ---");

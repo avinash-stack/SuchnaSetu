@@ -2156,5 +2156,186 @@ export const GOV_JOB_SOURCES_CONFIG: GovJobSourceConfig[] = [
       }
     ]
   },
+
+  {
+    "key": "rfcl_official_feed",
+    "name": "Ramagundam Fertilizers and Chemicals Limited (RFCL) Official Feed",
+    "organizationSlug": "rfcl",
+    "organizationName": "Ramagundam Fertilizers and Chemicals Limited",
+    "jurisdiction": "psu",
+    "baseUrl": "https://www.rfcl.co.in",
+    "recruitmentPath": "/careers.php",
+    "applyUrl": "https://www.rfcl.co.in/careers.php",
+    "defaultCategory": "psu-jobs",
+    "canonicalNotices": [
+      {
+        "advertisement_number": "RFCL/Rectt/2026/01",
+        "title": "RFCL Management Trainee & Non-Executive Recruitment 2026",
+        "ministry_or_department": "Ministry of Chemicals and Fertilizers, Government of India",
+        "post_name": "Management Trainee (Chemical / Mechanical / Electrical / Accounts)",
+        "total_vacancies": 48,
+        "date_of_notification": "2026-02-12",
+        "closing_date": "2026-03-25",
+        "pdf_url": "https://www.rfcl.co.in/careers.php",
+        "apply_url": "https://www.rfcl.co.in/careers.php",
+        "qualification_summary": "Degree in Engineering (Chemical/Mechanical/Electrical) with minimum 60% marks OR CA/CMA/MBA for Finance.",
+        "age_limit_summary": "18 to 30 years as on closing date (relaxations for SC/ST/OBC).",
+        "pay_scale": "E-1 Scale: Rs. 40,000 - 1,40,000",
+        "min_age": 18,
+        "max_age": 30
+      }
+    ]
+  },
+
+  {
+    "key": "eil_official_feed",
+    "name": "Engineers India Limited (EIL) Official Feed",
+    "organizationSlug": "eil",
+    "organizationName": "Engineers India Limited",
+    "jurisdiction": "psu",
+    "baseUrl": "https://engineersindia.com",
+    "recruitmentPath": "/careers",
+    "applyUrl": "https://recruitment.eil.co.in",
+    "defaultCategory": "psu-jobs",
+    "canonicalNotices": [
+      {
+        "advertisement_number": "HRD/Rectt/Advt/2026-02",
+        "title": "Engineers India Limited (EIL) Management Trainee & Executive Recruitment 2026",
+        "ministry_or_department": "Ministry of Petroleum and Natural Gas, Government of India",
+        "post_name": "Management Trainee (Engineering / Civil / Mechanical / Chemical / Electrical)",
+        "total_vacancies": 65,
+        "date_of_notification": "2026-02-10",
+        "closing_date": "2026-03-20",
+        "pdf_url": "https://recruitment.eil.co.in/hrd/advt2026.asp",
+        "apply_url": "https://recruitment.eil.co.in",
+        "qualification_summary": "Full time Engineering Degree (B.E./B.Tech/B.Sc. Engg) in relevant discipline with minimum 65% marks.",
+        "age_limit_summary": "Maximum 25 years as on 01-02-2026 (relaxations applicable as per GOI norms).",
+        "pay_scale": "Executive Grade (E-1): Rs. 60,000 - 1,80,000",
+        "min_age": 21,
+        "max_age": 25
+      }
+    ]
+  },
+
+  {
+    "key": "nic_nielit_official_feed",
+    "name": "National Informatics Centre (NIC) / NIELIT Official Feed",
+    "organizationSlug": "nic",
+    "organizationName": "National Informatics Centre",
+    "jurisdiction": "central",
+    "baseUrl": "https://www.nic.in",
+    "recruitmentPath": "/recruitment",
+    "applyUrl": "https://www.calicut.nielit.in/nic2026",
+    "defaultCategory": "central-govt",
+    "canonicalNotices": [
+      {
+        "advertisement_number": "NIELIT/NIC/2026/1",
+        "title": "National Informatics Centre (NIC) Scientist-B & Scientific Officer Recruitment 2026",
+        "ministry_or_department": "Ministry of Electronics and Information Technology (MeitY), Government of India",
+        "post_name": "Scientist-B / Scientific Officer / Scientific/Technical Assistant-A",
+        "total_vacancies": 598,
+        "date_of_notification": "2026-02-05",
+        "closing_date": "2026-03-18",
+        "pdf_url": "https://www.calicut.nielit.in/nic2026/advt.pdf",
+        "apply_url": "https://www.calicut.nielit.in/nic2026",
+        "qualification_summary": "Bachelor Degree in Engineering / Technology (CS, IT, Electronics, ECE) or M.Sc / MCA.",
+        "age_limit_summary": "Up to 30 years as on closing date (33 for OBC, 35 for SC/ST).",
+        "pay_scale": "Level-10 (Rs. 56,100 - 1,77,500) for Scientist-B; Level-6 for Scientific Assistant",
+        "min_age": 21,
+        "max_age": 30
+      }
+    ]
+  },
+
+  {
+    "key": "indiapost_official_feed",
+    "name": "Department of Posts (India Post) Official Feed",
+    "organizationSlug": "india-post",
+    "organizationName": "Department of Posts (India Post)",
+    "jurisdiction": "central",
+    "baseUrl": "https://www.indiapost.gov.in",
+    "recruitmentPath": "/VAS/Pages/Recruitment.aspx",
+    "applyUrl": "https://indiapostgdsonline.gov.in",
+    "defaultCategory": "central-govt",
+    "canonicalNotices": [
+      {
+        "advertisement_number": "17-21/2026-GDS",
+        "title": "India Post Gramin Dak Sevak (GDS) & Staff Car Driver Recruitment 2026",
+        "ministry_or_department": "Ministry of Communications, Government of India",
+        "post_name": "Branch Postmaster (BPM) / Assistant Branch Postmaster (ABPM) / Dak Sevak",
+        "total_vacancies": 44228,
+        "date_of_notification": "2026-02-08",
+        "closing_date": "2026-03-15",
+        "pdf_url": "https://indiapostgdsonline.gov.in/notification_2026.pdf",
+        "apply_url": "https://indiapostgdsonline.gov.in",
+        "qualification_summary": "Secondary School Examination pass certificate of 10th standard with passing marks in Mathematics and English.",
+        "age_limit_summary": "18 to 40 years as on closing date.",
+        "pay_scale": "TRCA Slab: Rs. 12,000 - 29,380 (BPM) / Rs. 10,000 - 24,470 (ABPM/Dak Sevak)",
+        "min_age": 18,
+        "max_age": 40
+      }
+    ]
+  },
+
+  {
+    "key": "incometax_official_feed",
+    "name": "Income Tax Department Official Feed",
+    "organizationSlug": "income-tax-department",
+    "organizationName": "Income Tax Department",
+    "jurisdiction": "central",
+    "baseUrl": "https://incometaxindia.gov.in",
+    "recruitmentPath": "/Pages/recruitment.aspx",
+    "applyUrl": "https://incometaxindia.gov.in",
+    "defaultCategory": "central-govt",
+    "canonicalNotices": [
+      {
+        "advertisement_number": "Pr.CCIT/Admn/Canteen/2026/04",
+        "title": "Income Tax Department Recruitment 2026 – 7 Canteen Attendant Posts",
+        "ministry_or_department": "Central Board of Direct Taxes (CBDT), Department of Revenue, Ministry of Finance",
+        "post_name": "Canteen Attendant (Departmental Canteen)",
+        "total_vacancies": 7,
+        "date_of_notification": "2026-02-14",
+        "closing_date": "2026-03-28",
+        "pdf_url": "https://incometaxindia.gov.in/Documents/canteen-attendant-2026.pdf",
+        "apply_url": "https://incometaxindia.gov.in",
+        "qualification_summary": "10th Class / Matriculation pass or equivalent from a recognized Board.",
+        "age_limit_summary": "18 to 25 years as on closing date (relaxations for reserved categories).",
+        "pay_scale": "Level-1 in the Pay Matrix (Rs. 18,000 - 56,900)",
+        "min_age": 18,
+        "max_age": 25
+      }
+    ]
+  },
+
+  {
+    "key": "incometax_pune_official_feed",
+    "name": "Income Tax Department Pune Sports Quota Official Feed",
+    "organizationSlug": "income-tax-pune",
+    "organizationName": "Income Tax Department (Pune Region)",
+    "jurisdiction": "central",
+    "stateCode": "MH",
+    "baseUrl": "https://incometaxpune.gov.in",
+    "recruitmentPath": "/sports-quota",
+    "applyUrl": "https://incometaxpune.gov.in",
+    "defaultCategory": "central-govt",
+    "canonicalNotices": [
+      {
+        "advertisement_number": "CCIT/PUNE/SPORTS/2026-27",
+        "title": "Income Tax Department Pune Sports Quota Recruitment 2026",
+        "ministry_or_department": "Office of the Principal Chief Commissioner of Income Tax, Pune (Maharashtra Region)",
+        "post_name": "Income Tax Inspector / Tax Assistant / Multi-Tasking Staff (MTS)",
+        "total_vacancies": 24,
+        "date_of_notification": "2026-02-12",
+        "closing_date": "2026-03-26",
+        "pdf_url": "https://incometaxpune.gov.in/sports-quota-advt-2026.pdf",
+        "apply_url": "https://incometaxpune.gov.in",
+        "qualification_summary": "Degree from recognized University for Inspector & Tax Assistant; 10th/12th for MTS + Meritorious sports achievements.",
+        "age_limit_summary": "18 to 30 years for Inspector; 18 to 27 years for Tax Assistant; 18 to 25 years for MTS.",
+        "pay_scale": "Pay Level 7 (Inspector) / Level 4 (Tax Assistant) / Level 1 (MTS)",
+        "min_age": 18,
+        "max_age": 30
+      }
+    ]
+  },
 ];
 

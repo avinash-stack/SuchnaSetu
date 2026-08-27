@@ -1,20 +1,12 @@
 import { LanguageCode } from "../config";
 import { en, TranslationKey } from "./en";
 import { hi } from "./hi";
-import { bn } from "./bn";
-import { or } from "./or";
-import { as } from "./as";
-import { pa } from "./pa";
 
 export { type TranslationKey } from "./en";
 
 export const translations: Record<LanguageCode, Record<TranslationKey, string>> = {
   en,
   hi,
-  bn,
-  or,
-  as,
-  pa,
 };
 
 /**
