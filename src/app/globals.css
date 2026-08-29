@@ -52,47 +52,62 @@ svg {
 }
 
 /* Regional Script Typography Adaptation */
-[data-lang="hi"] {
-  font-family: var(--font-noto-devanagari);
-}
-
-[data-lang="bn"],
-[data-lang="as"] {
-  font-family: var(--font-noto-bengali);
-}
-
-[data-lang="or"] {
-  font-family: var(--font-noto-oriya);
-}
-
-[data-lang="pa"] {
-  font-family: var(--font-noto-gurmukhi);
+[data-lang="hi"],
+.translated-ltr,
+.translated-rtl {
+  font-family: var(--font-noto-devanagari), var(--font-inter), sans-serif;
 }
 
 /* Headings font overrides */
 .font-heading {
-  font-family: var(--font-outfit);
+  font-family: var(--font-outfit), sans-serif;
 }
 
 [data-lang="hi"] .font-heading {
-  font-family: var(--font-noto-devanagari);
+  font-family: var(--font-noto-devanagari), var(--font-outfit), sans-serif;
   font-weight: 700;
 }
 
-[data-lang="bn"] .font-heading,
-[data-lang="as"] .font-heading {
-  font-family: var(--font-noto-bengali);
-  font-weight: 700;
+/* =============================================================================
+   Google Translate Styling Integration & Native Chrome Suppression
+   ============================================================================= */
+.goog-te-banner-frame.skiptranslate,
+.goog-te-banner-frame,
+iframe.goog-te-banner-frame {
+  display: none !important;
+  visibility: hidden !important;
+  height: 0 !important;
 }
 
-[data-lang="or"] .font-heading {
-  font-family: var(--font-noto-oriya);
-  font-weight: 700;
+body {
+  top: 0px !important;
+  position: static !important;
 }
 
-[data-lang="pa"] .font-heading {
-  font-family: var(--font-noto-gurmukhi);
-  font-weight: 700;
+#google_translate_element,
+.goog-te-gadget {
+  display: none !important;
+  visibility: hidden !important;
+}
+
+.goog-tooltip,
+.goog-tooltip:hover {
+  display: none !important;
+}
+
+.goog-text-highlight {
+  background-color: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+}
+
+.skiptranslate iframe {
+  display: none !important;
+}
+
+/* Protect critical UI components from unwanted DOM mutation artifacts */
+.notranslate {
+  translate: no !important;
 }
 
 /* Civic Editorial Scrollbar */

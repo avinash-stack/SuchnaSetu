@@ -3,6 +3,7 @@ import { Inter, Outfit } from "next/font/google";
 import { constructMetadata, HeadScripts } from "@/lib/seo";
 import { LanguageProvider } from "@/lib/i18n/context";
 import { LanguageSuggestionBanner } from "@/components/shared/language-suggestion-banner";
+import { GoogleTranslator } from "@/components/shared/google-translator";
 import "./globals.css";
 
 const inter = Inter({
@@ -33,6 +34,7 @@ export default function RootLayout({
         <LanguageProvider>
           <LanguageSuggestionBanner />
           {children}
+          <GoogleTranslator />
         </LanguageProvider>
       </body>
     </html>

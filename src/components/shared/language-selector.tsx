@@ -49,11 +49,11 @@ export function LanguageSelector({ variant = "capsule", className = "" }: Langua
       : "w-full justify-between bg-slate-50 text-slate-900 border-slate-200 text-sm rounded-lg";
 
   return (
-    <div className={`relative inline-block text-left ${className}`} ref={dropdownRef}>
+    <div className={`relative inline-block text-left notranslate ${className}`} ref={dropdownRef} translate="no">
       <button
         type="button"
         onClick={() => setIsOpen(!isOpen)}
-        className={`inline-flex items-center gap-1.5 font-semibold border transition-all shadow-2xs ${buttonStyle}`}
+        className={`inline-flex items-center gap-1.5 font-semibold border transition-all shadow-2xs notranslate ${buttonStyle}`}
         aria-expanded={isOpen}
         aria-haspopup="true"
         aria-label={`Select language. Current language is ${currentLang.name}`}

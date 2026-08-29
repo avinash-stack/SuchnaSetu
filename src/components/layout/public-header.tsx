@@ -82,11 +82,11 @@ export function PublicHeader() {
                 />
               </div>
             </div>
-            <div className="flex flex-col">
-              <span className="text-base sm:text-lg font-black tracking-tight text-[#013089] font-heading leading-none">
+            <div className="flex flex-col notranslate" translate="no">
+              <span className="text-base sm:text-lg font-black tracking-tight text-[#013089] font-heading leading-none notranslate">
                 {SITE_CONFIG.name}
               </span>
-              <span className="text-[8.5px] sm:text-[9px] font-extrabold uppercase tracking-widest text-[#FE8D01] mt-0.5 leading-none">
+              <span className="text-[8.5px] sm:text-[9px] font-extrabold uppercase tracking-widest text-[#FE8D01] mt-0.5 leading-none notranslate">
                 Official Gazette
               </span>
             </div>

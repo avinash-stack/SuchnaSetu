@@ -12,6 +12,7 @@ import {
   getSuggestedLanguageForState,
 } from "./config";
 import { getTranslation, TranslationKey } from "./translations";
+import { applyGoogleLanguage } from "@/components/shared/google-translator";
 
 interface LanguageContextType {
   language: LanguageCode;
@@ -107,6 +108,8 @@ export function LanguageProvider({ children }: { children: React.ReactNode }) {
     if (typeof document !== "undefined") {
       document.documentElement.lang = lang;
       document.documentElement.setAttribute("data-lang", lang);
+      // Trigger Google Translate engine
+      applyGoogleLanguage(lang);
     }
   };
 

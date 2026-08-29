@@ -6,6 +6,7 @@ import { usePathname } from "next/navigation";
 import Image from "next/image";
 import { NEWS_CATEGORIES } from "../constants/categories";
 import { useLanguage } from "@/lib/i18n/context";
+import { LanguageSelector } from "@/components/shared/language-selector";
 import { Search, ExternalLink, Menu, X, Newspaper, Sparkles, ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
@@ -61,7 +62,7 @@ export function NewsHeader() {
               </div>
             </div>
             <div>
-              <div className="flex items-center gap-1.5">
+              <div className="flex items-center gap-1.5 notranslate" translate="no">
                 <span className="text-lg sm:text-xl font-black text-[#013089] tracking-tight font-heading leading-none">
                   SuchnaSetu
                 </span>
@@ -76,8 +77,8 @@ export function NewsHeader() {
           </Link>
         </div>
 
-        {/* Right Search & Mobile Toggle */}
-        <div className="flex items-center gap-2">
+        {/* Right Search, Language Selector & Mobile Toggle */}
+        <div className="flex items-center gap-2.5">
           <Link
             href="/news/search"
             className="hidden sm:inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-600 text-xs font-semibold transition-colors border border-slate-200"
@@ -85,6 +86,9 @@ export function NewsHeader() {
             <Search className="h-3.5 w-3.5 text-slate-400" />
             <span>{isHindi ? "समाचार खोजें..." : "Search news, topics, states..."}</span>
           </Link>
+
+          {/* Multilingual Selector */}
+          <LanguageSelector variant="capsule" className="shrink-0" />
 
           <Button
             variant="outline"
