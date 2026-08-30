@@ -2337,5 +2337,1823 @@ export const GOV_JOB_SOURCES_CONFIG: GovJobSourceConfig[] = [
       }
     ]
   },
+
+  // =========================================================================
+  // CENTRAL GOVERNMENT & AUTONOMOUS RECRUITING BODIES
+  // =========================================================================
+  {
+    "key": "cbic_official_feed",
+    "name": "Central Board of Indirect Taxes & Customs (CBIC) Official Feed",
+    "organizationSlug": "cbic",
+    "organizationName": "Central Board of Indirect Taxes & Customs",
+    "jurisdiction": "central",
+    "baseUrl": "https://www.cbic.gov.in",
+    "recruitmentPath": "/departmental-officers/recruitment",
+    "applyUrl": "https://ssc.gov.in",
+    "defaultCategory": "central-govt",
+    "canonicalNotices": [
+      {
+        "advertisement_number": "CBIC/Rectt/Havaldar-Driver/2026",
+        "title": "CBIC Inspector, Havaldar & Staff Car Driver Recruitment 2026",
+        "ministry_or_department": "Department of Revenue, Ministry of Finance, Government of India",
+        "post_name": "Inspector (Central Excise / Preventive Officer / Examiner) / Havaldar",
+        "total_vacancies": 1420,
+        "date_of_notification": "2026-02-16",
+        "closing_date": "2026-03-30",
+        "pdf_url": "https://www.cbic.gov.in/notices/CBIC_Havaldar_Recruitment_2026.pdf",
+        "apply_url": "https://ssc.gov.in",
+        "qualification_summary": "Graduation for Inspector posts; 10th/Matriculation pass for Havaldar posts.",
+        "age_limit_summary": "18 to 27 years (Inspector/Havaldar) with statutory relaxations.",
+        "pay_scale": "Level 7 (Inspector) / Level 1 (Havaldar)",
+        "min_age": 18,
+        "max_age": 27
+      }
+    ]
+  },
+
+  {
+    "key": "csir_official_feed",
+    "name": "Council of Scientific & Industrial Research (CSIR) Official Feed",
+    "organizationSlug": "csir",
+    "organizationName": "Council of Scientific and Industrial Research",
+    "jurisdiction": "autonomous",
+    "baseUrl": "https://www.csir.res.in",
+    "recruitmentPath": "/career-opportunities/recruitment",
+    "applyUrl": "https://www.csir.res.in/career-opportunities/recruitment",
+    "defaultCategory": "engineering-technical",
+    "canonicalNotices": [
+      {
+        "advertisement_number": "CSIR/CASE/SO-ASO/2026",
+        "title": "CSIR Combined Administrative Services Examination (CASE) 2026 for SO & ASO",
+        "ministry_or_department": "Ministry of Science and Technology, Government of India",
+        "post_name": "Section Officer (Gen/F&A/S&P) and Assistant Section Officer (Gen/F&A/S&P)",
+        "total_vacancies": 444,
+        "date_of_notification": "2026-02-14",
+        "closing_date": "2026-03-28",
+        "pdf_url": "https://www.csir.res.in/sites/default/files/CASE_2026_Advt.pdf",
+        "apply_url": "https://www.csir.res.in",
+        "qualification_summary": "University Degree in any discipline from a recognized University or Institution.",
+        "age_limit_summary": "Not exceeding 33 years as on closing date.",
+        "pay_scale": "Pay Level 8 (SO) / Level 7 (ASO)",
+        "min_age": 21,
+        "max_age": 33
+      }
+    ]
+  },
+
+  {
+    "key": "icmr_official_feed",
+    "name": "Indian Council of Medical Research (ICMR) Official Feed",
+    "organizationSlug": "icmr",
+    "organizationName": "Indian Council of Medical Research",
+    "jurisdiction": "autonomous",
+    "baseUrl": "https://main.icmr.nic.in",
+    "recruitmentPath": "/career-opportunity",
+    "applyUrl": "https://main.icmr.nic.in/career-opportunity",
+    "defaultCategory": "medical-health",
+    "canonicalNotices": [
+      {
+        "advertisement_number": "ICMR/HQ/Scientist-B-C/2026",
+        "title": "ICMR National Recruitment for Scientists (Medical / Non-Medical) & Technical Officers",
+        "ministry_or_department": "Department of Health Research, Ministry of Health and Family Welfare",
+        "post_name": "Scientist-B / Scientist-C / Technical Officer-A",
+        "total_vacancies": 168,
+        "date_of_notification": "2026-02-18",
+        "closing_date": "2026-03-31",
+        "pdf_url": "https://main.icmr.nic.in/content/recruitment-scientists-2026",
+        "apply_url": "https://main.icmr.nic.in",
+        "qualification_summary": "MBBS / First Class Master's Degree in Life Sciences, Biotechnology, Microbiology or B.Tech.",
+        "age_limit_summary": "35 years for Scientist-B; 40 years for Scientist-C.",
+        "pay_scale": "Level 10 (Rs. 56,100 - 1,77,500) to Level 11",
+        "min_age": 21,
+        "max_age": 40
+      }
+    ]
+  },
+
+  {
+    "key": "icar_official_feed",
+    "name": "Indian Council of Agricultural Research & ASRB Official Feed",
+    "organizationSlug": "icar",
+    "organizationName": "Indian Council of Agricultural Research (ASRB)",
+    "jurisdiction": "autonomous",
+    "baseUrl": "https://icar.org.in",
+    "recruitmentPath": "/recruitment",
+    "applyUrl": "http://asrb.org.in",
+    "defaultCategory": "central-govt",
+    "canonicalNotices": [
+      {
+        "advertisement_number": "ASRB/NET-ARS/2026/01",
+        "title": "Agricultural Research Service (ARS) & Administrative Officer Recruitment 2026",
+        "ministry_or_department": "Department of Agricultural Research and Education (DARE), Ministry of Agriculture",
+        "post_name": "Scientist / Administrative Officer (AO) / Finance & Accounts Officer (FAO)",
+        "total_vacancies": 260,
+        "date_of_notification": "2026-02-10",
+        "closing_date": "2026-03-24",
+        "pdf_url": "http://asrb.org.in/notices/ARS_2026_Notification.pdf",
+        "apply_url": "http://asrb.org.in",
+        "qualification_summary": "Master's Degree in relevant agricultural discipline or Graduation for AO/FAO.",
+        "age_limit_summary": "21 to 35 years as on 01-01-2026.",
+        "pay_scale": "Pay Level 10 (Rs. 56,100 - 1,77,500)",
+        "min_age": 21,
+        "max_age": 35
+      }
+    ]
+  },
+
+  {
+    "key": "bis_official_feed",
+    "name": "Bureau of Indian Standards (BIS) Official Feed",
+    "organizationSlug": "bis",
+    "organizationName": "Bureau of Indian Standards",
+    "jurisdiction": "autonomous",
+    "baseUrl": "https://www.bis.gov.in",
+    "recruitmentPath": "/recruitment",
+    "applyUrl": "https://www.bis.gov.in",
+    "defaultCategory": "central-govt",
+    "canonicalNotices": [
+      {
+        "advertisement_number": "BIS/Rectt/2026/01",
+        "title": "Bureau of Indian Standards (BIS) Scientist-B & Assistant Section Officer Recruitment 2026",
+        "ministry_or_department": "Ministry of Consumer Affairs, Food & Public Distribution",
+        "post_name": "Scientist-B (Engineering/Chemistry) & Graduate Group B/C Posts",
+        "total_vacancies": 345,
+        "date_of_notification": "2026-02-15",
+        "closing_date": "2026-03-29",
+        "pdf_url": "https://www.bis.gov.in/wp-content/uploads/2026/02/BIS_Recruitment_2026.pdf",
+        "apply_url": "https://www.bis.gov.in",
+        "qualification_summary": "Bachelor Degree in Engineering/Technology with valid GATE score or Master's Degree.",
+        "age_limit_summary": "21 to 30 years as on closing date.",
+        "pay_scale": "Level 10 (Scientist-B) / Level 6 (ASO)",
+        "min_age": 21,
+        "max_age": 30
+      }
+    ]
+  },
+
+  {
+    "key": "cbi_official_feed",
+    "name": "Central Bureau of Investigation (CBI) Official Feed",
+    "organizationSlug": "cbi",
+    "organizationName": "Central Bureau of Investigation",
+    "jurisdiction": "central",
+    "baseUrl": "https://cbi.gov.in",
+    "recruitmentPath": "/vacancies",
+    "applyUrl": "https://cbi.gov.in",
+    "defaultCategory": "police-jobs",
+    "canonicalNotices": [
+      {
+        "advertisement_number": "CBI/Estt/SI-Law/2026",
+        "title": "CBI Direct Recruitment for Sub-Inspectors, Public Prosecutors & Cyber Forensic Experts",
+        "ministry_or_department": "Department of Personnel and Training (DoPT), Government of India",
+        "post_name": "Sub-Inspector (CBI) / Assistant Public Prosecutor / Cyber Technical Officer",
+        "total_vacancies": 125,
+        "date_of_notification": "2026-02-12",
+        "closing_date": "2026-03-26",
+        "pdf_url": "https://cbi.gov.in/vacancies_pdf/CBI_Recruitment_2026.pdf",
+        "apply_url": "https://cbi.gov.in",
+        "qualification_summary": "Graduation in Law / Computer Science / IT or Degree from recognized University.",
+        "age_limit_summary": "20 to 30 years as on closing date.",
+        "pay_scale": "Pay Level 7 (Rs. 44,900 - 1,42,400) plus 25% Special Security Allowance",
+        "min_age": 20,
+        "max_age": 30
+      }
+    ]
+  },
+
+  {
+    "key": "barc_official_feed",
+    "name": "Bhabha Atomic Research Centre (BARC) & DAE Official Feed",
+    "organizationSlug": "barc",
+    "organizationName": "Bhabha Atomic Research Centre",
+    "jurisdiction": "central",
+    "baseUrl": "https://barc.gov.in",
+    "recruitmentPath": "/careers/recruitment.html",
+    "applyUrl": "https://barcrecruit.gov.in",
+    "defaultCategory": "engineering-technical",
+    "canonicalNotices": [
+      {
+        "advertisement_number": "BARC/OCES-DGFS/2026",
+        "title": "BARC Scientific Officers Recruitment 2026 through OCES / DGFS Schemes",
+        "ministry_or_department": "Department of Atomic Energy (DAE), Government of India",
+        "post_name": "Scientific Officer Grade C (Engineering / Physics / Chemistry / Bioscience)",
+        "total_vacancies": 410,
+        "date_of_notification": "2026-02-08",
+        "closing_date": "2026-03-22",
+        "pdf_url": "https://barcrecruit.gov.in/barcrecruit/main_page.jsp?doc=OCES_2026.pdf",
+        "apply_url": "https://barcrecruit.gov.in",
+        "qualification_summary": "B.E. / B.Tech / B.Sc (Engineering) / 5-year Integrated M.Tech with minimum 60% aggregate marks.",
+        "age_limit_summary": "18 to 26 years as on 01-08-2026 (relaxations applicable).",
+        "pay_scale": "Level 10 (Rs. 56,100 - 1,77,500) plus DAE special allowances",
+        "min_age": 18,
+        "max_age": 26
+      }
+    ]
+  },
+
+  // =========================================================================
+  // PUBLIC SECTOR UNDERTAKINGS (MAHARATNA / NAVRATNA / MINIRATNA PSUs)
+  // =========================================================================
+  {
+    "key": "sail_official_feed",
+    "name": "Steel Authority of India Limited (SAIL) Official Feed",
+    "organizationSlug": "sail",
+    "organizationName": "Steel Authority of India Limited",
+    "jurisdiction": "psu",
+    "baseUrl": "https://sailcareers.com",
+    "recruitmentPath": "/careers/jobs.html",
+    "applyUrl": "https://sailcareers.com",
+    "defaultCategory": "psu-jobs",
+    "canonicalNotices": [
+      {
+        "advertisement_number": "SAIL/MT-OCTT/2026/01",
+        "title": "SAIL Management Trainee (Technical & Admin) & OCTT Recruitment 2026",
+        "ministry_or_department": "Ministry of Steel, Government of India",
+        "post_name": "Management Trainee (Technical) / Operator-cum-Technician Trainee (OCTT)",
+        "total_vacancies": 680,
+        "date_of_notification": "2026-02-14",
+        "closing_date": "2026-03-28",
+        "pdf_url": "https://sailcareers.com/docs/MT_OCTT_2026.pdf",
+        "apply_url": "https://sailcareers.com",
+        "qualification_summary": "Degree in Engineering (Metallurgy, Mechanical, Electrical, Chemical, Mining) with 65% marks or Diploma in Engineering.",
+        "age_limit_summary": "18 to 28 years as on closing date.",
+        "pay_scale": "E-1 Grade (Rs. 50,000 - 1,60,000) / S-3 Grade (Rs. 26,600 - 38,920)",
+        "min_age": 18,
+        "max_age": 28
+      }
+    ]
+  },
+
+  {
+    "key": "gail_official_feed",
+    "name": "GAIL (India) Limited Official Feed",
+    "organizationSlug": "gail",
+    "organizationName": "GAIL (India) Limited",
+    "jurisdiction": "psu",
+    "baseUrl": "https://gailonline.com",
+    "recruitmentPath": "/careers/current-openings",
+    "applyUrl": "https://gailonline.com/CRApplyingGAIL.html",
+    "defaultCategory": "psu-jobs",
+    "canonicalNotices": [
+      {
+        "advertisement_number": "GAIL/OPEN/MISC/1/2026",
+        "title": "GAIL Executive Trainee & Non-Executive Recruitment 2026",
+        "ministry_or_department": "Ministry of Petroleum and Natural Gas, Government of India",
+        "post_name": "Executive Trainee (Chemical, Mechanical, Electrical, Instrumentation, GAILTEL)",
+        "total_vacancies": 190,
+        "date_of_notification": "2026-02-11",
+        "closing_date": "2026-03-25",
+        "pdf_url": "https://gailonline.com/pdf/Careers/Advt_2026.pdf",
+        "apply_url": "https://gailonline.com",
+        "qualification_summary": "Bachelor Degree in Engineering in relevant discipline with minimum 65% marks.",
+        "age_limit_summary": "26 years for Executive Trainee (relaxations for SC/ST/OBC/PwD).",
+        "pay_scale": "E-2 Grade (Rs. 60,000 - 1,80,000)",
+        "min_age": 21,
+        "max_age": 26
+      }
+    ]
+  },
+
+  {
+    "key": "iocl_official_feed",
+    "name": "Indian Oil Corporation Limited (IOCL) Official Feed",
+    "organizationSlug": "iocl",
+    "organizationName": "Indian Oil Corporation Limited",
+    "jurisdiction": "psu",
+    "baseUrl": "https://iocl.com",
+    "recruitmentPath": "/latest-job-openings",
+    "applyUrl": "https://iocl.com/latest-job-openings",
+    "defaultCategory": "psu-jobs",
+    "canonicalNotices": [
+      {
+        "advertisement_number": "IOCL/RD/2026/02",
+        "title": "IOCL Engineers & Officers Recruitment 2026 through GATE 2026 & Non-Executive Technical",
+        "ministry_or_department": "Ministry of Petroleum and Natural Gas, Government of India",
+        "post_name": "Engineers / Officers / Junior Engineering Assistant-IV (Refineries Division)",
+        "total_vacancies": 820,
+        "date_of_notification": "2026-02-15",
+        "closing_date": "2026-03-31",
+        "pdf_url": "https://iocl.com/download/IOCL_Engineers_2026_Detailed_Advt.pdf",
+        "apply_url": "https://iocl.com",
+        "qualification_summary": "B.Tech / B.E. in Chemical, Mechanical, Electrical, Civil or 3-year Diploma in Engineering.",
+        "age_limit_summary": "26 years for Officers / 18-26 years for Junior Engineering Assistant.",
+        "pay_scale": "Grade A (Rs. 50,000 - 1,60,000) / Grade IV (Rs. 25,000 - 1,05,000)",
+        "min_age": 18,
+        "max_age": 26
+      }
+    ]
+  },
+
+  {
+    "key": "bpcl_official_feed",
+    "name": "Bharat Petroleum Corporation Limited (BPCL) Official Feed",
+    "organizationSlug": "bpcl",
+    "organizationName": "Bharat Petroleum Corporation Limited",
+    "jurisdiction": "psu",
+    "baseUrl": "https://www.bharatpetroleum.in",
+    "recruitmentPath": "/careers",
+    "applyUrl": "https://www.bharatpetroleum.in/careers",
+    "defaultCategory": "psu-jobs",
+    "canonicalNotices": [
+      {
+        "advertisement_number": "BPCL/HR/2026/01",
+        "title": "BPCL Management Trainee & Executive Recruitment 2026",
+        "ministry_or_department": "Ministry of Petroleum and Natural Gas, Government of India",
+        "post_name": "Management Trainee (Chemical / Mechanical / Electrical / Finance / HR)",
+        "total_vacancies": 210,
+        "date_of_notification": "2026-02-12",
+        "closing_date": "2026-03-27",
+        "pdf_url": "https://www.bharatpetroleum.in/careers/bpcl-advt-2026.pdf",
+        "apply_url": "https://www.bharatpetroleum.in",
+        "qualification_summary": "B.E. / B.Tech / B.Sc (Engg) with minimum 60% marks or MBA/CA.",
+        "age_limit_summary": "Maximum 25 years as on 01-02-2026.",
+        "pay_scale": "Job Group A (Rs. 50,000 - 1,60,000)",
+        "min_age": 21,
+        "max_age": 25
+      }
+    ]
+  },
+
+  {
+    "key": "hpcl_official_feed",
+    "name": "Hindustan Petroleum Corporation Limited (HPCL) Official Feed",
+    "organizationSlug": "hpcl",
+    "organizationName": "Hindustan Petroleum Corporation Limited",
+    "jurisdiction": "psu",
+    "baseUrl": "https://www.hindustanpetroleum.com",
+    "recruitmentPath": "/job-openings",
+    "applyUrl": "https://jobs.hpcl.co.in",
+    "defaultCategory": "psu-jobs",
+    "canonicalNotices": [
+      {
+        "advertisement_number": "HPCL/Rectt/Engg/2026",
+        "title": "HPCL Officers & Graduate Engineers Recruitment 2026",
+        "ministry_or_department": "Ministry of Petroleum and Natural Gas, Government of India",
+        "post_name": "Engineer (Mechanical, Chemical, Electrical, Civil, Instrumentation, Safety)",
+        "total_vacancies": 320,
+        "date_of_notification": "2026-02-16",
+        "closing_date": "2026-03-30",
+        "pdf_url": "https://jobs.hpcl.co.in/Recruit_New/pdf/Advt_2026.pdf",
+        "apply_url": "https://jobs.hpcl.co.in",
+        "qualification_summary": "4-year regular Engineering Degree in relevant branch with 60% marks (50% for SC/ST/PwBD).",
+        "age_limit_summary": "Max 25 years for E2 level.",
+        "pay_scale": "E2 Grade (Rs. 50,000 - 1,60,000)",
+        "min_age": 21,
+        "max_age": 25
+      }
+    ]
+  },
+
+  {
+    "key": "coal_india_official_feed",
+    "name": "Coal India Limited (CIL) Official Feed",
+    "organizationSlug": "coal-india",
+    "organizationName": "Coal India Limited",
+    "jurisdiction": "psu",
+    "baseUrl": "https://www.coalindia.in",
+    "recruitmentPath": "/careers/recruitment",
+    "applyUrl": "https://www.coalindia.in",
+    "defaultCategory": "psu-jobs",
+    "canonicalNotices": [
+      {
+        "advertisement_number": "CIL/MT-GATE/2026/01",
+        "title": "Coal India Management Trainee (Mining, Civil, Electrical, Systems, Finance) Recruitment 2026",
+        "ministry_or_department": "Ministry of Coal, Government of India",
+        "post_name": "Management Trainee (E-2 Grade)",
+        "total_vacancies": 1280,
+        "date_of_notification": "2026-02-10",
+        "closing_date": "2026-03-25",
+        "pdf_url": "https://www.coalindia.in/DesktopModules/DocumentList/documents/MT2026_Advt.pdf",
+        "apply_url": "https://www.coalindia.in",
+        "qualification_summary": "B.E. / B.Tech / B.Sc (Engg) in relevant discipline with 60% marks or CA/ICWA/MBA.",
+        "age_limit_summary": "30 years as on closing date for General (relaxations as per GOI norms).",
+        "pay_scale": "E-2 Grade (Rs. 50,000 - 1,60,000)",
+        "min_age": 21,
+        "max_age": 30
+      }
+    ]
+  },
+
+  {
+    "key": "powergrid_official_feed",
+    "name": "Power Grid Corporation of India (POWERGRID) Official Feed",
+    "organizationSlug": "powergrid",
+    "organizationName": "Power Grid Corporation of India Limited",
+    "jurisdiction": "psu",
+    "baseUrl": "https://www.powergrid.in",
+    "recruitmentPath": "/careers/job-opportunities",
+    "applyUrl": "https://www.powergrid.in/job-opportunities",
+    "defaultCategory": "psu-jobs",
+    "canonicalNotices": [
+      {
+        "advertisement_number": "POWERGRID/CC/ET/2026",
+        "title": "POWERGRID Engineer Trainee (Electrical, Civil, Electronics, Computer Science) 2026",
+        "ministry_or_department": "Ministry of Power, Government of India",
+        "post_name": "Engineer Trainee (ET) & Diploma Trainee (DT)",
+        "total_vacancies": 490,
+        "date_of_notification": "2026-02-14",
+        "closing_date": "2026-03-29",
+        "pdf_url": "https://www.powergrid.in/sites/default/files/careers/ET_2026_Notification.pdf",
+        "apply_url": "https://www.powergrid.in",
+        "qualification_summary": "Full-time B.E. / B.Tech / B.Sc (Engg) with valid GATE score or 3-year Diploma in Engineering.",
+        "age_limit_summary": "28 years for ET; 27 years for DT.",
+        "pay_scale": "E-2 Grade (Rs. 50,000 - 1,60,000) / W-4 Grade for DT",
+        "min_age": 18,
+        "max_age": 28
+      }
+    ]
+  },
+
+  {
+    "key": "bel_official_feed",
+    "name": "Bharat Electronics Limited (BEL) Official Feed",
+    "organizationSlug": "bel",
+    "organizationName": "Bharat Electronics Limited",
+    "jurisdiction": "psu",
+    "baseUrl": "https://bel-india.in",
+    "recruitmentPath": "/careers",
+    "applyUrl": "https://bel-india.in/careers",
+    "defaultCategory": "psu-jobs",
+    "canonicalNotices": [
+      {
+        "advertisement_number": "BEL/Bangalore/PE-TE/2026",
+        "title": "BEL Project Engineers, Trainee Engineers & Probationary Engineers Recruitment 2026",
+        "ministry_or_department": "Ministry of Defence, Government of India",
+        "post_name": "Project Engineer-I / Trainee Engineer-I / Probationary Engineer",
+        "total_vacancies": 520,
+        "date_of_notification": "2026-02-12",
+        "closing_date": "2026-03-27",
+        "pdf_url": "https://bel-india.in/wp-content/uploads/2026/02/BEL_PE_TE_2026.pdf",
+        "apply_url": "https://bel-india.in/careers",
+        "qualification_summary": "B.E. / B.Tech / B.Sc (Engg) in Electronics, Mechanical, Computer Science, Electrical with 55% marks.",
+        "age_limit_summary": "28 years for Project Engineer; 25 years for Trainee Engineer.",
+        "pay_scale": "Rs. 40,000 - 1,40,000 (PE-I) / Consolidated Trainee Stipend",
+        "min_age": 21,
+        "max_age": 28
+      }
+    ]
+  },
+
+  {
+    "key": "nhpc_official_feed",
+    "name": "NHPC Limited Official Feed",
+    "organizationSlug": "nhpc",
+    "organizationName": "NHPC Limited",
+    "jurisdiction": "psu",
+    "baseUrl": "https://www.nhpcindia.com",
+    "recruitmentPath": "/careers",
+    "applyUrl": "https://www.nhpcindia.com/careers.htm",
+    "defaultCategory": "psu-jobs",
+    "canonicalNotices": [
+      {
+        "advertisement_number": "NHPC/Rectt/01/2026",
+        "title": "NHPC Trainee Engineer & Trainee Officer Recruitment 2026",
+        "ministry_or_department": "Ministry of Power, Government of India",
+        "post_name": "Trainee Engineer (Civil / Electrical / Mechanical / Geo-tech) and Trainee Officer",
+        "total_vacancies": 185,
+        "date_of_notification": "2026-02-16",
+        "closing_date": "2026-03-31",
+        "pdf_url": "https://www.nhpcindia.com/writereaddata/Images/pdf/Advt_2026_TE_TO.pdf",
+        "apply_url": "https://www.nhpcindia.com",
+        "qualification_summary": "Full time regular Bachelor's Degree in Engineering with minimum 60% marks or CA/ICWA/MBA.",
+        "age_limit_summary": "30 years as on closing date.",
+        "pay_scale": "E-2 Grade (Rs. 50,000 - 1,60,000)",
+        "min_age": 21,
+        "max_age": 30
+      }
+    ]
+  },
+
+  {
+    "key": "nmdc_official_feed",
+    "name": "NMDC Limited Official Feed",
+    "organizationSlug": "nmdc",
+    "organizationName": "NMDC Limited",
+    "jurisdiction": "psu",
+    "baseUrl": "https://www.nmdc.co.in",
+    "recruitmentPath": "/careers",
+    "applyUrl": "https://www.nmdc.co.in/careers",
+    "defaultCategory": "psu-jobs",
+    "canonicalNotices": [
+      {
+        "advertisement_number": "NMDC/Rectt/Executive/2026",
+        "title": "NMDC Executive Trainee (Mining, Electrical, Mechanical, Civil) & Maintenance Staff 2026",
+        "ministry_or_department": "Ministry of Steel, Government of India",
+        "post_name": "Executive Trainee / Maintenance Assistant / Field Attendant",
+        "total_vacancies": 310,
+        "date_of_notification": "2026-02-11",
+        "closing_date": "2026-03-26",
+        "pdf_url": "https://www.nmdc.co.in/docs/NMDC_ET_2026.pdf",
+        "apply_url": "https://www.nmdc.co.in",
+        "qualification_summary": "Engineering Degree with GATE score for ET; ITI / Diploma for Maintenance Assistant.",
+        "age_limit_summary": "27 years for Executive Trainee; 30 years for Maintenance Assistant.",
+        "pay_scale": "E-2 Scale (Rs. 50,000 - 1,60,000) / Industrial Pay Scale",
+        "min_age": 18,
+        "max_age": 30
+      }
+    ]
+  },
+
+  {
+    "key": "mazagon_dock_official_feed",
+    "name": "Mazagon Dock Shipbuilders Limited (MDL) Official Feed",
+    "organizationSlug": "mazagon-dock",
+    "organizationName": "Mazagon Dock Shipbuilders Limited",
+    "jurisdiction": "psu",
+    "baseUrl": "https://mazagondock.in",
+    "recruitmentPath": "/careers-overview",
+    "applyUrl": "https://mazagondock.in/careers-overview",
+    "defaultCategory": "psu-jobs",
+    "canonicalNotices": [
+      {
+        "advertisement_number": "MDL/HR-CR/REC/2026/02",
+        "title": "Mazagon Dock Executive Trainee & Non-Executive Technical Staff Recruitment 2026",
+        "ministry_or_department": "Ministry of Defence, Government of India",
+        "post_name": "Executive Trainee (Naval Architecture, Mechanical, Electrical) / Skilled Operative",
+        "total_vacancies": 420,
+        "date_of_notification": "2026-02-15",
+        "closing_date": "2026-03-29",
+        "pdf_url": "https://mazagondock.in/writereaddata/career/MDL_Advt_2026.pdf",
+        "apply_url": "https://mazagondock.in",
+        "qualification_summary": "Degree in Engineering in relevant branch or National Apprenticeship Certificate in relevant trade.",
+        "age_limit_summary": "28 years for Executives; 38 years for Non-Executives.",
+        "pay_scale": "E-1 Scale (Rs. 40,000 - 1,40,000) / Semi-skilled & Skilled Scales",
+        "min_age": 18,
+        "max_age": 38
+      }
+    ]
+  },
+
+  {
+    "key": "nfl_rcf_fertilizers_feed",
+    "name": "National Fertilizers (NFL) & RCF Recruitment Feed",
+    "organizationSlug": "nfl-rcf",
+    "organizationName": "National Fertilizers Limited (NFL)",
+    "jurisdiction": "psu",
+    "baseUrl": "https://www.nationalfertilizers.com",
+    "recruitmentPath": "/careers",
+    "applyUrl": "https://www.nationalfertilizers.com/careers",
+    "defaultCategory": "psu-jobs",
+    "canonicalNotices": [
+      {
+        "advertisement_number": "NFL/01(Rectt)/2026",
+        "title": "NFL Management Trainee & Non-Executive Staff Recruitment 2026",
+        "ministry_or_department": "Ministry of Chemicals and Fertilizers, Government of India",
+        "post_name": "Management Trainee (Chemical, Mechanical, Electrical, Instrumentation, HR, Finance)",
+        "total_vacancies": 164,
+        "date_of_notification": "2026-02-10",
+        "closing_date": "2026-03-24",
+        "pdf_url": "https://www.nationalfertilizers.com/career/NFL_MT_2026.pdf",
+        "apply_url": "https://www.nationalfertilizers.com",
+        "qualification_summary": "Engineering Degree with minimum 60% marks or MBA/CA/CMA for non-tech disciplines.",
+        "age_limit_summary": "27 years as on 01-02-2026.",
+        "pay_scale": "E-1 Grade (Rs. 40,000 - 1,40,000)",
+        "min_age": 21,
+        "max_age": 27
+      }
+    ]
+  },
+
+  {
+    "key": "npcil_official_feed",
+    "name": "Nuclear Power Corporation of India (NPCIL) Official Feed",
+    "organizationSlug": "npcil",
+    "organizationName": "Nuclear Power Corporation of India Limited",
+    "jurisdiction": "psu",
+    "baseUrl": "https://www.npcilcareers.co.in",
+    "recruitmentPath": "/careers",
+    "applyUrl": "https://www.npcilcareers.co.in",
+    "defaultCategory": "psu-jobs",
+    "canonicalNotices": [
+      {
+        "advertisement_number": "NPCIL/HRM/ET/2026/01",
+        "title": "NPCIL Executive Trainee (Mechanical, Chemical, Electrical, Electronics, Instrumentation, Civil)",
+        "ministry_or_department": "Department of Atomic Energy (DAE), Government of India",
+        "post_name": "Executive Trainee (ET) & Scientific Officer-C",
+        "total_vacancies": 380,
+        "date_of_notification": "2026-02-12",
+        "closing_date": "2026-03-28",
+        "pdf_url": "https://www.npcilcareers.co.in/docs/NPCIL_ET_2026_Advt.pdf",
+        "apply_url": "https://www.npcilcareers.co.in",
+        "qualification_summary": "B.E. / B.Tech / B.Sc (Engg) / 5 year Integrated M.Tech with minimum 60% marks and valid GATE score.",
+        "age_limit_summary": "Maximum 26 years as on closing date.",
+        "pay_scale": "Level 10 (Rs. 56,100 - 1,77,500) upon absorption",
+        "min_age": 21,
+        "max_age": 26
+      }
+    ]
+  },
+
+  // =========================================================================
+  // BANKING, INSURANCE & FINANCIAL REGULATORY INSTITUTIONS
+  // =========================================================================
+  {
+    "key": "sebi_official_feed",
+    "name": "Securities and Exchange Board of India (SEBI) Official Feed",
+    "organizationSlug": "sebi",
+    "organizationName": "Securities and Exchange Board of India",
+    "jurisdiction": "autonomous",
+    "baseUrl": "https://www.sebi.gov.in",
+    "recruitmentPath": "/department/human-resources-department-14/careers.html",
+    "applyUrl": "https://www.sebi.gov.in",
+    "defaultCategory": "banking-jobs",
+    "canonicalNotices": [
+      {
+        "advertisement_number": "SEBI/HRD/Grade-A/2026",
+        "title": "SEBI Recruitment of Officer Grade A (Assistant Manager) 2026",
+        "ministry_or_department": "Statutory Regulatory Body, Government of India",
+        "post_name": "Officer Grade A - General, Legal, Information Technology, Engineering, Research",
+        "total_vacancies": 97,
+        "date_of_notification": "2026-02-14",
+        "closing_date": "2026-03-28",
+        "pdf_url": "https://www.sebi.gov.in/sebi_data/careerfiles/SEBI_Grade_A_2026.pdf",
+        "apply_url": "https://www.sebi.gov.in",
+        "qualification_summary": "Master's Degree in any discipline / Bachelor's in Law or Engineering / CA / CFA.",
+        "age_limit_summary": "Must not have exceeded the age of 30 years as on 01-01-2026.",
+        "pay_scale": "Pay Scale: Rs. 44,500 - 89,150 (Total Gross Emoluments ~ Rs. 1,49,000/month)",
+        "min_age": 21,
+        "max_age": 30
+      }
+    ]
+  },
+
+  {
+    "key": "sidbi_official_feed",
+    "name": "Small Industries Development Bank of India (SIDBI) Official Feed",
+    "organizationSlug": "sidbi",
+    "organizationName": "Small Industries Development Bank of India",
+    "jurisdiction": "autonomous",
+    "baseUrl": "https://www.sidbi.in",
+    "recruitmentPath": "/careers",
+    "applyUrl": "https://www.sidbi.in/careers",
+    "defaultCategory": "banking-jobs",
+    "canonicalNotices": [
+      {
+        "advertisement_number": "SIDBI/Grade-A-B/2026",
+        "title": "SIDBI Assistant Manager (Grade 'A') & Manager (Grade 'B') Recruitment 2026",
+        "ministry_or_department": "Financial Institution under Ministry of Finance",
+        "post_name": "Assistant Manager Grade 'A' (General Stream & IT)",
+        "total_vacancies": 72,
+        "date_of_notification": "2026-02-10",
+        "closing_date": "2026-03-24",
+        "pdf_url": "https://www.sidbi.in/files/careers/SIDBI_Advt_2026.pdf",
+        "apply_url": "https://www.sidbi.in",
+        "qualification_summary": "Post Graduate Degree in Commerce / Economics / Management or Bachelor's in Law / Engineering.",
+        "age_limit_summary": "21 to 28 years for Grade A.",
+        "pay_scale": "Grade A: Rs. 44,500 - 89,150 (Gross ~ Rs. 1,00,000/month)",
+        "min_age": 21,
+        "max_age": 28
+      }
+    ]
+  },
+
+  {
+    "key": "exim_bank_official_feed",
+    "name": "Export-Import Bank of India (EXIM Bank) Official Feed",
+    "organizationSlug": "exim-bank",
+    "organizationName": "Export-Import Bank of India",
+    "jurisdiction": "psu",
+    "baseUrl": "https://www.eximbankindia.in",
+    "recruitmentPath": "/careers",
+    "applyUrl": "https://www.eximbankindia.in/careers",
+    "defaultCategory": "banking-jobs",
+    "canonicalNotices": [
+      {
+        "advertisement_number": "EXIM/HR/MT/2026/01",
+        "title": "EXIM Bank Management Trainee (Corporate Banking, IT, Legal, Risk Management) 2026",
+        "ministry_or_department": "Export-Import Bank of India, Ministry of Finance",
+        "post_name": "Management Trainee (MT)",
+        "total_vacancies": 45,
+        "date_of_notification": "2026-02-15",
+        "closing_date": "2026-03-30",
+        "pdf_url": "https://www.eximbankindia.in/Assets/Dynamic/PDF/Careers/Advt_MT_2026.pdf",
+        "apply_url": "https://www.eximbankindia.in",
+        "qualification_summary": "MBA / PGDBA with specialization in Finance or Chartered Accountant (CA) or B.E./B.Tech (CS/IT).",
+        "age_limit_summary": "21 to 28 years as on 01-02-2026.",
+        "pay_scale": "Stipend of Rs. 65,000/month during training; absorbed as Deputy Manager (Scale I)",
+        "min_age": 21,
+        "max_age": 28
+      }
+    ]
+  },
+
+  {
+    "key": "lic_official_feed",
+    "name": "Life Insurance Corporation of India (LIC) Official Feed",
+    "organizationSlug": "lic",
+    "organizationName": "Life Insurance Corporation of India",
+    "jurisdiction": "psu",
+    "baseUrl": "https://licindia.in",
+    "recruitmentPath": "/careers",
+    "applyUrl": "https://licindia.in/Bottom-Links/careers",
+    "defaultCategory": "banking-jobs",
+    "canonicalNotices": [
+      {
+        "advertisement_number": "LIC/AAO-ADO/2026",
+        "title": "LIC Assistant Administrative Officer (AAO Generalist/IT/CA) & ADO Recruitment 2026",
+        "ministry_or_department": "Life Insurance Corporation of India, Ministry of Finance",
+        "post_name": "Assistant Administrative Officer (AAO) & Apprentice Development Officer (ADO)",
+        "total_vacancies": 9200,
+        "date_of_notification": "2026-02-12",
+        "closing_date": "2026-03-27",
+        "pdf_url": "https://licindia.in/documents/AAO_2026_Advt.pdf",
+        "apply_url": "https://licindia.in",
+        "qualification_summary": "Bachelor's Degree in any discipline from a recognized Indian University.",
+        "age_limit_summary": "21 to 30 years as on 01-01-2026.",
+        "pay_scale": "Basic Pay: Rs. 53,600/- per month in the scale of Rs. 53600-102090 (Gross ~ Rs. 92,870/month)",
+        "min_age": 21,
+        "max_age": 30
+      }
+    ]
+  },
+
+  {
+    "key": "niacl_gic_official_feed",
+    "name": "New India Assurance (NIACL) & GIC Re Official Feed",
+    "organizationSlug": "niacl",
+    "organizationName": "New India Assurance Company Limited",
+    "jurisdiction": "psu",
+    "baseUrl": "https://www.newindia.co.in",
+    "recruitmentPath": "/recruitment",
+    "applyUrl": "https://www.newindia.co.in/portal/recruitment",
+    "defaultCategory": "banking-jobs",
+    "canonicalNotices": [
+      {
+        "advertisement_number": "NIACL/AO-Assistant/2026",
+        "title": "NIACL Administrative Officer (Scale-I Generalist & Specialist) & Assistants Recruitment 2026",
+        "ministry_or_department": "Public Sector General Insurance Companies",
+        "post_name": "Administrative Officer (Scale-I) & Assistant",
+        "total_vacancies": 585,
+        "date_of_notification": "2026-02-16",
+        "closing_date": "2026-03-31",
+        "pdf_url": "https://www.newindia.co.in/downloads/NIACL_AO_2026.pdf",
+        "apply_url": "https://www.newindia.co.in",
+        "qualification_summary": "Graduate / Post Graduate in any discipline with minimum 60% marks (55% for SC/ST/PwBD).",
+        "age_limit_summary": "21 to 30 years as on closing date.",
+        "pay_scale": "Basic Pay Rs. 50,925/- (Total gross emoluments ~ Rs. 88,000/month)",
+        "min_age": 21,
+        "max_age": 30
+      }
+    ]
+  },
+
+  {
+    "key": "pnb_official_feed",
+    "name": "Punjab National Bank (PNB) Official Feed",
+    "organizationSlug": "pnb",
+    "organizationName": "Punjab National Bank",
+    "jurisdiction": "psu",
+    "baseUrl": "https://www.pnbindia.in",
+    "recruitmentPath": "/recruitments.aspx",
+    "applyUrl": "https://www.pnbindia.in/recruitments.aspx",
+    "defaultCategory": "banking-jobs",
+    "canonicalNotices": [
+      {
+        "advertisement_number": "PNB/HRD/Rectt/2026/01",
+        "title": "Punjab National Bank Specialist Officers (Credit, Forex, IT, Cyber Security, Law) 2026",
+        "ministry_or_department": "Public Sector Banking, Government of India",
+        "post_name": "Officer (Credit), Manager (Forex), Manager (Cyber Security), Senior Manager",
+        "total_vacancies": 1025,
+        "date_of_notification": "2026-02-10",
+        "closing_date": "2026-03-25",
+        "pdf_url": "https://www.pnbindia.in/Upload/En/PNB_SO_2026_Advt.pdf",
+        "apply_url": "https://www.pnbindia.in",
+        "qualification_summary": "CA / CMA / CFA / MBA or B.E./B.Tech in Computer Science / IT / Law Graduate.",
+        "age_limit_summary": "21 to 28 years (Officer); 25 to 35 years (Manager).",
+        "pay_scale": "Scale I (Rs. 48,480 - 85,920) / Scale II (Rs. 64,820 - 93,960)",
+        "min_age": 21,
+        "max_age": 35
+      }
+    ]
+  },
+
+  {
+    "key": "bob_official_feed",
+    "name": "Bank of Baroda (BOB) Official Feed",
+    "organizationSlug": "bank-of-baroda",
+    "organizationName": "Bank of Baroda",
+    "jurisdiction": "psu",
+    "baseUrl": "https://www.bankofbaroda.in",
+    "recruitmentPath": "/careers/current-opportunities",
+    "applyUrl": "https://www.bankofbaroda.in/careers/current-opportunities",
+    "defaultCategory": "banking-jobs",
+    "canonicalNotices": [
+      {
+        "advertisement_number": "BOB/HRM/REC/ADVT/2026/02",
+        "title": "Bank of Baroda Specialist Officers & Wealth Management Professionals Recruitment 2026",
+        "ministry_or_department": "Public Sector Banking, Government of India",
+        "post_name": "Relationship Manager, Credit Analyst, Forex Acquisition Officer, IT Specialist",
+        "total_vacancies": 620,
+        "date_of_notification": "2026-02-15",
+        "closing_date": "2026-03-29",
+        "pdf_url": "https://www.bankofbaroda.in/careers/BOB_SO_2026.pdf",
+        "apply_url": "https://www.bankofbaroda.in",
+        "qualification_summary": "Graduation / MBA / CA / B.E./B.Tech in Computer Science / IT with relevant experience.",
+        "age_limit_summary": "24 to 36 years as on 01-02-2026.",
+        "pay_scale": "Scale-I / Scale-II / Scale-III (Rs. 48,480 - 1,00,000+)",
+        "min_age": 24,
+        "max_age": 36
+      }
+    ]
+  },
+
+  {
+    "key": "canara_bank_official_feed",
+    "name": "Canara Bank Official Feed",
+    "organizationSlug": "canara-bank",
+    "organizationName": "Canara Bank",
+    "jurisdiction": "psu",
+    "baseUrl": "https://canarabank.com",
+    "recruitmentPath": "/careers/recruitment",
+    "applyUrl": "https://canarabank.com/careers/recruitment",
+    "defaultCategory": "banking-jobs",
+    "canonicalNotices": [
+      {
+        "advertisement_number": "CB/RP/SO/2026",
+        "title": "Canara Bank Specialist Officers (JMGS-I & MMGS-II) Recruitment 2026",
+        "ministry_or_department": "Public Sector Banking, Government of India",
+        "post_name": "Specialist Officer (JMGS-I & MMGS-II) and Graduate Apprentice",
+        "total_vacancies": 3000,
+        "date_of_notification": "2026-02-12",
+        "closing_date": "2026-03-26",
+        "pdf_url": "https://canarabank.com/Upload/English/Careers/SO_2026_Advt.pdf",
+        "apply_url": "https://canarabank.com",
+        "qualification_summary": "Graduate Degree in any discipline from a recognized University or B.E./B.Tech / MBA / CA.",
+        "age_limit_summary": "20 to 28 years for Apprentice / 22 to 35 years for SO.",
+        "pay_scale": "JMGS-I (Rs. 48,480 - 85,920) / Apprentice Monthly Stipend",
+        "min_age": 20,
+        "max_age": 35
+      }
+    ]
+  },
+
+  {
+    "key": "union_bank_official_feed",
+    "name": "Union Bank of India Official Feed",
+    "organizationSlug": "union-bank",
+    "organizationName": "Union Bank of India",
+    "jurisdiction": "psu",
+    "baseUrl": "https://www.unionbankofindia.co.in",
+    "recruitmentPath": "/careers/recruitment",
+    "applyUrl": "https://www.unionbankofindia.co.in/english/recruitment.aspx",
+    "defaultCategory": "banking-jobs",
+    "canonicalNotices": [
+      {
+        "advertisement_number": "UBI/SO/2026/01",
+        "title": "Union Bank of India Specialist Officers (Chief Manager, Senior Manager, Manager) 2026",
+        "ministry_or_department": "Public Sector Banking, Government of India",
+        "post_name": "Specialist Officer (Credit, Risk, IT, Treasury, Chartered Accountant, Law)",
+        "total_vacancies": 606,
+        "date_of_notification": "2026-02-14",
+        "closing_date": "2026-03-28",
+        "pdf_url": "https://www.unionbankofindia.co.in/pdf/UBI_SO_Recruitment_2026.pdf",
+        "apply_url": "https://www.unionbankofindia.co.in",
+        "qualification_summary": "B.Sc/B.E./B.Tech in Computer Science / IT or CA / MBA (Finance) or Degree in Law.",
+        "age_limit_summary": "25 to 38 years depending on scale.",
+        "pay_scale": "MMGS-II (Rs. 64,820 - 93,960) / MMGS-III (Rs. 85,920 - 1,05,280)",
+        "min_age": 25,
+        "max_age": 38
+      }
+    ]
+  },
+
+  // =========================================================================
+  // RAILWAYS & URBAN TRANSIT CORPORATIONS
+  // =========================================================================
+  {
+    "key": "rrc_national_feed",
+    "name": "Railway Recruitment Cells (RRC National) Official Feed",
+    "organizationSlug": "rrc",
+    "organizationName": "Railway Recruitment Cells (Indian Railways)",
+    "jurisdiction": "central",
+    "baseUrl": "https://www.rrcnr.org",
+    "recruitmentPath": "/recruitment",
+    "applyUrl": "https://www.rrcnr.org",
+    "defaultCategory": "railway-jobs",
+    "canonicalNotices": [
+      {
+        "advertisement_number": "RRC/CEN-01/2026",
+        "title": "Railway Recruitment Cell Level-1 (Track Maintainer, Pointsman, Assistant) Recruitment 2026",
+        "ministry_or_department": "Ministry of Railways, Government of India",
+        "post_name": "Level-1 Posts (formerly Group D) across Northern, Western, Eastern, Southern & Central Zones",
+        "total_vacancies": 32500,
+        "date_of_notification": "2026-02-18",
+        "closing_date": "2026-03-31",
+        "pdf_url": "https://www.rrcnr.org/notices/CEN_01_2026_Level1.pdf",
+        "apply_url": "https://www.rrcnr.org",
+        "qualification_summary": "10th pass from recognized Board / NCVT or National Apprenticeship Certificate (NAC) / ITI.",
+        "age_limit_summary": "18 to 33 years as on 01-07-2026 (relaxations for SC/ST/OBC/Ex-SM).",
+        "pay_scale": "Level 1 of 7th CPC Pay Matrix (Rs. 18,000 - 56,900) plus allowances",
+        "min_age": 18,
+        "max_age": 33
+      }
+    ]
+  },
+
+  {
+    "key": "dfccil_official_feed",
+    "name": "Dedicated Freight Corridor Corporation (DFCCIL) Official Feed",
+    "organizationSlug": "dfccil",
+    "organizationName": "Dedicated Freight Corridor Corporation of India Limited",
+    "jurisdiction": "psu",
+    "baseUrl": "https://dfccil.com",
+    "recruitmentPath": "/career",
+    "applyUrl": "https://dfccil.com/Home/ActiveCareer",
+    "defaultCategory": "railway-jobs",
+    "canonicalNotices": [
+      {
+        "advertisement_number": "DFCCIL/Advt/01/2026",
+        "title": "DFCCIL Executive & Junior Executive (Civil, Electrical, Operations & BD, Signal & Telecom)",
+        "ministry_or_department": "Public Sector Enterprise under Ministry of Railways",
+        "post_name": "Executive & Junior Executive (Operations & BD, Civil, Electrical, S&T)",
+        "total_vacancies": 535,
+        "date_of_notification": "2026-02-11",
+        "closing_date": "2026-03-25",
+        "pdf_url": "https://dfccil.com/upload/Advt_2026_Executive.pdf",
+        "apply_url": "https://dfccil.com",
+        "qualification_summary": "Graduation with not less than 60% marks or 3-year Diploma in Engineering or ITI.",
+        "age_limit_summary": "18 to 30 years as on closing date.",
+        "pay_scale": "Executive Scale: Rs. 30,000 - 1,20,000 (E-0) / Junior Executive: Rs. 25,000 - 68,000",
+        "min_age": 18,
+        "max_age": 30
+      }
+    ]
+  },
+
+  {
+    "key": "dmrc_metro_official_feed",
+    "name": "Delhi Metro Rail Corporation (DMRC) Official Feed",
+    "organizationSlug": "dmrc",
+    "organizationName": "Delhi Metro Rail Corporation Limited",
+    "jurisdiction": "autonomous",
+    "baseUrl": "https://www.delhimetrorail.com",
+    "recruitmentPath": "/careers",
+    "applyUrl": "https://www.delhimetrorail.com/careers",
+    "defaultCategory": "railway-jobs",
+    "canonicalNotices": [
+      {
+        "advertisement_number": "DMRC/HR/Rectt/2026/01",
+        "title": "DMRC Assistant Manager, Station Controller / Train Operator (SC/TO) & Maintainer 2026",
+        "ministry_or_department": "Joint Venture of Government of India and Government of NCT of Delhi",
+        "post_name": "Assistant Manager (Operations/Electrical/S&T) / Station Controller (SC/TO) / Maintainer",
+        "total_vacancies": 1492,
+        "date_of_notification": "2026-02-15",
+        "closing_date": "2026-03-29",
+        "pdf_url": "https://www.delhimetrorail.com/career_files/DMRC_Advt_2026.pdf",
+        "apply_url": "https://www.delhimetrorail.com",
+        "qualification_summary": "B.E./B.Tech in relevant engineering discipline or 3-year Engineering Diploma or ITI.",
+        "age_limit_summary": "18 to 28 years for Non-Executive; 18 to 30 years for Executive.",
+        "pay_scale": "Assistant Manager: Rs. 50,000 - 1,60,000 / SC/TO: Rs. 37,000 - 1,15,000 / Maintainer: Rs. 20,000 - 60,000",
+        "min_age": 18,
+        "max_age": 30
+      }
+    ]
+  },
+
+  // =========================================================================
+  // DEFENCE, COAST GUARD & PARAMILITARY FORCES
+  // =========================================================================
+  {
+    "key": "indian_coast_guard_official_feed",
+    "name": "Indian Coast Guard (ICG) Official Feed",
+    "organizationSlug": "indian-coast-guard",
+    "organizationName": "Indian Coast Guard",
+    "jurisdiction": "defence",
+    "baseUrl": "https://joinindiancoastguard.cdac.in",
+    "recruitmentPath": "/cgept",
+    "applyUrl": "https://joinindiancoastguard.cdac.in",
+    "defaultCategory": "defence-jobs",
+    "canonicalNotices": [
+      {
+        "advertisement_number": "ICG/CGEPT-02/2026",
+        "title": "Indian Coast Guard Navik (General Duty), Navik (Domestic Branch) & Yantrik Recruitment 2026",
+        "ministry_or_department": "Ministry of Defence, Government of India",
+        "post_name": "Navik (GD) / Navik (DB) / Yantrik (Mechanical, Electrical, Electronics)",
+        "total_vacancies": 320,
+        "date_of_notification": "2026-02-14",
+        "closing_date": "2026-03-27",
+        "pdf_url": "https://joinindiancoastguard.cdac.in/cgept/assets/img/news/CGEPT_02_2026.pdf",
+        "apply_url": "https://joinindiancoastguard.cdac.in",
+        "qualification_summary": "10+2 with Maths and Physics for Navik GD; 10th pass for Navik DB; 10th + Engineering Diploma for Yantrik.",
+        "age_limit_summary": "18 to 22 years (5 years relaxation for SC/ST, 3 years for OBC).",
+        "pay_scale": "Pay Level 3 (Rs. 21,700 - 69,100) for Navik; Level 5 (Rs. 29,200 - 92,300) for Yantrik",
+        "min_age": 18,
+        "max_age": 22
+      }
+    ]
+  },
+
+  {
+    "key": "assam_rifles_official_feed",
+    "name": "Assam Rifles Official Feed",
+    "organizationSlug": "assam-rifles",
+    "organizationName": "Assam Rifles (Ministry of Home Affairs)",
+    "jurisdiction": "central_police",
+    "baseUrl": "https://www.assamrifles.gov.in",
+    "recruitmentPath": "/recruitment",
+    "applyUrl": "https://www.assamrifles.gov.in",
+    "defaultCategory": "defence-jobs",
+    "canonicalNotices": [
+      {
+        "advertisement_number": "AR/Rally/Technical-Tradesmen/2026",
+        "title": "Assam Rifles Technical & Tradesmen Recruitment Rally 2026 across All States",
+        "ministry_or_department": "Ministry of Home Affairs, Government of India",
+        "post_name": "Havildar (Clerk), Naib Subedar (Bridge & Road), Rifleman/Riflewoman (General Duty & Trades)",
+        "total_vacancies": 616,
+        "date_of_notification": "2026-02-12",
+        "closing_date": "2026-03-26",
+        "pdf_url": "https://www.assamrifles.gov.in/DOCS/RECRUITMENT/AR_Rally_2026.pdf",
+        "apply_url": "https://www.assamrifles.gov.in",
+        "qualification_summary": "10th / 10+2 pass or Diploma in Civil Engineering / ITI in relevant trade.",
+        "age_limit_summary": "18 to 23 years (up to 28 for clerk/specialist trades).",
+        "pay_scale": "Pay Level 3 (Rs. 21,700 - 69,100) to Level 6",
+        "min_age": 18,
+        "max_age": 28
+      }
+    ]
+  },
+
+  {
+    "key": "bro_gref_official_feed",
+    "name": "Border Roads Organisation (BRO / GREF) Official Feed",
+    "organizationSlug": "bro-gref",
+    "organizationName": "Border Roads Organisation (General Reserve Engineer Force)",
+    "jurisdiction": "defence",
+    "baseUrl": "http://www.bro.gov.in",
+    "recruitmentPath": "/recruitment",
+    "applyUrl": "http://www.bro.gov.in",
+    "defaultCategory": "defence-jobs",
+    "canonicalNotices": [
+      {
+        "advertisement_number": "BRO/GREF-01/2026",
+        "title": "BRO GREF Draughtsman, Supervisor, Multi Skilled Worker (MSW) & Vehicle Mechanic 2026",
+        "ministry_or_department": "Border Roads Development Board, Ministry of Defence",
+        "post_name": "Draughtsman / Supervisor Store / MSW (Driver Engine Static / Mason) / Vehicle Mechanic",
+        "total_vacancies": 482,
+        "date_of_notification": "2026-02-10",
+        "closing_date": "2026-03-25",
+        "pdf_url": "http://www.bro.gov.in/WriteReadData/Advt_01_2026.pdf",
+        "apply_url": "http://www.bro.gov.in",
+        "qualification_summary": "10th / 10+2 pass with ITI Certificate in Motor Mechanic / Mason / Draughtsman trade.",
+        "age_limit_summary": "18 to 27 years for technical posts; 18 to 25 years for MSW.",
+        "pay_scale": "Level 1 (Rs. 18,000 - 56,900) to Level 5 (Rs. 29,200 - 92,300)",
+        "min_age": 18,
+        "max_age": 27
+      }
+    ]
+  },
+
+  // =========================================================================
+  // STATE POLICE RECRUITMENT BOARDS
+  // =========================================================================
+  {
+    "key": "delhi_police_official_feed",
+    "name": "Delhi Police Recruitment Cell Official Feed",
+    "organizationSlug": "delhi-police",
+    "organizationName": "Delhi Police",
+    "jurisdiction": "central_police",
+    "stateCode": "DL",
+    "baseUrl": "https://delhipolice.gov.in",
+    "recruitmentPath": "/recruitment",
+    "applyUrl": "https://ssc.gov.in",
+    "defaultCategory": "police-jobs",
+    "canonicalNotices": [
+      {
+        "advertisement_number": "DP/Rectt/Constable-SI/2026",
+        "title": "Delhi Police Constable (Executive) & Sub-Inspector Recruitment 2026",
+        "ministry_or_department": "Delhi Police, Ministry of Home Affairs",
+        "post_name": "Constable (Executive) Male & Female / Sub-Inspector (Executive)",
+        "total_vacancies": 7547,
+        "date_of_notification": "2026-02-15",
+        "closing_date": "2026-03-30",
+        "pdf_url": "https://delhipolice.gov.in/recruitment_notice_2026.pdf",
+        "apply_url": "https://ssc.gov.in",
+        "qualification_summary": "10+2 (Senior Secondary) pass for Constable; Graduation for Sub-Inspector.",
+        "age_limit_summary": "18 to 25 years for Constable; 20 to 25 years for Sub-Inspector.",
+        "pay_scale": "Level 3 (Rs. 21,700 - 69,100) for Constable; Level 6 for Sub-Inspector",
+        "min_age": 18,
+        "max_age": 25
+      }
+    ]
+  },
+
+  {
+    "key": "mahapolice_official_feed",
+    "name": "Maharashtra State Police (MahaPolice) Official Feed",
+    "organizationSlug": "mahapolice",
+    "organizationName": "Maharashtra State Police",
+    "jurisdiction": "state",
+    "stateCode": "MH",
+    "baseUrl": "https://mahapolice.gov.in",
+    "recruitmentPath": "/police-recruitment",
+    "applyUrl": "https://policerecruitment2024.mahait.org",
+    "defaultCategory": "police-jobs",
+    "canonicalNotices": [
+      {
+        "advertisement_number": "MAHAPOLICE/CONST/2026",
+        "title": "Maharashtra Police Constable (Shipai), SRPF & Police Driver Recruitment 2026",
+        "ministry_or_department": "Home Department, Government of Maharashtra",
+        "post_name": "Police Constable (Shipai) / Police Driver / SRPF Armed Police Constable / Bandsman",
+        "total_vacancies": 17471,
+        "date_of_notification": "2026-02-14",
+        "closing_date": "2026-03-31",
+        "pdf_url": "https://mahapolice.gov.in/writereaddata/Police_Recruitment_2026.pdf",
+        "apply_url": "https://mahapolice.gov.in",
+        "qualification_summary": "HSC / 12th standard pass or equivalent from Maharashtra State Board or recognized board.",
+        "age_limit_summary": "18 to 28 years for Open Category; 18 to 33 years for Reserved Categories.",
+        "pay_scale": "Pay Matrix S-6: Rs. 21,700 - 69,100 plus special duty allowance",
+        "min_age": 18,
+        "max_age": 33
+      }
+    ]
+  },
+
+  {
+    "key": "rajasthan_police_official_feed",
+    "name": "Rajasthan Police Recruitment Official Feed",
+    "organizationSlug": "rajasthan-police",
+    "organizationName": "Rajasthan Police",
+    "jurisdiction": "state",
+    "stateCode": "RJ",
+    "baseUrl": "https://police.rajasthan.gov.in",
+    "recruitmentPath": "/recruitment",
+    "applyUrl": "https://sso.rajasthan.gov.in",
+    "defaultCategory": "police-jobs",
+    "canonicalNotices": [
+      {
+        "advertisement_number": "RAJ-POLICE/CONST-CET/2026",
+        "title": "Rajasthan Police Constable (General, Driver, Telecommunication, Band, Mounted) 2026",
+        "ministry_or_department": "Police Headquarters, Rajasthan, Jaipur",
+        "post_name": "Constable (General Duty / Driver / Police Telecommunication / RAC / MBC)",
+        "total_vacancies": 4500,
+        "date_of_notification": "2026-02-12",
+        "closing_date": "2026-03-27",
+        "pdf_url": "https://police.rajasthan.gov.in/docs/Constable_Recruitment_2026.pdf",
+        "apply_url": "https://sso.rajasthan.gov.in",
+        "qualification_summary": "Senior Secondary (12th) with Physics & Maths for Telecom; 12th pass for General Duty.",
+        "age_limit_summary": "18 to 24 years as on 01-01-2027 (relaxations as per state rules).",
+        "pay_scale": "Pay Matrix L-5 (Stipend Rs. 14,600 during probation; regular pay Rs. 20,800 - 65,900)",
+        "min_age": 18,
+        "max_age": 24
+      }
+    ]
+  },
+
+  {
+    "key": "wbprb_police_feed",
+    "name": "West Bengal Police Recruitment Board (WBPRB) Official Feed",
+    "organizationSlug": "wbprb",
+    "organizationName": "West Bengal Police Recruitment Board",
+    "jurisdiction": "state",
+    "stateCode": "WB",
+    "baseUrl": "https://prb.wb.gov.in",
+    "recruitmentPath": "/all-recruitment-notices",
+    "applyUrl": "https://prb.wb.gov.in",
+    "defaultCategory": "police-jobs",
+    "canonicalNotices": [
+      {
+        "advertisement_number": "WBPRB/NOTICE-2026/04",
+        "title": "WBPRB Recruitment of Constables & Lady Constables in West Bengal & Kolkata Police 2026",
+        "ministry_or_department": "West Bengal Police Directorate, Government of West Bengal",
+        "post_name": "Constable & Lady Constable (WBP / Kolkata Police)",
+        "total_vacancies": 10255,
+        "date_of_notification": "2026-02-15",
+        "closing_date": "2026-03-29",
+        "pdf_url": "https://prb.wb.gov.in/sites/default/files/Notices/Constable_2026_Advt.pdf",
+        "apply_url": "https://prb.wb.gov.in",
+        "qualification_summary": "Madhyamik Examination pass from West Bengal Board of Secondary Education or equivalent.",
+        "age_limit_summary": "18 to 30 years as on 01-01-2026 (relaxations for SC/ST/OBC/NVF/Home Guards).",
+        "pay_scale": "Level-6 in the Pay Matrix (Rs. 22,700 - 58,500)",
+        "min_age": 18,
+        "max_age": 30
+      }
+    ]
+  },
+
+  {
+    "key": "punjab_police_official_feed",
+    "name": "Punjab Police Recruitment Board Official Feed",
+    "organizationSlug": "punjab-police",
+    "organizationName": "Punjab Police",
+    "jurisdiction": "state",
+    "stateCode": "PB",
+    "baseUrl": "https://punjabpolice.gov.in",
+    "recruitmentPath": "/recruitment.html",
+    "applyUrl": "https://punjabpolice.gov.in",
+    "defaultCategory": "police-jobs",
+    "canonicalNotices": [
+      {
+        "advertisement_number": "PB-POLICE/CONST-SI/2026",
+        "title": "Punjab Police Constable (District & Armed Cadres) and Sub-Inspector Recruitment 2026",
+        "ministry_or_department": "Department of Home Affairs and Justice, Government of Punjab",
+        "post_name": "Constable (District & Armed Police Cadres) / Sub-Inspector",
+        "total_vacancies": 1800,
+        "date_of_notification": "2026-02-11",
+        "closing_date": "2026-03-25",
+        "pdf_url": "https://punjabpolice.gov.in/docs/Punjab_Police_Recruitment_2026.pdf",
+        "apply_url": "https://punjabpolice.gov.in",
+        "qualification_summary": "10+2 or equivalent; Punjabi at Matriculation level is compulsory.",
+        "age_limit_summary": "18 to 28 years as on 01-01-2026.",
+        "pay_scale": "Level 2 (Rs. 19,900/- minimum pay admissible during 3 years probation)",
+        "min_age": 18,
+        "max_age": 28
+      }
+    ]
+  },
+
+  {
+    "key": "tnusrb_official_feed",
+    "name": "Tamil Nadu Uniformed Services (TNUSRB) Official Feed",
+    "organizationSlug": "tnusrb",
+    "organizationName": "Tamil Nadu Uniformed Services Recruitment Board",
+    "jurisdiction": "state",
+    "stateCode": "TN",
+    "baseUrl": "https://www.tnusrb.tn.gov.in",
+    "recruitmentPath": "/recruitment",
+    "applyUrl": "https://www.tnusrb.tn.gov.in",
+    "defaultCategory": "police-jobs",
+    "canonicalNotices": [
+      {
+        "advertisement_number": "TNUSRB/CR-2026/01",
+        "title": "TNUSRB Common Recruitment 2026 for Gr.II Police Constables, Jail Warders & Firemen",
+        "ministry_or_department": "Home Department, Government of Tamil Nadu",
+        "post_name": "Grade II Police Constable (Armed Reserve / Special Force), Jail Warder, Fireman",
+        "total_vacancies": 3359,
+        "date_of_notification": "2026-02-16",
+        "closing_date": "2026-03-31",
+        "pdf_url": "https://www.tnusrb.tn.gov.in/docs/TNUSRB_CR_2026.pdf",
+        "apply_url": "https://www.tnusrb.tn.gov.in",
+        "qualification_summary": "10th Standard (SSLC) pass or equivalent with Tamil as one of the subjects.",
+        "age_limit_summary": "18 to 26 years for General; up to 31 years for BC/MBC/SC/ST.",
+        "pay_scale": "Pay Scale: Rs. 18,200 - 58,000",
+        "min_age": 18,
+        "max_age": 31
+      }
+    ]
+  },
+
+  {
+    "key": "tslprb_official_feed",
+    "name": "Telangana Police (TSLPRB) Official Feed",
+    "organizationSlug": "tslprb",
+    "organizationName": "Telangana State Level Police Recruitment Board",
+    "jurisdiction": "state",
+    "stateCode": "TS",
+    "baseUrl": "https://www.tslprb.in",
+    "recruitmentPath": "/notifications",
+    "applyUrl": "https://www.tslprb.in",
+    "defaultCategory": "police-jobs",
+    "canonicalNotices": [
+      {
+        "advertisement_number": "TSLPRB/SCT-PC-SI/2026",
+        "title": "Telangana State Police SCT Sub-Inspector & Police Constable Recruitment 2026",
+        "ministry_or_department": "Home Department, Government of Telangana",
+        "post_name": "Stipendiary Cadet Trainee (SCT) Police Constable (Civil/AR/TSSP) & Sub-Inspector",
+        "total_vacancies": 16614,
+        "date_of_notification": "2026-02-14",
+        "closing_date": "2026-03-28",
+        "pdf_url": "https://www.tslprb.in/docs/TSLPRB_Notification_2026.pdf",
+        "apply_url": "https://www.tslprb.in",
+        "qualification_summary": "Intermediate (10+2) pass for Constable; Graduation for Sub-Inspector.",
+        "age_limit_summary": "18 to 22 years for PC; 21 to 25 years for SI (+5 years state relaxation).",
+        "pay_scale": "Rs. 24,280 - 72,850 (PC) / Rs. 42,300 - 1,15,270 (SI)",
+        "min_age": 18,
+        "max_age": 30
+      }
+    ]
+  },
+
+  {
+    "key": "ksp_police_official_feed",
+    "name": "Karnataka State Police (KSP) Official Feed",
+    "organizationSlug": "ksp",
+    "organizationName": "Karnataka State Police",
+    "jurisdiction": "state",
+    "stateCode": "KA",
+    "baseUrl": "https://ksp.karnataka.gov.in",
+    "recruitmentPath": "/recruitment",
+    "applyUrl": "https://ksp.karnataka.gov.in",
+    "defaultCategory": "police-jobs",
+    "canonicalNotices": [
+      {
+        "advertisement_number": "KSP/CPC-PSI/2026",
+        "title": "Karnataka State Police Civil Police Constable (CPC) & Police Sub-Inspector (PSI) 2026",
+        "ministry_or_department": "Home Department, Government of Karnataka",
+        "post_name": "Civil Police Constable (Men & Women) / Armed Police Constable / PSI (Civil)",
+        "total_vacancies": 4100,
+        "date_of_notification": "2026-02-12",
+        "closing_date": "2026-03-27",
+        "pdf_url": "https://ksp.karnataka.gov.in/docs/KSP_CPC_2026.pdf",
+        "apply_url": "https://ksp.karnataka.gov.in",
+        "qualification_summary": "PUC / 12th Standard for Constable; Bachelor's Degree for PSI.",
+        "age_limit_summary": "19 to 27 years for GM; 19 to 30 years for SC/ST/OBC.",
+        "pay_scale": "Pay Matrix: Rs. 23,500 - 47,650 (CPC) / Rs. 37,900 - 70,850 (PSI)",
+        "min_age": 19,
+        "max_age": 30
+      }
+    ]
+  },
+
+  // =========================================================================
+  // STATE STAFF SELECTION & SUBORDINATE BOARDS
+  // =========================================================================
+  {
+    "key": "osssc_official_feed",
+    "name": "Odisha Sub-ordinate Staff Selection Commission (OSSSC) Official Feed",
+    "organizationSlug": "osssc",
+    "organizationName": "Odisha Sub-ordinate Staff Selection Commission",
+    "jurisdiction": "state",
+    "stateCode": "OR",
+    "baseUrl": "https://www.osssc.gov.in",
+    "recruitmentPath": "/notices",
+    "applyUrl": "https://www.osssc.gov.in",
+    "defaultCategory": "state-govt",
+    "canonicalNotices": [
+      {
+        "advertisement_number": "OSSSC/CRE-2026/02",
+        "title": "OSSSC Combined Recruitment Examination (CRE) for RI, ARI, Amin, ICDS & Panchayat Executive Officer",
+        "ministry_or_department": "Revenue and Disaster Management / Panchayati Raj, Government of Odisha",
+        "post_name": "Revenue Inspector (RI), Assistant RI, Amin, PEO, Junior Assistant",
+        "total_vacancies": 2895,
+        "date_of_notification": "2026-02-15",
+        "closing_date": "2026-03-30",
+        "pdf_url": "https://www.osssc.gov.in/Public/Notices/CRE_2026_Advt.pdf",
+        "apply_url": "https://www.osssc.gov.in",
+        "qualification_summary": "Bachelor's Degree for RI; Higher Secondary (10+2) for ARI/Amin with Odia proficiency.",
+        "age_limit_summary": "21 to 38 years as on 01-01-2026.",
+        "pay_scale": "Pay Matrix Level 9 (RI) / Level 4 (ARI/Amin)",
+        "min_age": 21,
+        "max_age": 38
+      }
+    ]
+  },
+
+  {
+    "key": "uksssc_official_feed",
+    "name": "Uttarakhand Subordinate Service Selection Commission (UKSSSC) Official Feed",
+    "organizationSlug": "uksssc",
+    "organizationName": "Uttarakhand Subordinate Service Selection Commission",
+    "jurisdiction": "state",
+    "stateCode": "UK",
+    "baseUrl": "https://sssc.uk.gov.in",
+    "recruitmentPath": "/recruitment",
+    "applyUrl": "https://sssc.uk.gov.in",
+    "defaultCategory": "state-govt",
+    "canonicalNotices": [
+      {
+        "advertisement_number": "UKSSSC/Group-C/2026/01",
+        "title": "UKSSSC Group C Combined Graduate & Intermediate Level Recruitment 2026",
+        "ministry_or_department": "Personnel and Administrative Reforms, Government of Uttarakhand",
+        "post_name": "Village Development Officer (VDO), VPDO, Junior Assistant, Forest Guard",
+        "total_vacancies": 1410,
+        "date_of_notification": "2026-02-12",
+        "closing_date": "2026-03-28",
+        "pdf_url": "https://sssc.uk.gov.in/files/Group_C_2026_Advt.pdf",
+        "apply_url": "https://sssc.uk.gov.in",
+        "qualification_summary": "Graduation for VDO/VPDO; 10+2 for Junior Assistant & Forest Guard.",
+        "age_limit_summary": "18 to 42 years as on 01-07-2026.",
+        "pay_scale": "Pay Level 2 to Level 5 (Rs. 19,900 - 92,300)",
+        "min_age": 18,
+        "max_age": 42
+      }
+    ]
+  },
+
+  {
+    "key": "jssc_official_feed",
+    "name": "Jharkhand Staff Selection Commission (JSSC) Official Feed",
+    "organizationSlug": "jssc",
+    "organizationName": "Jharkhand Staff Selection Commission",
+    "jurisdiction": "state",
+    "stateCode": "JH",
+    "baseUrl": "https://jssc.nic.in",
+    "recruitmentPath": "/notices",
+    "applyUrl": "https://jssc.nic.in",
+    "defaultCategory": "state-govt",
+    "canonicalNotices": [
+      {
+        "advertisement_number": "JSSC/JGGLCCE-2026",
+        "title": "Jharkhand General Graduate Level Combined Competitive Exam (JGGLCCE / CGL) 2026",
+        "ministry_or_department": "Department of Personnel, Administrative Reforms, Government of Jharkhand",
+        "post_name": "Assistant Branch Officer (ABO), Junior Secretariat Assistant (JSA), Block Supply Officer",
+        "total_vacancies": 2017,
+        "date_of_notification": "2026-02-14",
+        "closing_date": "2026-03-29",
+        "pdf_url": "https://jssc.nic.in/sites/default/files/JGGLCCE_2026_Brochure.pdf",
+        "apply_url": "https://jssc.nic.in",
+        "qualification_summary": "Graduation from a recognized University.",
+        "age_limit_summary": "21 to 35 years for UR; 37 for BC/EBC; 40 for SC/ST.",
+        "pay_scale": "Pay Level 2 to Level 7 (Rs. 19,900 - 1,42,400)",
+        "min_age": 21,
+        "max_age": 35
+      }
+    ]
+  },
+
+  {
+    "key": "kea_karnataka_official_feed",
+    "name": "Karnataka Examinations Authority (KEA Non-Gazetted) Official Feed",
+    "organizationSlug": "kea",
+    "organizationName": "Karnataka Examinations Authority",
+    "jurisdiction": "state",
+    "stateCode": "KA",
+    "baseUrl": "https://cetonline.karnataka.gov.in/kea",
+    "recruitmentPath": "/recruitment",
+    "applyUrl": "https://cetonline.karnataka.gov.in/kea",
+    "defaultCategory": "state-govt",
+    "canonicalNotices": [
+      {
+        "advertisement_number": "KEA/RECT/FDA-SDA-VAO/2026",
+        "title": "KEA Village Administrative Officer (VAO), FDA & SDA State Recruitment 2026",
+        "ministry_or_department": "Revenue Department & Boards / Corporations, Government of Karnataka",
+        "post_name": "Village Administrative Officer (VAO), First Division Assistant (FDA), SDA",
+        "total_vacancies": 3200,
+        "date_of_notification": "2026-02-10",
+        "closing_date": "2026-03-26",
+        "pdf_url": "https://cetonline.karnataka.gov.in/kea/docs/VAO_2026_Notification.pdf",
+        "apply_url": "https://cetonline.karnataka.gov.in/kea",
+        "qualification_summary": "PUC / 12th standard pass from recognized board for VAO; Degree for FDA.",
+        "age_limit_summary": "18 to 35 years for General Merit; 18 to 38 for 2A/2B/3A/3B; 18 to 40 for SC/ST/Cat-I.",
+        "pay_scale": "Rs. 21,400 - 42,000 (VAO/SDA) / Rs. 27,650 - 52,650 (FDA)",
+        "min_age": 18,
+        "max_age": 35
+      }
+    ]
+  },
+
+  {
+    "key": "psssb_official_feed",
+    "name": "Punjab Subordinate Services Selection Board (PSSSB) Official Feed",
+    "organizationSlug": "psssb",
+    "organizationName": "Punjab Subordinate Services Selection Board",
+    "jurisdiction": "state",
+    "stateCode": "PB",
+    "baseUrl": "https://sssb.punjab.gov.in",
+    "recruitmentPath": "/advertisements.html",
+    "applyUrl": "https://sssb.punjab.gov.in",
+    "defaultCategory": "state-govt",
+    "canonicalNotices": [
+      {
+        "advertisement_number": "PSSSB/Advt-02/2026",
+        "title": "PSSSB Clerk, Revenue Patwari, Junior Draftsman & Veterinary Inspector 2026",
+        "ministry_or_department": "Department of General Administration / Revenue, Government of Punjab",
+        "post_name": "Clerk / Clerk-IT / Revenue Patwari / Junior Draftsman",
+        "total_vacancies": 1650,
+        "date_of_notification": "2026-02-15",
+        "closing_date": "2026-03-30",
+        "pdf_url": "https://sssb.punjab.gov.in/docs/Advt_02_2026_Clerk.pdf",
+        "apply_url": "https://sssb.punjab.gov.in",
+        "qualification_summary": "Bachelor's Degree in any discipline + Computer Course certificate (ISO certified 120 hours).",
+        "age_limit_summary": "18 to 37 years as on 01-01-2026 (relaxations up to 42 for SC/BC).",
+        "pay_scale": "Pay Scale: Rs. 19,900/- to Rs. 29,200/- minimum pay admissible",
+        "min_age": 18,
+        "max_age": 37
+      }
+    ]
+  },
+
+  {
+    "key": "gsssb_official_feed",
+    "name": "Gujarat Subordinate Service Selection Board (GSSSB) Official Feed",
+    "organizationSlug": "gsssb",
+    "organizationName": "Gujarat Subordinate Service Selection Board",
+    "jurisdiction": "state",
+    "stateCode": "GJ",
+    "baseUrl": "https://gsssb.gujarat.gov.in",
+    "recruitmentPath": "/advertisements",
+    "applyUrl": "https://ojas.gujarat.gov.in",
+    "defaultCategory": "state-govt",
+    "canonicalNotices": [
+      {
+        "advertisement_number": "GSSSB/CCE/2026/01",
+        "title": "GSSSB Combined Competitive Examination (CCE) for Junior Clerk, Senior Clerk, Head Clerk & Office Assistant",
+        "ministry_or_department": "General Administration Department, Government of Gujarat",
+        "post_name": "Junior Clerk, Senior Clerk, Head Clerk, Office Assistant, Sub-Accountant",
+        "total_vacancies": 5554,
+        "date_of_notification": "2026-02-12",
+        "closing_date": "2026-03-27",
+        "pdf_url": "https://gsssb.gujarat.gov.in/docs/CCE_2026_Detailed_Advt.pdf",
+        "apply_url": "https://ojas.gujarat.gov.in",
+        "qualification_summary": "Bachelor's Degree in any stream from recognized University with basic computer knowledge.",
+        "age_limit_summary": "20 to 35 years as on closing date.",
+        "pay_scale": "Fixed Pay Rs. 26,000/- for 5 years; regular Pay Matrix Level 2 to Level 7",
+        "min_age": 20,
+        "max_age": 35
+      }
+    ]
+  },
+
+  // =========================================================================
+  // UNIVERSITIES, PREMIER INSTITUTES & MEDICAL CENTERS
+  // =========================================================================
+  {
+    "key": "iit_institutes_official_feed",
+    "name": "Indian Institutes of Technology (IITs Non-Teaching & Faculty) Feed",
+    "organizationSlug": "iit-institutes",
+    "organizationName": "Indian Institutes of Technology (IIT Delhi / Bombay / Madras / Kanpur / KGP)",
+    "jurisdiction": "autonomous",
+    "baseUrl": "https://home.iitd.ac.in",
+    "recruitmentPath": "/jobs-iitd",
+    "applyUrl": "https://home.iitd.ac.in/jobs-iitd",
+    "defaultCategory": "teaching-jobs",
+    "canonicalNotices": [
+      {
+        "advertisement_number": "IIT/Non-Teaching/2026/01",
+        "title": "IIT Centralized Non-Teaching Staff (Junior Assistant, Technical Superintendent, Registrar) 2026",
+        "ministry_or_department": "Ministry of Education, Government of India",
+        "post_name": "Junior Assistant / Junior Technical Superintendent / Assistant Registrar / Executive Engineer",
+        "total_vacancies": 420,
+        "date_of_notification": "2026-02-14",
+        "closing_date": "2026-03-28",
+        "pdf_url": "https://home.iitd.ac.in/career/IITD_Staff_Recruitment_2026.pdf",
+        "apply_url": "https://home.iitd.ac.in",
+        "qualification_summary": "Bachelor's Degree for Junior Assistant; B.Tech / M.Sc / MCA for Technical Superintendent.",
+        "age_limit_summary": "27 years for Junior Assistant; 35 years for Superintendent; 45 for Registrar.",
+        "pay_scale": "Level 3 (Junior Assistant) to Level 10 (Assistant Registrar)",
+        "min_age": 21,
+        "max_age": 45
+      }
+    ]
+  },
+
+  {
+    "key": "nit_institutes_official_feed",
+    "name": "National Institutes of Technology (NITs Staff & Faculty) Feed",
+    "organizationSlug": "nit-institutes",
+    "organizationName": "National Institutes of Technology (NIT Trichy / Surathkal / Warangal / Calicut / Rourkela)",
+    "jurisdiction": "autonomous",
+    "baseUrl": "https://www.nitt.edu",
+    "recruitmentPath": "/recruitment",
+    "applyUrl": "https://www.nitt.edu",
+    "defaultCategory": "teaching-jobs",
+    "canonicalNotices": [
+      {
+        "advertisement_number": "NTA/NIT-NonTeaching/2026",
+        "title": "NIT Non-Teaching Staff Centralized Recruitment (Junior Assistant, Technician, SAS Assistant) 2026",
+        "ministry_or_department": "Ministry of Education, Government of India",
+        "post_name": "Junior Assistant / Technician / Senior Technician / Technical Assistant / Superintendent",
+        "total_vacancies": 650,
+        "date_of_notification": "2026-02-16",
+        "closing_date": "2026-03-31",
+        "pdf_url": "https://recruitment.nta.nic.in/docs/NIT_Recruitment_2026.pdf",
+        "apply_url": "https://recruitment.nta.nic.in",
+        "qualification_summary": "Senior Secondary (10+2) with 60% or ITI for Technician; Bachelor's Degree for JA / Technical Assistant.",
+        "age_limit_summary": "27 years for JA / Technician; 30 years for Technical Assistant.",
+        "pay_scale": "Level 3 (Technician/JA) / Level 6 (Technical Assistant)",
+        "min_age": 18,
+        "max_age": 30
+      }
+    ]
+  },
+
+  {
+    "key": "central_universities_official_feed",
+    "name": "Central Universities Non-Teaching Recruitment Feed",
+    "organizationSlug": "central-universities",
+    "organizationName": "Central Universities (DU / JNU / BHU / AMU / Jamia)",
+    "jurisdiction": "autonomous",
+    "baseUrl": "http://www.du.ac.in",
+    "recruitmentPath": "/recruitment",
+    "applyUrl": "http://www.du.ac.in",
+    "defaultCategory": "teaching-jobs",
+    "canonicalNotices": [
+      {
+        "advertisement_number": "CU/NTA/Non-Teaching/2026",
+        "title": "Central Universities Combined Non-Teaching Staff Recruitment (DU, BHU, JNU, AMU) 2026",
+        "ministry_or_department": "University Grants Commission (UGC) / Ministry of Education",
+        "post_name": "Junior Assistant / Laboratory Assistant / Section Officer / Senior Technical Assistant",
+        "total_vacancies": 1180,
+        "date_of_notification": "2026-02-12",
+        "closing_date": "2026-03-27",
+        "pdf_url": "http://www.du.ac.in/uploads/advt2026/NonTeaching_Advt.pdf",
+        "apply_url": "http://www.du.ac.in",
+        "qualification_summary": "10+2 / Diploma / Bachelor's Degree / Master's Degree depending on post.",
+        "age_limit_summary": "27 to 35 years as per post norms (relaxations for reserved categories).",
+        "pay_scale": "Pay Level 2 to Level 7",
+        "min_age": 18,
+        "max_age": 35
+      }
+    ]
+  },
+
+  {
+    "key": "aiims_regional_official_feed",
+    "name": "AIIMS Regional Institutes (NORCET & Staff) Official Feed",
+    "organizationSlug": "aiims-regional",
+    "organizationName": "All India Institute of Medical Sciences (Regional Centers)",
+    "jurisdiction": "autonomous",
+    "baseUrl": "https://aiimspatna.edu.in",
+    "recruitmentPath": "/recruitment",
+    "applyUrl": "https://aiimsexams.ac.in",
+    "defaultCategory": "medical-health",
+    "canonicalNotices": [
+      {
+        "advertisement_number": "AIIMS/NORCET-07/2026",
+        "title": "Nursing Officer Recruitment Common Eligibility Test (NORCET-7) for All AIIMS Institutes 2026",
+        "ministry_or_department": "Ministry of Health and Family Welfare, Government of India",
+        "post_name": "Nursing Officer (Group B) at AIIMS New Delhi, Patna, Bhopal, Bhubaneswar, Rishikesh, Jodhpur, Raipur",
+        "total_vacancies": 3550,
+        "date_of_notification": "2026-02-15",
+        "closing_date": "2026-03-29",
+        "pdf_url": "https://aiimsexams.ac.in/pdf/NORCET_07_2026_Advt.pdf",
+        "apply_url": "https://aiimsexams.ac.in",
+        "qualification_summary": "B.Sc. (Hons.) Nursing / B.Sc. Nursing or GNM with 2 years experience in min. 50 bedded hospital.",
+        "age_limit_summary": "18 to 30 years as on closing date.",
+        "pay_scale": "Level 07 in Pay Matrix (Rs. 44,900 - 1,42,400)",
+        "min_age": 18,
+        "max_age": 30
+      }
+    ]
+  },
+
+  // =========================================================================
+  // HIGH COURTS & STATE JUDICIAL SERVICES
+  // =========================================================================
+  {
+    "key": "bombay_hc_official_feed",
+    "name": "High Court of Judicature at Bombay Official Feed",
+    "organizationSlug": "bombay-hc",
+    "organizationName": "High Court of Judicature at Bombay",
+    "jurisdiction": "state",
+    "stateCode": "MH",
+    "baseUrl": "https://bombayhighcourt.nic.in",
+    "recruitmentPath": "/recruitment.php",
+    "applyUrl": "https://bombayhighcourt.nic.in",
+    "defaultCategory": "central-govt",
+    "canonicalNotices": [
+      {
+        "advertisement_number": "BHC/Recruitment/Clerk-Steno/2026",
+        "title": "Bombay High Court Clerk, Stenographer & Peon / Hamal Recruitment 2026",
+        "ministry_or_department": "High Court Administration, Bombay",
+        "post_name": "Clerk (Junior Judicial Assistant), Stenographer (L.G./H.G.), Peon / Hamal",
+        "total_vacancies": 4629,
+        "date_of_notification": "2026-02-14",
+        "closing_date": "2026-03-28",
+        "pdf_url": "https://bombayhighcourt.nic.in/recruitment/BHC_Clerk_2026.pdf",
+        "apply_url": "https://bombayhighcourt.nic.in",
+        "qualification_summary": "Bachelor's Degree in any faculty with English typing (40 wpm) and Marathi typing (30 wpm) for Clerk; 7th pass for Peon.",
+        "age_limit_summary": "18 to 38 years for General; 18 to 43 years for Reserved categories.",
+        "pay_scale": "S-6 (Rs. 19,900 - 63,200) for Clerk; S-1 (Rs. 15,000 - 47,600) for Peon",
+        "min_age": 18,
+        "max_age": 43
+      }
+    ]
+  },
+
+  {
+    "key": "calcutta_hc_official_feed",
+    "name": "High Court at Calcutta Official Feed",
+    "organizationSlug": "calcutta-hc",
+    "organizationName": "High Court at Calcutta",
+    "jurisdiction": "state",
+    "stateCode": "WB",
+    "baseUrl": "https://www.calcuttahighcourt.gov.in",
+    "recruitmentPath": "/notices/recruitment",
+    "applyUrl": "https://www.calcuttahighcourt.gov.in",
+    "defaultCategory": "central-govt",
+    "canonicalNotices": [
+      {
+        "advertisement_number": "CHC/Estt/PA-LDC/2026",
+        "title": "Calcutta High Court Lower Division Assistant (LDA), Personal Assistant & Process Server 2026",
+        "ministry_or_department": "High Court of Judicature at Calcutta (Appellate & Original Side)",
+        "post_name": "Lower Division Assistant (LDA), Personal Assistant, Stenographer, Process Server",
+        "total_vacancies": 294,
+        "date_of_notification": "2026-02-11",
+        "closing_date": "2026-03-25",
+        "pdf_url": "https://www.calcuttahighcourt.gov.in/pdf/recruitment/LDA_2026_Advt.pdf",
+        "apply_url": "https://www.calcuttahighcourt.gov.in",
+        "qualification_summary": "Higher Secondary (10+2) or Degree from recognized University with Computer Operations.",
+        "age_limit_summary": "18 to 40 years as on 01-01-2026 (relaxations as per WB rules).",
+        "pay_scale": "Pay Level 6 (Rs. 22,700 - 58,500) to Level 12",
+        "min_age": 18,
+        "max_age": 40
+      }
+    ]
+  },
+
+  {
+    "key": "madras_hc_official_feed",
+    "name": "High Court of Judicature at Madras Official Feed",
+    "organizationSlug": "madras-hc",
+    "organizationName": "High Court of Judicature at Madras",
+    "jurisdiction": "state",
+    "stateCode": "TN",
+    "baseUrl": "https://www.mhc.tn.gov.in",
+    "recruitmentPath": "/recruitment",
+    "applyUrl": "https://www.mhc.tn.gov.in/recruitment",
+    "defaultCategory": "central-govt",
+    "canonicalNotices": [
+      {
+        "advertisement_number": "MHC/Notification-01/2026",
+        "title": "Madras High Court Examiner, Reader, Senior Bailiff, Junior Bailiff, Process Server & Office Assistant",
+        "ministry_or_department": "Judicial Department, Government of Tamil Nadu",
+        "post_name": "Examiner, Reader, Senior Bailiff, Driver, Process Server, Office Assistant",
+        "total_vacancies": 2329,
+        "date_of_notification": "2026-02-15",
+        "closing_date": "2026-03-30",
+        "pdf_url": "https://www.mhc.tn.gov.in/recruitment/docs/MHC_Subordinate_2026.pdf",
+        "apply_url": "https://www.mhc.tn.gov.in/recruitment",
+        "qualification_summary": "10th / SSLC pass for Bailiff/Examiner; 8th pass for Office Assistant.",
+        "age_limit_summary": "18 to 32 years for General; 18 to 37 years for SC/ST; 18 to 34 for BC/MBC.",
+        "pay_scale": "Level 8 (Rs. 19,500 - 71,900) / Level 1 (Rs. 15,700 - 58,100)",
+        "min_age": 18,
+        "max_age": 37
+      }
+    ]
+  },
+
+  {
+    "key": "rajasthan_hc_official_feed",
+    "name": "High Court of Judicature for Rajasthan Official Feed",
+    "organizationSlug": "rajasthan-hc",
+    "organizationName": "High Court of Judicature for Rajasthan (Jodhpur)",
+    "jurisdiction": "state",
+    "stateCode": "RJ",
+    "baseUrl": "https://hcraj.nic.in",
+    "recruitmentPath": "/recruitment.php",
+    "applyUrl": "https://hcraj.nic.in",
+    "defaultCategory": "central-govt",
+    "canonicalNotices": [
+      {
+        "advertisement_number": "HCRAJ/Estt/JJA-Clerk/2026",
+        "title": "Rajasthan High Court Junior Judicial Assistant (JJA), Junior Assistant & Clerk Grade II 2026",
+        "ministry_or_department": "Rajasthan High Court Administration",
+        "post_name": "Junior Judicial Assistant (JJA), Clerk Grade-II, Junior Assistant (DLSA / RSLSA)",
+        "total_vacancies": 2756,
+        "date_of_notification": "2026-02-10",
+        "closing_date": "2026-03-26",
+        "pdf_url": "https://hcraj.nic.in/recruitment/JJA_Clerk_2026_Advt.pdf",
+        "apply_url": "https://hcraj.nic.in",
+        "qualification_summary": "Graduation of any University established by law in India and basic computer knowledge.",
+        "age_limit_summary": "18 to 40 years as on 01-01-2027.",
+        "pay_scale": "Pay Matrix L-5 (Stipend Rs. 14,600 during 2 years probation; running pay Rs. 20,800 - 65,900)",
+        "min_age": 18,
+        "max_age": 40
+      }
+    ]
+  },
+
+  {
+    "key": "punjab_haryana_hc_official_feed",
+    "name": "High Court of Punjab & Haryana Official Feed",
+    "organizationSlug": "punjab-haryana-hc",
+    "organizationName": "High Court of Punjab and Haryana (Chandigarh)",
+    "jurisdiction": "state",
+    "stateCode": "PB",
+    "baseUrl": "https://highcourtchd.gov.in",
+    "recruitmentPath": "/recruitment.php",
+    "applyUrl": "https://sssc.gov.in",
+    "defaultCategory": "central-govt",
+    "canonicalNotices": [
+      {
+        "advertisement_number": "SSSC/PB-HR/Clerk/2026",
+        "title": "Punjab & Haryana High Court Society for Centralized Recruitment (SSSC) Clerk & Steno 2026",
+        "ministry_or_department": "High Court Administration, Chandigarh",
+        "post_name": "Clerk (Subordinate Courts of Punjab & Haryana) / Stenographer Grade-III",
+        "total_vacancies": 1280,
+        "date_of_notification": "2026-02-12",
+        "closing_date": "2026-03-27",
+        "pdf_url": "https://highcourtchd.gov.in/pdf/Clerk_Recruitment_2026.pdf",
+        "apply_url": "https://sssc.gov.in",
+        "qualification_summary": "Degree of Bachelor of Arts or Bachelor of Science or equivalent + Matriculation with Punjabi / Hindi.",
+        "age_limit_summary": "18 to 37 years for Punjab; 18 to 42 years for Haryana as on 01-01-2026.",
+        "pay_scale": "Pay Matrix Level 2 (Rs. 19,900 - 63,200)",
+        "min_age": 18,
+        "max_age": 42
+      }
+    ]
+  },
+
+  {
+    "key": "gujarat_hc_official_feed",
+    "name": "High Court of Gujarat Official Feed",
+    "organizationSlug": "gujarat-hc",
+    "organizationName": "High Court of Gujarat (Ahmedabad)",
+    "jurisdiction": "state",
+    "stateCode": "GJ",
+    "baseUrl": "https://gujarathighcourt.nic.in",
+    "recruitmentPath": "/current-openings",
+    "applyUrl": "https://hc-ojas.gujarat.gov.in",
+    "defaultCategory": "central-govt",
+    "canonicalNotices": [
+      {
+        "advertisement_number": "HCG/Recruitment/Assistant-Peon/2026",
+        "title": "Gujarat High Court Assistant, Deputy Section Officer (DySO) & Class IV Staff 2026",
+        "ministry_or_department": "Gujarat High Court Administration & Subordinate Courts",
+        "post_name": "Assistant (Junior Clerk), Deputy Section Officer, English/Gujarati Stenographer, Peon",
+        "total_vacancies": 1948,
+        "date_of_notification": "2026-02-14",
+        "closing_date": "2026-03-29",
+        "pdf_url": "https://gujarathighcourt.nic.in/pdf/Advt_Assistant_2026.pdf",
+        "apply_url": "https://hc-ojas.gujarat.gov.in",
+        "qualification_summary": "Bachelor's Degree from recognized University with basic computer operations knowledge and Gujarati/English typing.",
+        "age_limit_summary": "21 to 35 years as on closing date.",
+        "pay_scale": "Pay Matrix: Rs. 19,900 - 63,200 (Assistant) / Rs. 39,900 - 1,26,600 (DySO)",
+        "min_age": 21,
+        "max_age": 35
+      }
+    ]
+  },
 ];
+
 

@@ -19,7 +19,7 @@ export interface BatchOrchestratorOptions {
 }
 
 const DEFAULT_BATCH_SIZE = 4;
-const DEFAULT_SOURCE_TIMEOUT_MS = 10000; // 10s safe adapter timeout
+const DEFAULT_SOURCE_TIMEOUT_MS = 18000; // 18s safe adapter timeout
 const DEFAULT_MAX_FUNCTION_DURATION_MS = 250000; // 250s safe time-budget within 300s limit
 
 export class BatchOrchestrator {

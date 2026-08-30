@@ -78,7 +78,7 @@ export class StandardGovJobSourceAdapter extends BaseSourceAdapter<any, Canonica
 
     try {
       const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 10000);
+      const timeoutId = setTimeout(() => controller.abort(), 4000);
 
       const endpoint = `${this.config.baseUrl}${this.config.recruitmentPath}`;
       const response = await fetch(endpoint, {
