@@ -96,30 +96,6 @@ export function NewsArticleView({
           </div>
 
           <div className="flex items-center gap-2">
-            {/* Language Switch for Article */}
-            <div className="inline-flex rounded-lg border border-slate-200 bg-slate-100/70 p-0.5 text-xs">
-              <Link
-                href={`/news/${article.slug}`}
-                className={`px-2.5 py-1 text-xs font-bold rounded-md transition-all ${
-                  !isHindi
-                    ? "bg-white text-[#013089] shadow-2xs border border-slate-200/60"
-                    : "text-slate-600 hover:text-slate-900"
-                }`}
-              >
-                English
-              </Link>
-              <Link
-                href={`/news/${article.slug}?lang=hi`}
-                className={`px-2.5 py-1 text-xs font-bold rounded-md transition-all ${
-                  isHindi
-                    ? "bg-[#013089] text-white shadow-2xs"
-                    : "text-slate-600 hover:text-slate-900"
-                }`}
-              >
-                हिंदी
-              </Link>
-            </div>
-
             <Button
               variant="outline"
               size="sm"

@@ -28,6 +28,7 @@ export async function generateMetadata({ params, searchParams }: NewsArticlePage
     return constructMetadata({
       title: "News Story Not Found | SuchnaSetu News",
       description: "The requested news story could not be found.",
+      manifest: "/news/manifest.webmanifest",
     });
   }
 
@@ -44,6 +45,7 @@ export async function generateMetadata({ params, searchParams }: NewsArticlePage
       en: `https://suchnasetu.in/news/${article.slug}`,
       hi: `https://suchnasetu.in/news/${article.slug}?lang=hi`,
     },
+    manifest: "/news/manifest.webmanifest",
   });
 }
 

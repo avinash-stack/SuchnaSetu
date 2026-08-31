@@ -1,0 +1,74 @@
+{
+  "name": "SuchnaSetu Admin",
+  "short_name": "Suchna Admin",
+  "description": "Administrative operations console, data ingestion orchestrator, and real-time observability center for SuchnaSetu.",
+  "start_url": "/admin",
+  "scope": "/admin",
+  "id": "/admin",
+  "display": "standalone",
+  "display_override": ["window-controls-overlay", "standalone", "minimal-ui"],
+  "orientation": "any",
+  "background_color": "#0B0F19",
+  "theme_color": "#0F172A",
+  "categories": ["business", "productivity", "utilities"],
+  "lang": "en-IN",
+  "dir": "ltr",
+  "icons": [
+    {
+      "src": "/icons/admin/icon-192x192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/icons/admin/icon-maskable-192x192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "maskable"
+    },
+    {
+      "src": "/icons/admin/icon-512x512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/icons/admin/icon-maskable-512x512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    },
+    {
+      "src": "/icons/admin/icon.svg",
+      "sizes": "512x512",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Operations Center",
+      "short_name": "Operations",
+      "url": "/admin/operations",
+      "icons": [{ "src": "/icons/admin/icon-192x192.png", "sizes": "192x192" }]
+    },
+    {
+      "name": "Job Recruitment Management",
+      "short_name": "Jobs",
+      "url": "/admin/jobs",
+      "icons": [{ "src": "/icons/admin/icon-192x192.png", "sizes": "192x192" }]
+    },
+    {
+      "name": "Exams & Results Management",
+      "short_name": "Exams",
+      "url": "/admin/exams",
+      "icons": [{ "src": "/icons/admin/icon-192x192.png", "sizes": "192x192" }]
+    },
+    {
+      "name": "News Desk",
+      "short_name": "News",
+      "url": "/admin/news",
+      "icons": [{ "src": "/icons/admin/icon-192x192.png", "sizes": "192x192" }]
+    }
+  ]
+}

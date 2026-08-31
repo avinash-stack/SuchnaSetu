@@ -7,7 +7,6 @@ import {
 import { NewsHeader } from "@/modules/news/components/news-header";
 import { NewsListViewItem } from "@/modules/news/components/news-list-view-item";
 import { NewsPagination } from "@/modules/news/components/news-pagination";
-import { NewsLanguageFilter } from "@/modules/news/components/news-language-filter";
 import { EmptyState } from "@/components/shared/empty-state";
 import { constructMetadata, buildBreadcrumbJsonLd } from "@/lib/seo";
 
@@ -34,6 +33,7 @@ export async function generateMetadata({ params, searchParams }: CategoryPagePro
     return constructMetadata({
       title: "Category Not Found | SuchnaSetu News",
       description: "The requested news category could not be found.",
+      manifest: "/news/manifest.webmanifest",
     });
   }
 
@@ -46,6 +46,7 @@ export async function generateMetadata({ params, searchParams }: CategoryPagePro
       : `Latest verified news, policy decisions, and national developments in ${category.name}.`,
     path: `/news/category/${category.slug}`,
     canonicalPath: `/news/category/${category.slug}`,
+    manifest: "/news/manifest.webmanifest",
   });
 }
 
@@ -95,11 +96,6 @@ export default async function NewsCategoryPage({ params, searchParams }: Categor
               <span className="text-xs font-bold uppercase tracking-wider text-[#013089]">
                 {isHindi ? "समाचार श्रेणी" : "News Desk"}
               </span>
-              <NewsLanguageFilter
-                currentLang={lang}
-                pathname={`/news/category/${category.slug}`}
-                searchParams={sParams}
-              />
             </div>
 
             <div className="flex items-baseline justify-between flex-wrap gap-2">

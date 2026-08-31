@@ -8,6 +8,7 @@ export const metadata: Metadata = constructMetadata({
   description: "Official Terms and Conditions governing the use of SuchnaSetu News. Learn about editorial disclaimers, machine translation policies, copyright, and limitation of liability.",
   path: "/news/terms-and-conditions",
   canonicalPath: "/news/terms-and-conditions",
+  manifest: "/news/manifest.webmanifest",
 });
 
 export default function NewsTermsPage() {

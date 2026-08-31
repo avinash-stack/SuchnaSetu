@@ -3,7 +3,6 @@ import { fetchNewsFeed } from "@/modules/news/services/news-query-service";
 import { NewsHeader } from "@/modules/news/components/news-header";
 import { NewsListViewItem } from "@/modules/news/components/news-list-view-item";
 import { NewsPagination } from "@/modules/news/components/news-pagination";
-import { NewsLanguageFilter } from "@/modules/news/components/news-language-filter";
 import { EmptyState } from "@/components/shared/empty-state";
 import { constructMetadata, buildBreadcrumbJsonLd } from "@/lib/seo";
 import { getLocalizedStateName } from "@/lib/i18n/config";
@@ -39,6 +38,7 @@ export async function generateMetadata({ params, searchParams }: StateNewsPagePr
       : `Latest verified news, state government announcements, cabinet decisions, and local updates from ${stateName}.`,
     path: `/news/state/${rawState.toLowerCase()}`,
     canonicalPath: `/news/state/${rawState.toLowerCase()}`,
+    manifest: "/news/manifest.webmanifest",
   });
 }
 
@@ -87,11 +87,6 @@ export default async function StateNewsPage({ params, searchParams }: StateNewsP
                 <MapPin className="h-4 w-4 text-[#FE8D01]" />
                 <span>{isHindi ? "राज्य एवं प्रादेशिक डेस्क" : "State & Regional News Desk"}</span>
               </div>
-              <NewsLanguageFilter
-                currentLang={lang}
-                pathname={`/news/state/${rawState.toLowerCase()}`}
-                searchParams={sParams}
-              />
             </div>
 
             <div className="flex items-baseline justify-between flex-wrap gap-2">

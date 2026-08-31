@@ -8,6 +8,7 @@ export const metadata: Metadata = constructMetadata({
   description: "Official Privacy Policy for SuchnaSetu News. Learn how we handle cookies, readership analytics, Google AdSense advertising, and news data privacy.",
   path: "/news/privacy-policy",
   canonicalPath: "/news/privacy-policy",
+  manifest: "/news/manifest.webmanifest",
 });
 
 export default function NewsPrivacyPolicyPage() {

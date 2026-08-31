@@ -11,6 +11,7 @@ interface MetadataProps {
   noIndex?: boolean;
   keywords?: string[];
   availableLanguages?: Record<string, string>;
+  manifest?: string;
 }
 
 /**
@@ -50,6 +51,7 @@ export function constructMetadata({
   noIndex = false,
   keywords,
   availableLanguages,
+  manifest: manifestOverride,
 }: MetadataProps = {}): Metadata {
   const baseUrl = getCanonicalSiteUrl();
   const pageTitle = title ? `${title} | ${SITE_CONFIG.name}` : `${SITE_CONFIG.name} - ${SITE_CONFIG.tagline}`;
@@ -131,7 +133,7 @@ export function constructMetadata({
         { url: "/apple-touch-icon.png", sizes: "180x180", type: "image/png" },
       ],
     },
-    manifest: "/site.webmanifest",
+    manifest: manifestOverride || "/site.webmanifest",
     robots: {
       index: !noIndex,
       follow: true,

@@ -7,7 +7,6 @@ import {
 import { NewsHeader } from "@/modules/news/components/news-header";
 import { NewsListViewItem } from "@/modules/news/components/news-list-view-item";
 import { NewsPagination } from "@/modules/news/components/news-pagination";
-import { NewsLanguageFilter } from "@/modules/news/components/news-language-filter";
 import { NewsSearchBar } from "@/modules/news/components/news-search-bar";
 import { EmptyState } from "@/components/shared/empty-state";
 import { constructMetadata } from "@/lib/seo";
@@ -36,6 +35,7 @@ export async function generateMetadata({ searchParams }: NewsSearchPageProps): P
     description: "Search verified Indian government news, public announcements, policy decisions, and state reports.",
     path: "/news/search",
     canonicalPath: "/news/search",
+    manifest: "/news/manifest.webmanifest",
   });
 }
 
@@ -78,11 +78,6 @@ export default async function NewsSearchPage({ searchParams }: NewsSearchPagePro
                   {isHindi ? "समाचार एवं सार्वजनिक मामले खोजें" : "Search News & Public Affairs"}
                 </h1>
               </div>
-              <NewsLanguageFilter
-                currentLang={lang}
-                pathname="/news/search"
-                searchParams={params}
-              />
             </div>
 
             <NewsSearchBar initialQuery={query} lang={lang} />

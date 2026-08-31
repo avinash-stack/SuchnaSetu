@@ -8,7 +8,6 @@ import {
 import { NewsHeader } from "@/modules/news/components/news-header";
 import { NewsListViewItem } from "@/modules/news/components/news-list-view-item";
 import { NewsPagination } from "@/modules/news/components/news-pagination";
-import { NewsLanguageFilter } from "@/modules/news/components/news-language-filter";
 import { constructMetadata, buildBreadcrumbJsonLd } from "@/lib/seo";
 import { Newspaper, Sparkles } from "lucide-react";
 import { EmptyState } from "@/components/shared/empty-state";
@@ -39,6 +38,7 @@ export async function generateMetadata({ searchParams }: NewsPortalPageProps): P
       : "Direct verified reporting on national developments, education reforms, cabinet decisions, government policies, state circulars, and civic advisories.",
     path: "/news",
     canonicalPath: "/news",
+    manifest: "/news/manifest.webmanifest",
   });
 }
 
@@ -84,7 +84,7 @@ export default async function NewsPortalPage({ searchParams }: NewsPortalPagePro
 
         {/* Main Content Container */}
         <main className="mx-auto max-w-5xl px-4 sm:px-6 lg:px-8 py-6 space-y-6">
-          {/* Top Control Bar: Stream Title & Language Filter */}
+          {/* Top Control Bar: Stream Title */}
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-200/90 pb-4">
             <div className="flex items-center gap-2">
               <Newspaper className="h-5 w-5 text-[#013089]" />
@@ -99,9 +99,6 @@ export default async function NewsPortalPage({ searchParams }: NewsPortalPagePro
                 </p>
               </div>
             </div>
-
-            {/* Language Switcher */}
-            <NewsLanguageFilter currentLang={lang} pathname="/news" searchParams={sParams} />
           </div>
 
           {/* Top Stories Highlights Strip (Only on Page 1) */}

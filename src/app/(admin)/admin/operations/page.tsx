@@ -8,6 +8,7 @@ import {
   getOperationalReports,
 } from "@/modules/operations/service";
 import { OperationsClient } from "./operations-client";
+import { ManualSyncConsole } from "@/components/admin/manual-sync-console";
 
 export default async function AdminOperationsPage() {
   const supabase = await createClient();
@@ -48,6 +49,9 @@ export default async function AdminOperationsPage() {
           Monitor source uptime, retry failed ingestion jobs, audit data quality, validate SEO indexing, and review platform telemetry.
         </p>
       </div>
+
+      {/* Interactive Manual Sync Mission Control */}
+      <ManualSyncConsole />
 
       {/* Interactive Operations Console */}
       <OperationsClient

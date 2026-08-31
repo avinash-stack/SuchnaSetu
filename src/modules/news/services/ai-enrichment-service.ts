@@ -92,7 +92,7 @@ Respond with a single raw JSON object matching:
 }`;
 
   const controller = new AbortController();
-  const timeoutId = setTimeout(() => controller.abort(), 12000);
+  const timeoutId = setTimeout(() => controller.abort(), 4000);
 
   try {
     const res = await fetch("https://openrouter.ai/api/v1/chat/completions", {

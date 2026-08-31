@@ -19,8 +19,9 @@ export async function syncSingleNewsSource(source: NewsSource): Promise<Ingestio
     const adapter = new RssAtomAdapter(source);
     const rawItems = await adapter.fetch();
     fetchedCount = rawItems.length;
+    const itemsToProcess = rawItems.slice(0, 15);
 
-    for (const raw of rawItems) {
+    for (const raw of itemsToProcess) {
       try {
         const normalized = await adapter.normalize(raw);
         if (!normalized) continue;
@@ -34,7 +35,7 @@ export async function syncSingleNewsSource(source: NewsSource): Promise<Ingestio
         const slug = generateNewsSlug(normalized.title, normalized.publishedAt);
         const contentHash = computeContentHash(normalized.title, normalized.summary);
 
-        // Enrich with AI (returns fallback on timeout/error)
+        // Quick AI enrichment with fast fallback
         const enriched = await enrichNewsArticleWithAi(normalized);
 
         const insertRes = await insertNewsArticle({
