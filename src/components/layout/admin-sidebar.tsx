@@ -17,6 +17,7 @@ import {
   Newspaper,
   Calendar,
   Activity,
+  X,
 } from "lucide-react";
 
 const iconMap = {
@@ -31,29 +32,62 @@ const iconMap = {
   Newspaper,
 };
 
-export function AdminSidebar() {
+interface AdminSidebarProps {
+  isOpen?: boolean;
+  onClose?: () => void;
+}
+
+export function AdminSidebar({ isOpen = false, onClose }: AdminSidebarProps) {
   const pathname = usePathname();
 
-  return (
-    <aside className="flex h-screen w-64 flex-col border-r border-slate-800 bg-slate-900 text-slate-300 flex-shrink-0 sticky top-0">
+  // Close sidebar on route change (mobile)
+  React.useEffect(() => {
+    onClose?.();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [pathname]);
+
+  // Lock body scroll when mobile sidebar is open
+  React.useEffect(() => {
+    if (isOpen) {
+      document.body.style.overflow = "hidden";
+    } else {
+      document.body.style.overflow = "";
+    }
+    return () => {
+      document.body.style.overflow = "";
+    };
+  }, [isOpen]);
+
+  const sidebarContent = (
+    <>
       {/* Top Brand Bar */}
       <div className="flex-shrink-0">
-        <div className="flex h-16 items-center gap-3 border-b border-slate-800 px-6">
-          <Image
-            src="/brand/logo-icon.png"
-            alt="SuchnaSetu Logo"
-            width={40}
-            height={40}
-            className="h-10 w-10 object-contain bg-white rounded-xl p-1 shadow-sm"
-          />
-          <div className="flex flex-col">
-            <span className="text-base font-bold tracking-tight text-white">
-              SuchnaSetu
-            </span>
-            <span className="text-[10px] font-semibold uppercase tracking-widest text-slate-400">
-              Admin Console
-            </span>
+        <div className="flex h-16 items-center justify-between border-b border-slate-800 px-6">
+          <div className="flex items-center gap-3">
+            <Image
+              src="/brand/logo-icon.png"
+              alt="SuchnaSetu Logo"
+              width={40}
+              height={40}
+              className="h-10 w-10 object-contain bg-white rounded-xl p-1 shadow-sm"
+            />
+            <div className="flex flex-col">
+              <span className="text-base font-bold tracking-tight text-white">
+                SuchnaSetu
+              </span>
+              <span className="text-[10px] font-semibold uppercase tracking-widest text-slate-400">
+                Admin Console
+              </span>
+            </div>
           </div>
+          {/* Close button — visible only on mobile */}
+          <button
+            onClick={onClose}
+            className="lg:hidden flex h-8 w-8 items-center justify-center rounded-lg text-slate-400 hover:bg-slate-800 hover:text-white transition-colors"
+            aria-label="Close sidebar"
+          >
+            <X className="h-5 w-5" />
+          </button>
         </div>
       </div>
 
@@ -102,6 +136,33 @@ export function AdminSidebar() {
           </p>
         </div>
       </div>
-    </aside>
+    </>
+  );
+
+  return (
+    <>
+      {/* Desktop Sidebar — always visible on lg+ */}
+      <aside className="hidden lg:flex h-screen w-64 flex-col border-r border-slate-800 bg-slate-900 text-slate-300 flex-shrink-0 sticky top-0">
+        {sidebarContent}
+      </aside>
+
+      {/* Mobile Backdrop Overlay */}
+      <div
+        className={`fixed inset-0 z-50 bg-black/60 backdrop-blur-sm transition-opacity duration-300 lg:hidden ${
+          isOpen ? "opacity-100 pointer-events-auto" : "opacity-0 pointer-events-none"
+        }`}
+        onClick={onClose}
+        aria-hidden="true"
+      />
+
+      {/* Mobile Sidebar Drawer */}
+      <aside
+        className={`fixed inset-y-0 left-0 z-50 flex w-72 flex-col bg-slate-900 text-slate-300 shadow-2xl transition-transform duration-300 ease-out lg:hidden ${
+          isOpen ? "translate-x-0" : "-translate-x-full"
+        }`}
+      >
+        {sidebarContent}
+      </aside>
+    </>
   );
 }

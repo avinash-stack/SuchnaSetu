@@ -6,14 +6,19 @@ import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Shield, LogOut, ExternalLink, User } from "lucide-react";
+import { Shield, LogOut, ExternalLink, User, Menu } from "lucide-react";
 
 interface AdminHeaderProps {
   userEmail?: string;
   userRole?: string;
+  onMenuToggle?: () => void;
 }
 
-export function AdminHeader({ userEmail = "admin@suchnasetu.in", userRole = "super_admin" }: AdminHeaderProps) {
+export function AdminHeader({
+  userEmail = "admin@suchnasetu.in",
+  userRole = "super_admin",
+  onMenuToggle,
+}: AdminHeaderProps) {
   const router = useRouter();
   const [isLoggingOut, setIsLoggingOut] = React.useState(false);
 
@@ -35,6 +40,15 @@ export function AdminHeader({ userEmail = "admin@suchnasetu.in", userRole = "sup
   return (
     <header className="sticky top-0 z-40 flex h-16 w-full items-center justify-between border-b border-slate-200 bg-white px-4 sm:px-6">
       <div className="flex items-center gap-3">
+        {/* Mobile Hamburger Button */}
+        <button
+          onClick={onMenuToggle}
+          className="lg:hidden flex h-9 w-9 items-center justify-center rounded-lg text-slate-600 hover:bg-slate-100 hover:text-slate-900 transition-colors -ml-1"
+          aria-label="Open navigation menu"
+        >
+          <Menu className="h-5 w-5" />
+        </button>
+
         <div className="flex items-center gap-2">
           <Shield className="h-5 w-5 text-brand-600" />
           <span className="text-sm font-semibold text-slate-800 hidden sm:inline">
@@ -46,15 +60,15 @@ export function AdminHeader({ userEmail = "admin@suchnasetu.in", userRole = "sup
         </Badge>
       </div>
 
-      <div className="flex items-center gap-3">
+      <div className="flex items-center gap-2 sm:gap-3">
         <Link href="/" target="_blank">
-          <Button variant="ghost" size="sm" className="gap-1.5 text-xs text-slate-600">
+          <Button variant="ghost" size="sm" className="gap-1.5 text-xs text-slate-600 hidden sm:inline-flex">
             <span>View Public Site</span>
             <ExternalLink className="h-3.5 w-3.5" />
           </Button>
         </Link>
 
-        <div className="h-5 w-[1px] bg-slate-200" />
+        <div className="h-5 w-[1px] bg-slate-200 hidden sm:block" />
 
         <div className="flex items-center gap-2">
           <div className="flex h-8 w-8 items-center justify-center rounded-full bg-slate-100 text-slate-700">
