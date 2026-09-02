@@ -376,21 +376,38 @@ async function processSource(source) {
         const contentHash = computeContentHash(cleanTitle, cleanSummary);
         const slug = generateSlug(cleanTitle, publishedAt);
 
-        // Deduplication Check
-        const { data: existing } = await supabase
+        // Deduplication Check: safe check across content_hash, source_url, and slug
+        let existingId = null;
+
+        const { data: byHash } = await supabase
           .from("news_articles")
           .select("id")
-          .or(`content_hash.eq.${contentHash},source_url.eq.${raw.link}`)
-          .limit(1);
+          .eq("content_hash", contentHash)
+          .limit(1)
+          .maybeSingle();
+        if (byHash?.id) existingId = byHash.id;
 
-        if (existing && existing.length > 0) {
-          duplicates++;
-          continue;
+        if (!existingId && raw.link) {
+          const { data: byUrl } = await supabase
+            .from("news_articles")
+            .select("id")
+            .eq("source_url", raw.link)
+            .limit(1)
+            .maybeSingle();
+          if (byUrl?.id) existingId = byUrl.id;
         }
 
-        // Insert new article
-        const { error: insErr } = await supabase.from("news_articles").insert({
-          slug,
+        if (!existingId && slug) {
+          const { data: bySlug } = await supabase
+            .from("news_articles")
+            .select("id")
+            .eq("slug", slug)
+            .limit(1)
+            .maybeSingle();
+          if (bySlug?.id) existingId = bySlug.id;
+        }
+
+        const articlePayload = {
           title: cleanTitle,
           summary: cleanSummary,
           content: raw.content ? truncate(raw.content, 1500) : null,
@@ -408,12 +425,30 @@ async function processSource(source) {
           content_hash: contentHash,
           published_at: publishedAt,
           is_published: true,
-          views_count: 0,
-        });
+          updated_at: new Date().toISOString(),
+        };
+
+        if (existingId) {
+          // Idempotent update
+          await supabase.from("news_articles").update(articlePayload).eq("id", existingId);
+          duplicates++;
+          continue;
+        }
+
+        // Insert new article
+        articlePayload.slug = slug;
+        articlePayload.views_count = 0;
+
+        const { error: insErr } = await supabase.from("news_articles").insert(articlePayload);
 
         if (insErr) {
-          console.warn(`   ⚠️ Insert error for "${cleanTitle.slice(0, 40)}":`, insErr.message);
-          failed++;
+          if (insErr.code === "23505" || insErr.message?.includes("news_articles_slug_key")) {
+            await supabase.from("news_articles").update(articlePayload).eq("slug", slug);
+            duplicates++;
+          } else {
+            console.warn(`   ⚠️ Insert error for "${cleanTitle.slice(0, 40)}":`, insErr.message);
+            failed++;
+          }
         } else {
           inserted++;
         }
