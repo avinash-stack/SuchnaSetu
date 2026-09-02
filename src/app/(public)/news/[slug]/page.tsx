@@ -41,6 +41,7 @@ export async function generateMetadata({ params, searchParams }: NewsArticlePage
     description: article.summary,
     path: `/news/${article.slug}${isHindi ? "?lang=hi" : ""}`,
     canonicalPath: `/news/${article.slug}`,
+    image: article.image_url || undefined,
     availableLanguages: {
       en: `https://suchnasetu.in/news/${article.slug}`,
       hi: `https://suchnasetu.in/news/${article.slug}?lang=hi`,

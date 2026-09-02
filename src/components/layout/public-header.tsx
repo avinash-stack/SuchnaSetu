@@ -79,6 +79,7 @@ export function PublicHeader() {
                   height={28}
                   className="h-7 w-7 object-contain"
                   priority
+                  unoptimized
                 />
               </div>
             </div>

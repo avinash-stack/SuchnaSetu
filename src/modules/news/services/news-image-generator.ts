@@ -3,6 +3,7 @@ import { createAdminClient } from "@/lib/supabase/admin";
 /**
  * Provider-independent AI Image Generation service for News Articles.
  * Generates editorial, high-quality, story-specific imagery and persists it to the database.
+ * Serves optimized 16:9 images directly from edge CDNs or Supabase Storage, bypassing Vercel Image Optimization.
  */
 export class NewsImageGenerator {
   /**
@@ -43,8 +44,57 @@ export class NewsImageGenerator {
   }
 
   /**
+   * Attempts to upload the generated image buffer to Supabase Storage for direct origin delivery.
+   * Falls back gracefully to the direct provider URL if storage bucket is not configured or fails.
+   */
+  private static async tryPersistToStorage(
+    sourceUrl: string,
+    slugOrId: string
+  ): Promise<string | null> {
+    try {
+      if (!process.env.NEXT_PUBLIC_SUPABASE_URL || !process.env.SUPABASE_SERVICE_ROLE_KEY) {
+        return null;
+      }
+
+      const controller = new AbortController();
+      const timeout = setTimeout(() => controller.abort(), 6000); // 6s timeout
+
+      const res = await fetch(sourceUrl, { signal: controller.signal });
+      clearTimeout(timeout);
+
+      if (!res.ok) return null;
+
+      const buffer = await res.arrayBuffer();
+      const cleanSlug = slugOrId.replace(/[^a-zA-Z0-9-_]/g, "").slice(0, 80);
+      const fileName = `${cleanSlug}.jpg`;
+      const supabase = createAdminClient();
+
+      const { data, error } = await supabase.storage
+        .from("news-images")
+        .upload(fileName, buffer, {
+          contentType: "image/jpeg",
+          cacheControl: "31536000",
+          upsert: true,
+        });
+
+      if (error || !data) {
+        return null;
+      }
+
+      const { data: publicUrlData } = supabase.storage
+        .from("news-images")
+        .getPublicUrl(fileName);
+
+      return publicUrlData?.publicUrl || null;
+    } catch {
+      // Storage upload failure should NEVER disrupt image display
+      return null;
+    }
+  }
+
+  /**
    * Generates or retrieves a persistent AI image URL for a news article.
-   * Ensures the image is generated once and stored in the database.
+   * Ensures the image is generated once and stored in an optimized 16:9 format.
    */
   static async getOrGenerateArticleImage(article: {
     id: string;
@@ -70,7 +120,7 @@ export class NewsImageGenerator {
       }
       const positiveSeed = Math.abs(seed);
 
-      // 3. Generate image URL via provider (Pollinations FLUX / Turbo)
+      // 3. Generate image URL via provider (Pollinations FLUX / Turbo) in pre-optimized 960x540 (16:9)
       const prompt = this.buildImagePrompt(article);
       const encodedPrompt = encodeURIComponent(prompt);
 
@@ -79,19 +129,27 @@ export class NewsImageGenerator {
       let generatedImageUrl: string;
 
       if (customApi) {
-        generatedImageUrl = `${customApi}?prompt=${encodedPrompt}&seed=${positiveSeed}&width=1200&height=675`;
+        generatedImageUrl = `${customApi}?prompt=${encodedPrompt}&seed=${positiveSeed}&width=960&height=540`;
       } else {
-        generatedImageUrl = `https://image.pollinations.ai/prompt/${encodedPrompt}?width=1200&height=675&model=flux&nologo=true&seed=${positiveSeed}`;
+        generatedImageUrl = `https://image.pollinations.ai/prompt/${encodedPrompt}?width=960&height=540&model=flux&nologo=true&seed=${positiveSeed}`;
       }
 
-      // 4. Update database asynchronously so subsequent views use stored URL
+      let finalImageUrl = generatedImageUrl;
+
+      // 4. Optionally persist to Supabase Storage if configured and available
+      const storageUrl = await this.tryPersistToStorage(generatedImageUrl, article.slug || article.id);
+      if (storageUrl) {
+        finalImageUrl = storageUrl;
+      }
+
+      // 5. Update database asynchronously so subsequent views use stored URL
       if (article.id) {
         try {
           const supabase = createAdminClient();
           await (supabase as any)
             .from("news_articles")
             .update({
-              image_url: generatedImageUrl,
+              image_url: finalImageUrl,
               updated_at: new Date().toISOString(),
             })
             .eq("id", article.id);
@@ -100,7 +158,7 @@ export class NewsImageGenerator {
         }
       }
 
-      return generatedImageUrl;
+      return finalImageUrl;
     } catch {
       // If image generation fails, return null so the article still renders perfectly
       return null;

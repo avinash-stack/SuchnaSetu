@@ -12,7 +12,18 @@ const nextConfig = {
   },
   images: {
     formats: ["image/avif", "image/webp"],
+    minimumCacheTTL: 31536000,
+    deviceSizes: [640, 1080, 1200],
+    imageSizes: [32, 64, 96, 256],
     remotePatterns: [
+      {
+        protocol: "https",
+        hostname: "image.pollinations.ai",
+      },
+      {
+        protocol: "https",
+        hostname: "*.supabase.co",
+      },
       {
         protocol: "https",
         hostname: "**",

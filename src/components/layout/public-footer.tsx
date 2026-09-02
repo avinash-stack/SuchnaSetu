@@ -41,6 +41,7 @@ export function PublicFooter() {
                 width={40}
                 height={40}
                 className="h-10 w-10 object-contain bg-white rounded-lg p-0.5"
+                unoptimized
               />
               <span className="text-2xl font-bold tracking-tight text-white font-heading">
                 {SITE_CONFIG.name}

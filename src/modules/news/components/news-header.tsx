@@ -58,6 +58,7 @@ export function NewsHeader() {
                   width={30}
                   height={30}
                   className="h-7 w-7 object-contain"
+                  unoptimized
                 />
               </div>
             </div>

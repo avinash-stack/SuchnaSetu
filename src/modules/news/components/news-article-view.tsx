@@ -153,6 +153,7 @@ export function NewsArticleView({
             alt={article.title}
             fill
             priority
+            unoptimized
             sizes="(max-width: 768px) 100vw, (max-width: 1200px) 90vw, 850px"
             className="object-cover transition-transform duration-500 group-hover:scale-102"
           />

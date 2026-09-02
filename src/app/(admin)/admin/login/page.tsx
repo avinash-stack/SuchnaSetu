@@ -164,6 +164,7 @@ export default function AdminLoginPage() {
             height={56}
             className="h-14 w-14 object-contain bg-white rounded-2xl p-1.5 shadow-lg mb-3"
             priority
+            unoptimized
           />
           <h1 className="text-2xl font-bold tracking-tight text-white font-heading">
             SuchnaSetu Admin Portal
