@@ -34,13 +34,30 @@ const ALLOWED_CATEGORIES = [
   "entertainment",
 ];
 
+import { ArticleContentExtractor } from "./article-content-extractor";
+import { NewsContentSynthesizer } from "./content-synthesizer";
+
 export async function enrichNewsArticleWithAi(
   payload: NormalizedNewsPayload
 ): Promise<EnrichedNewsMetadata> {
   const fallbackCategory = (payload.categorySlug || "india").toLowerCase();
+
+  // Ensure source content sent to AI is strictly cleaned of any web chrome
+  const cleanedSourceContent = ArticleContentExtractor.cleanArticleText(payload.content);
+  const cleanSummary =
+    ArticleContentExtractor.sanitizeParagraph(payload.summary) ||
+    payload.summary.replace(/<[^>]*>/g, "").trim();
+
+  // Build fallback synthesized content if AI is skipped or unavailable
+  const fallbackSynthesis = NewsContentSynthesizer.synthesizeFromCleanSummary(
+    payload.title,
+    cleanSummary,
+    payload.author || undefined
+  );
+
   const defaultMetadata: EnrichedNewsMetadata = {
-    summary: payload.summary,
-    content: payload.content || null,
+    summary: cleanSummary,
+    content: cleanedSourceContent || fallbackSynthesis.paragraphs.join("\n\n"),
     categorySlug: ALLOWED_CATEGORIES.includes(fallbackCategory) ? fallbackCategory : "india",
     subcategory: null,
     stateCode: payload.stateCode || null,
@@ -58,23 +75,28 @@ export async function enrichNewsArticleWithAi(
 
   const model = process.env.NEWS_AI_MODEL || config.searchModel || "google/gemini-2.5-flash";
 
-  const prompt = `You are a factual, objective news editor for SuchnaSetu. Process this authentic news report and output a structured editorial report along with taxonomy metadata:
+  // Feed only factual, clean text into the AI
+  const factualSourceContext = cleanedSourceContent
+    ? cleanedSourceContent.slice(0, 3500)
+    : cleanSummary;
+
+  const prompt = `You are a professional, factual news editor for SuchnaSetu. Process this verified factual report and generate an original, objective news report along with taxonomy metadata:
 
 Title: ${payload.title}
 Source: ${payload.author || "News Desk"}
-Raw Story Text:
-${payload.content ? payload.content.slice(0, 3500) : payload.summary}
+Factual Source Context:
+${factualSourceContext}
 
 Strict Editorial Directives:
 1. "summary": A crisp 2-sentence factual executive summary of what happened.
-2. "content": Write a thorough, multi-paragraph factual news article (at least 3-4 distinct paragraphs separated by double newlines \\n\\n) based strictly on the provided real news text:
-   - Paragraph 1: The core announcement or event, key individuals/authorities involved, and primary context.
-   - Paragraph 2: Specific figures, numbers, dates, locations, quotes, and operational decisions mentioned in the story.
-   - Paragraph 3: Background context, affected citizens/stakeholders, and procedural details.
-   - DO NOT invent or hallucinate any facts.
-   - DO NOT generate generic template filler or repetitive platitudes.
-   - DO NOT repeat the headline as the body.
-   - Preserve all specific names, dates, numbers, and locations from the source text.
+2. "content": Write an original, multi-paragraph factual news article (3 to 4 distinct paragraphs separated by double newlines \\n\\n) based STRICTLY on the real news details provided:
+   - Paragraph 1: The core announcement or event, key authorities/individuals involved, and primary context.
+   - Paragraph 2: Specific figures, numbers, dates, locations, and operational decisions mentioned in the story.
+   - Paragraph 3: Background context, affected citizens/stakeholders, and implications.
+   - DO NOT invent, assume, or hallucinate any facts.
+   - DO NOT copy sentences verbatim from the source (write original journalistic sentences).
+   - NEVER include website UI, subscription/paywall text, login prompts, comments, or promotional filler.
+   - Preserve all specific names, dates, numbers, and locations accurately.
 3. "category_slug": Must be exactly one of: india, states, education, governance, business, technology, politics, world, health, sports, entertainment.
 4. "state_code": 2-letter state code if state-specific (e.g. BR, UP, MH, DL, TN, KA, WB, PB, RJ, MP, GJ, KL) or null.
 5. "tags": 3 to 5 relevant topic tags.
@@ -92,7 +114,7 @@ Respond with a single raw JSON object matching:
 }`;
 
   const controller = new AbortController();
-  const timeoutId = setTimeout(() => controller.abort(), 4000);
+  const timeoutId = setTimeout(() => controller.abort(), 4500);
 
   try {
     const res = await fetch("https://openrouter.ai/api/v1/chat/completions", {
@@ -130,20 +152,26 @@ Respond with a single raw JSON object matching:
     }
 
     const data = await res.json();
-    const rawContent = data.choices?.[0]?.message?.content;
-    if (!rawContent) {
+    const rawAiResponse = data.choices?.[0]?.message?.content;
+    if (!rawAiResponse) {
       return defaultMetadata;
     }
 
-    const parsed = JSON.parse(rawContent);
+    const parsed = JSON.parse(rawAiResponse);
+
+    // Validate and sanitize AI-generated content & summary
+    const validatedSummary =
+      ArticleContentExtractor.sanitizeParagraph(parsed.summary) || defaultMetadata.summary;
+    const validatedContent =
+      ArticleContentExtractor.cleanArticleText(parsed.content) || defaultMetadata.content;
 
     const categorySlug = ALLOWED_CATEGORIES.includes(parsed.category_slug?.toLowerCase())
       ? parsed.category_slug.toLowerCase()
       : defaultMetadata.categorySlug;
 
     return {
-      summary: parsed.summary?.trim() || defaultMetadata.summary,
-      content: parsed.content?.trim() || defaultMetadata.content,
+      summary: validatedSummary,
+      content: validatedContent,
       categorySlug,
       subcategory: parsed.subcategory || null,
       stateCode: parsed.state_code || defaultMetadata.stateCode,
@@ -158,7 +186,7 @@ Respond with a single raw JSON object matching:
       aiModel: model,
     };
   } catch (err: any) {
-    console.warn(`[News AI Enrichment Warning]: ${err.message}, preserving extracted content`);
+    console.warn(`[News AI Enrichment Warning]: ${err.message}, using safe synthesized content`);
     return defaultMetadata;
   }
 }

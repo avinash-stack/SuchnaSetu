@@ -113,15 +113,20 @@ export class RssAtomAdapter implements NewsSourceAdapter {
 
     // 3. Clean Summary & Content
     const summaryText = rawItem.summary || rawItem.content || cleanTitle;
-    const cleanSummary = truncateSummary(summaryText, 350);
+    const cleanSummary =
+      ArticleContentExtractor.sanitizeParagraph(summaryText) || truncateSummary(summaryText, 350);
     const imageUrl = extractImageUrl(rawItem);
 
-    // If RSS does not provide multi-paragraph content, fetch from the original page
-    let fullContent = rawItem.content && rawItem.content.length > 250 ? rawItem.content : null;
+    // If RSS provides content, sanitize it; otherwise extract authentic body from the original page
+    let fullContent: string | null = null;
+    if (rawItem.content && rawItem.content.length > 200) {
+      fullContent = ArticleContentExtractor.cleanArticleText(rawItem.content);
+    }
+
     if (!fullContent && rawItem.link) {
       try {
         const extracted = await ArticleContentExtractor.extractFullContent(rawItem.link);
-        if (extracted && extracted.length > 150) {
+        if (extracted && extracted.length >= 180) {
           fullContent = extracted;
         }
       } catch {
