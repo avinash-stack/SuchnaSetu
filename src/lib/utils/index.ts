@@ -137,3 +137,11 @@ export function formatApplicationFee(feeData?: any): string | null {
 
   return String(feeData);
 }
+
+/**
+ * Test whether a string is a valid UUID (standard 8-4-4-4-12 hex format)
+ */
+export function isUuid(str?: string | null): boolean {
+  if (!str || typeof str !== "string") return false;
+  return /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(str.trim());
+}

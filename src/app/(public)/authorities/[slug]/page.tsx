@@ -4,6 +4,7 @@ import Link from "next/link";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { constructMetadata, buildGovOrgJsonLd, buildBreadcrumbJsonLd } from "@/lib/seo";
 import { getCanonicalSiteUrl } from "@/lib/constants";
+import { isUuid } from "@/lib/utils";
 import { JobListTable } from "@/modules/jobs/components/job-list-table";
 import { ExamListTable } from "@/modules/exams/components/exam-list-table";
 import { GovJobDetailed } from "@/modules/jobs/types";
@@ -31,9 +32,18 @@ export const revalidate = 1800; // 30 mins cache
 
 async function getOrganization(slug: string): Promise<any> {
   const supabase = createAdminClient();
-  const cleanSlug = decodeURIComponent(slug).trim();
+  const cleanSlug = decodeURIComponent(slug).trim().toLowerCase();
 
-  // Try lookup by acronym
+  // 1. Primary lookup by slug
+  const { data: bySlug } = await supabase
+    .from("organizations")
+    .select("*")
+    .eq("slug", cleanSlug)
+    .maybeSingle();
+
+  if (bySlug) return bySlug;
+
+  // 2. Secondary lookup by acronym (case-insensitive)
   const { data: byAcronym } = await supabase
     .from("organizations")
     .select("*")
@@ -42,14 +52,18 @@ async function getOrganization(slug: string): Promise<any> {
 
   if (byAcronym) return byAcronym;
 
-  // Try lookup by ID
-  const { data: byId } = await supabase
-    .from("organizations")
-    .select("*")
-    .eq("id", cleanSlug)
-    .maybeSingle();
+  // 3. Fallback lookup by UUID ONLY if cleanSlug is a valid UUID format
+  if (isUuid(cleanSlug)) {
+    const { data: byId } = await supabase
+      .from("organizations")
+      .select("*")
+      .eq("id", cleanSlug)
+      .maybeSingle();
 
-  return byId;
+    if (byId) return byId;
+  }
+
+  return null;
 }
 
 export async function generateMetadata({ params }: AuthorityPageProps): Promise<Metadata> {

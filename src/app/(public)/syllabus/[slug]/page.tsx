@@ -4,6 +4,7 @@ import Link from "next/link";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { constructMetadata, buildSyllabusJsonLd, buildBreadcrumbJsonLd } from "@/lib/seo";
 import { getCanonicalSiteUrl } from "@/lib/constants";
+import { isUuid } from "@/lib/utils";
 import {
   BookOpen,
   ArrowRight,
@@ -28,19 +29,7 @@ async function getExamForSyllabus(slug: string): Promise<any> {
   const supabase = createAdminClient();
   const cleanSlug = decodeURIComponent(slug).trim();
 
-  // Try lookup by ID
-  const { data: byId } = await supabase
-    .from("gov_exams")
-    .select(`
-      *,
-      organization:organizations!inner(*)
-    `)
-    .eq("id", cleanSlug)
-    .maybeSingle();
-
-  if (byId) return byId;
-
-  // Try lookup by slug
+  // 1. Primary lookup by slug
   const { data: bySlug } = await supabase
     .from("gov_exams")
     .select(`
@@ -50,7 +39,23 @@ async function getExamForSyllabus(slug: string): Promise<any> {
     .eq("slug", cleanSlug)
     .maybeSingle();
 
-  return bySlug;
+  if (bySlug) return bySlug;
+
+  // 2. Fallback lookup by ID ONLY if cleanSlug is a valid UUID format
+  if (isUuid(cleanSlug)) {
+    const { data: byId } = await supabase
+      .from("gov_exams")
+      .select(`
+        *,
+        organization:organizations!inner(*)
+      `)
+      .eq("id", cleanSlug)
+      .maybeSingle();
+
+    if (byId) return byId;
+  }
+
+  return null;
 }
 
 export async function generateMetadata({ params }: SyllabusDetailPageProps): Promise<Metadata> {

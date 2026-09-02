@@ -2,6 +2,7 @@ import { createClient } from "@/lib/supabase/server";
 import { createPublicClient } from "@/lib/supabase/public";
 import { cache } from "react";
 import { unstable_cache } from "next/cache";
+import { isUuid } from "@/lib/utils";
 import { PublicBulletinDetailed, BulletinFilterParams } from "./types";
 import { BULLETIN_CATEGORIES } from "./constants";
 
@@ -71,8 +72,9 @@ export const getBreakingBulletins = unstable_cache(
  */
 const fetchBulletinBySlugUncached = async (slug: string): Promise<PublicBulletinDetailed | null> => {
   const supabase = createPublicClient();
+  const cleanSlug = decodeURIComponent(slug).trim();
 
-  const { data, error } = await (supabase.from("public_bulletins") as any)
+  let { data, error } = await (supabase.from("public_bulletins") as any)
     .select(
       `
       *,
@@ -81,9 +83,27 @@ const fetchBulletinBySlugUncached = async (slug: string): Promise<PublicBulletin
       translations:bulletin_translations(*)
     `
     )
-    .eq("slug", slug)
+    .eq("slug", cleanSlug)
     .eq("status", "published")
-    .single();
+    .maybeSingle();
+
+  // Fallback: only if cleanSlug is a valid UUID, allow ID lookup
+  if (!data && isUuid(cleanSlug)) {
+    const byIdRes = await (supabase.from("public_bulletins") as any)
+      .select(
+        `
+        *,
+        organization:organizations(*),
+        related_job:gov_jobs(*),
+        translations:bulletin_translations(*)
+      `
+      )
+      .eq("id", cleanSlug)
+      .eq("status", "published")
+      .maybeSingle();
+
+    if (byIdRes.data) data = byIdRes.data;
+  }
 
   if (error || !data) {
     return null;
@@ -114,7 +134,7 @@ export async function getRelatedBulletins(
 ): Promise<PublicBulletinDetailed[]> {
   const supabase = createPublicClient();
 
-  const { data, error } = await (supabase.from("public_bulletins") as any)
+  let query = (supabase.from("public_bulletins") as any)
     .select(
       `
       *,
@@ -122,8 +142,13 @@ export async function getRelatedBulletins(
     `
     )
     .eq("status", "published")
-    .neq("id", currentId)
-    .eq("category", category)
+    .eq("category", category);
+
+  if (isUuid(currentId)) {
+    query = query.neq("id", currentId);
+  }
+
+  const { data, error } = await query
     .order("published_at", { ascending: false })
     .limit(limit);
 
@@ -143,6 +168,16 @@ export async function getRelatedBulletinsForJob(
   limit: number = 3
 ): Promise<PublicBulletinDetailed[]> {
   const supabase = createPublicClient();
+  const filters: string[] = [];
+
+  if (jobId && isUuid(jobId)) {
+    filters.push(`related_job_id.eq.${jobId}`);
+  }
+  if (orgId && isUuid(orgId)) {
+    filters.push(`organization_id.eq.${orgId}`);
+  }
+
+  if (filters.length === 0) return [];
 
   let query = (supabase.from("public_bulletins") as any)
     .select(
@@ -153,10 +188,11 @@ export async function getRelatedBulletinsForJob(
     )
     .eq("status", "published");
 
-  if (orgId) {
-    query = query.or(`related_job_id.eq.${jobId},organization_id.eq.${orgId}`);
+  if (filters.length === 1) {
+    const [field, val] = filters[0].split(".eq.");
+    query = query.eq(field, val);
   } else {
-    query = query.eq("related_job_id", jobId);
+    query = query.or(filters.join(","));
   }
 
   const { data, error } = await query
@@ -177,7 +213,7 @@ export async function getRelatedBulletinsForExam(
   orgId?: string | null,
   limit: number = 3
 ): Promise<PublicBulletinDetailed[]> {
-  if (!orgId) return [];
+  if (!orgId || !isUuid(orgId)) return [];
   const supabase = createPublicClient();
 
   const { data, error } = await (supabase.from("public_bulletins") as any)
@@ -290,17 +326,24 @@ export async function getAdminBulletins(params: {
  */
 export async function getAdminBulletinById(id: string): Promise<PublicBulletinDetailed | null> {
   const supabase = await createClient();
+  const cleanId = decodeURIComponent(id).trim();
 
-  const { data, error } = await (supabase.from("public_bulletins") as any)
+  let query = (supabase.from("public_bulletins") as any)
     .select(
       `
       *,
       organization:organizations(*),
       related_job:gov_jobs(*)
     `
-    )
-    .eq("id", id)
-    .single();
+    );
+
+  if (isUuid(cleanId)) {
+    query = query.eq("id", cleanId);
+  } else {
+    query = query.eq("slug", cleanId);
+  }
+
+  const { data, error } = await query.maybeSingle();
 
   if (error || !data) {
     return null;

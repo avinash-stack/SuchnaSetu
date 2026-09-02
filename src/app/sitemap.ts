@@ -234,7 +234,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     // 8. Legacy Bulletins (Backwards compatibility)
     const { data: bulletins } = await supabase
       .from("public_bulletins")
-      .select("slug, updated_at, published_at")
+      .select("slug, published_at, created_at")
       .eq("status", "published")
       .order("published_at", { ascending: false })
       .limit(500);
@@ -243,7 +243,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       (bulletins as any[]).forEach((b: any) => {
         routes.push({
           url: `${baseUrl}/news/${b.slug}`,
-          lastModified: b.updated_at || b.published_at || currentDate,
+          lastModified: b.published_at || b.created_at || currentDate,
           changeFrequency: "daily",
           priority: 0.75,
         });

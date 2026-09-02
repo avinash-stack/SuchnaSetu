@@ -1,5 +1,6 @@
 import { createPublicClient } from "@/lib/supabase/public";
 import { createAdminClient } from "@/lib/supabase/admin";
+import { isUuid } from "@/lib/utils";
 import { NewsArticle, NewsArticleDetailed, NewsFilterParams } from "../types/article";
 import { CANONICAL_NEWS_ARTICLES } from "../constants/seed-articles";
 
@@ -113,14 +114,72 @@ export async function getTopStories(limit = 7): Promise<NewsArticle[]> {
 export async function getNewsArticleBySlug(slug: string): Promise<NewsArticleDetailed | null> {
   try {
     const supabase = createPublicClient();
-    const { data, error } = await (supabase as any)
+    const cleanSlug = decodeURIComponent(slug).trim();
+
+    // 1. Primary lookup: by slug in news_articles
+    let { data, error } = await (supabase as any)
       .from("news_articles")
       .select("*, translations:news_translations(*)")
-      .eq("slug", slug)
+      .eq("slug", cleanSlug)
       .maybeSingle();
 
+    // 2. Secondary fallback: check public_bulletins for legacy bulletin URLs
+    if (!data) {
+      const { data: bulletin } = await (supabase as any)
+        .from("public_bulletins")
+        .select("*, organization:organizations(*), translations:bulletin_translations(*)")
+        .eq("slug", cleanSlug)
+        .eq("status", "published")
+        .maybeSingle();
+
+      if (bulletin) {
+        return {
+          id: bulletin.id,
+          slug: bulletin.slug,
+          title: bulletin.title,
+          summary: bulletin.summary,
+          content: bulletin.content,
+          source_name: bulletin.source_name,
+          source_url: bulletin.source_url,
+          canonical_url: bulletin.source_url,
+          author: bulletin.author || bulletin.organization?.name || "SuchnaSetu Desk",
+          image_url: bulletin.image_url || null,
+          image_caption: null,
+          category_slug: bulletin.category || "governance",
+          subcategory: null,
+          state_code: null,
+          tags: bulletin.tags || [],
+          importance: bulletin.is_breaking ? "breaking" : "standard",
+          published_at: bulletin.published_at || bulletin.created_at || new Date().toISOString(),
+          created_at: bulletin.created_at || new Date().toISOString(),
+          updated_at: bulletin.created_at || new Date().toISOString(),
+          views_count: 0,
+          is_published: true,
+          ai_status: "not_started" as const,
+          content_hash: "",
+          category: {
+            slug: bulletin.category || "governance",
+            name: bulletin.category || "Public Notice",
+            name_hi: "सार्वजनिक सूचना",
+          },
+          organization: bulletin.organization || null,
+          translations: bulletin.translations || [],
+        } as unknown as NewsArticleDetailed;
+      }
+    }
+
+    // 3. Fallback: only if cleanSlug is a valid UUID, allow ID lookup
+    if (!data && isUuid(cleanSlug)) {
+      const { data: byId } = await (supabase as any)
+        .from("news_articles")
+        .select("*, translations:news_translations(*)")
+        .eq("id", cleanSlug)
+        .maybeSingle();
+      if (byId) data = byId;
+    }
+
     if (error || !data) {
-      const matched = CANONICAL_NEWS_ARTICLES.find((a) => a.slug === slug);
+      const matched = CANONICAL_NEWS_ARTICLES.find((a) => a.slug === cleanSlug);
       return matched || null;
     }
     return data as NewsArticleDetailed;
@@ -137,12 +196,18 @@ export async function getRelatedNewsArticles(
 ): Promise<NewsArticle[]> {
   try {
     const supabase = createPublicClient();
-    const { data, error } = await (supabase as any)
+    let query = (supabase as any)
       .from("news_articles")
       .select("*, translations:news_translations(*)")
       .eq("is_published", true)
-      .eq("category_slug", categorySlug)
-      .neq("id", articleId)
+      .eq("category_slug", categorySlug);
+
+    // Guard: Only query .neq("id", articleId) if articleId is a valid UUID
+    if (isUuid(articleId)) {
+      query = query.neq("id", articleId);
+    }
+
+    const { data, error } = await query
       .order("published_at", { ascending: false })
       .limit(limit);
 
@@ -151,7 +216,10 @@ export async function getRelatedNewsArticles(
         (a) => a.id !== articleId && (a.category_slug === categorySlug || true)
       ).slice(0, limit);
     }
-    return data as NewsArticle[];
+
+    // Filter out same article in-memory if non-UUID ID
+    const filtered = (data as NewsArticle[]).filter((a) => a.id !== articleId);
+    return filtered.slice(0, limit);
   } catch {
     return CANONICAL_NEWS_ARTICLES.filter((a) => a.id !== articleId).slice(0, limit);
   }

@@ -5,7 +5,7 @@ import { unstable_cache } from "next/cache";
 import { GovJob, GovJobDetailed, JobFilterParams, JobVacancy, JobImportantDate, JobEligibility, JobOfficialDocument } from "./types";
 import { GovJobInput } from "./schemas";
 import { Organization, Category, StateUT, Department, Qualification } from "@/modules/core/types";
-import { slugify } from "@/lib/utils";
+import { slugify, isUuid } from "@/lib/utils";
 
 import { searchJobs } from "@/modules/search/service";
 import { parseSearchQuery } from "@/modules/search/query-parser";
@@ -29,8 +29,9 @@ export async function getPublicJobs(params: JobFilterParams = {}): Promise<{
  */
 const fetchJobBySlugUncached = async (slug: string): Promise<GovJobDetailed | null> => {
   const supabase = createPublicClient();
+  const cleanSlug = decodeURIComponent(slug).trim();
 
-  const { data: job, error } = await (supabase.from("gov_jobs") as any)
+  let { data: job, error } = await (supabase.from("gov_jobs") as any)
     .select(
       `
       *,
@@ -46,10 +47,36 @@ const fetchJobBySlugUncached = async (slug: string): Promise<GovJobDetailed | nu
       translations:gov_job_translations(*)
     `
     )
-    .eq("slug", slug)
+    .eq("slug", cleanSlug)
     .eq("status", "published")
     .is("deleted_at", null)
-    .single();
+    .maybeSingle();
+
+  // Fallback: only if cleanSlug is a valid UUID, allow ID lookup
+  if (!job && isUuid(cleanSlug)) {
+    const byIdRes = await (supabase.from("gov_jobs") as any)
+      .select(
+        `
+        *,
+        organization:organizations(*),
+        department:departments(*),
+        category:categories(*),
+        qualification:qualifications(*),
+        state:states_uts(*),
+        vacancies:job_vacancies(*),
+        important_dates:job_important_dates(*),
+        eligibility:job_eligibility(*),
+        official_documents:job_official_documents(*),
+        translations:gov_job_translations(*)
+      `
+      )
+      .eq("id", cleanSlug)
+      .eq("status", "published")
+      .is("deleted_at", null)
+      .maybeSingle();
+
+    if (byIdRes.data) job = byIdRes.data;
+  }
 
   if (error || !job) {
     return null;
@@ -59,23 +86,32 @@ const fetchJobBySlugUncached = async (slug: string): Promise<GovJobDetailed | nu
 
   // Fetch contextual related entities in parallel for rich internal linking
   const jobFilters: string[] = [];
-  if (rawJob.organization_id) jobFilters.push(`organization_id.eq.${rawJob.organization_id}`);
-  if (rawJob.category_id) jobFilters.push(`category_id.eq.${rawJob.category_id}`);
+  if (rawJob.organization_id && isUuid(rawJob.organization_id)) {
+    jobFilters.push(`organization_id.eq.${rawJob.organization_id}`);
+  }
+  if (rawJob.category_id && isUuid(rawJob.category_id)) {
+    jobFilters.push(`category_id.eq.${rawJob.category_id}`);
+  }
 
-  const examFilters: string[] = [`related_job_id.eq.${rawJob.id}`];
-  if (rawJob.organization_id) examFilters.push(`organization_id.eq.${rawJob.organization_id}`);
+  const examFilters: string[] = [];
+  if (rawJob.id && isUuid(rawJob.id)) {
+    examFilters.push(`related_job_id.eq.${rawJob.id}`);
+  }
+  if (rawJob.organization_id && isUuid(rawJob.organization_id)) {
+    examFilters.push(`organization_id.eq.${rawJob.organization_id}`);
+  }
 
   const [relatedJobsRes, relatedExamsRes, relatedBulletinsRes, relatedNewsRes] = await Promise.all([
     jobFilters.length > 0
-      ? supabase
-          .from("gov_jobs")
-          .select("id, title, slug, total_vacancies, application_end_date, state_code, pay_scale_details, organization:organizations(name, acronym)")
-          .eq("status", "published")
-          .is("deleted_at", null)
-          .neq("id", rawJob.id)
-          .or(jobFilters.join(","))
-          .order("published_at", { ascending: false })
-          .limit(4)
+      ? (() => {
+          let q = supabase
+            .from("gov_jobs")
+            .select("id, title, slug, total_vacancies, application_end_date, state_code, pay_scale_details, organization:organizations(name, acronym)")
+            .eq("status", "published")
+            .is("deleted_at", null);
+          if (isUuid(rawJob.id)) q = q.neq("id", rawJob.id);
+          return q.or(jobFilters.join(",")).order("published_at", { ascending: false }).limit(4);
+        })()
       : Promise.resolve({ data: [] }),
     examFilters.length > 0
       ? supabase
@@ -258,8 +294,9 @@ export async function getAdminJobs(params: {
  */
 export async function getAdminJobById(id: string): Promise<GovJobDetailed | null> {
   const supabase = await createClient();
+  const cleanId = decodeURIComponent(id).trim();
 
-  const { data: job, error } = await (supabase.from("gov_jobs") as any)
+  let query = (supabase.from("gov_jobs") as any)
     .select(
       `
       *,
@@ -273,9 +310,15 @@ export async function getAdminJobById(id: string): Promise<GovJobDetailed | null
       eligibility:job_eligibility(*),
       official_documents:job_official_documents(*)
     `
-    )
-    .eq("id", id)
-    .single();
+    );
+
+  if (isUuid(cleanId)) {
+    query = query.eq("id", cleanId);
+  } else {
+    query = query.eq("slug", cleanId);
+  }
+
+  const { data: job, error } = await query.maybeSingle();
 
   if (error || !job) {
     return null;

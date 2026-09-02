@@ -2,6 +2,7 @@ import { createClient } from "@/lib/supabase/server";
 import { createPublicClient } from "@/lib/supabase/public";
 import { cache } from "react";
 import { unstable_cache } from "next/cache";
+import { isUuid } from "@/lib/utils";
 import { GovExam, GovExamDetailed, ExamFilterParams } from "./types";
 import { Category, Organization, StateUT, Department, Qualification } from "@/modules/core/types";
 
@@ -21,8 +22,9 @@ export async function getPublicExams(params: ExamFilterParams = {}) {
  */
 const fetchExamBySlugUncached = async (slug: string): Promise<GovExamDetailed | null> => {
   const supabase = createPublicClient();
+  const cleanSlug = decodeURIComponent(slug).trim();
 
-  const { data, error } = await supabase
+  let { data, error } = await supabase
     .from("gov_exams")
     .select(
       `
@@ -41,10 +43,39 @@ const fetchExamBySlugUncached = async (slug: string): Promise<GovExamDetailed | 
       translations:gov_exam_translations(*)
     `
     )
-    .eq("slug", slug)
+    .eq("slug", cleanSlug)
     .eq("status", "published")
     .is("deleted_at", null)
-    .single();
+    .maybeSingle();
+
+  // Fallback: only if cleanSlug is a valid UUID, allow ID lookup
+  if (!data && isUuid(cleanSlug)) {
+    const byIdRes = await supabase
+      .from("gov_exams")
+      .select(
+        `
+        *,
+        organization:organizations(*),
+        department:departments(*),
+        category:categories(*),
+        state:states_uts(*),
+        related_job:gov_jobs(*),
+        stages:exam_stages(*),
+        schedules:exam_schedules(*),
+        eligibility:exam_eligibility(*, min_qualification:qualifications(*)),
+        important_dates:exam_important_dates(*),
+        centers:exam_centers(*),
+        official_documents:exam_official_documents(*),
+        translations:gov_exam_translations(*)
+      `
+      )
+      .eq("id", cleanSlug)
+      .eq("status", "published")
+      .is("deleted_at", null)
+      .maybeSingle();
+
+    if (byIdRes.data) data = byIdRes.data;
+  }
 
   if (error || !data) {
     return null;
@@ -75,31 +106,58 @@ const fetchExamBySlugUncached = async (slug: string): Promise<GovExamDetailed | 
   }
 
   // Fetch contextual related entities in parallel for rich internal linking
+  const examFilters: string[] = [];
+  if (detailed.organization_id && isUuid(detailed.organization_id)) {
+    examFilters.push(`organization_id.eq.${detailed.organization_id}`);
+  }
+
+  const jobFilters: string[] = [];
+  if (detailed.organization_id && isUuid(detailed.organization_id)) {
+    jobFilters.push(`organization_id.eq.${detailed.organization_id}`);
+  }
+  if (detailed.category_id && isUuid(detailed.category_id)) {
+    jobFilters.push(`category_id.eq.${detailed.category_id}`);
+  }
+
+  const bulletinFilters: string[] = [];
+  if (detailed.organization_id && isUuid(detailed.organization_id)) {
+    bulletinFilters.push(`organization_id.eq.${detailed.organization_id}`);
+  }
+  if (detailed.related_job_id && isUuid(detailed.related_job_id)) {
+    bulletinFilters.push(`related_job_id.eq.${detailed.related_job_id}`);
+  }
+
   const [relatedExamsRes, relatedJobsRes, relatedBulletinsRes, relatedNewsRes] = await Promise.all([
-    supabase
-      .from("gov_exams")
-      .select("id, title, slug, mode, exam_code, published_at, organization:organizations(name, acronym)")
-      .eq("status", "published")
-      .is("deleted_at", null)
-      .neq("id", detailed.id)
-      .eq("organization_id", detailed.organization_id)
-      .order("published_at", { ascending: false })
-      .limit(4),
-    supabase
-      .from("gov_jobs")
-      .select("id, title, slug, total_vacancies, application_end_date, state_code, pay_scale_details, organization:organizations(name, acronym)")
-      .eq("status", "published")
-      .is("deleted_at", null)
-      .or(`organization_id.eq.${detailed.organization_id}${detailed.category_id ? `,category_id.eq.${detailed.category_id}` : ""}`)
-      .order("published_at", { ascending: false })
-      .limit(4),
-    supabase
-      .from("public_bulletins")
-      .select("id, title, slug, category, summary, source_url, source_name, published_at")
-      .eq("status", "published")
-      .or(`organization_id.eq.${detailed.organization_id}${detailed.related_job_id ? `,related_job_id.eq.${detailed.related_job_id}` : ""}`)
-      .order("published_at", { ascending: false })
-      .limit(4),
+    examFilters.length > 0 && isUuid(detailed.id)
+      ? supabase
+          .from("gov_exams")
+          .select("id, title, slug, mode, exam_code, published_at, organization:organizations(name, acronym)")
+          .eq("status", "published")
+          .is("deleted_at", null)
+          .neq("id", detailed.id)
+          .or(examFilters.join(","))
+          .order("published_at", { ascending: false })
+          .limit(4)
+      : Promise.resolve({ data: [] }),
+    jobFilters.length > 0
+      ? supabase
+          .from("gov_jobs")
+          .select("id, title, slug, total_vacancies, application_end_date, state_code, pay_scale_details, organization:organizations(name, acronym)")
+          .eq("status", "published")
+          .is("deleted_at", null)
+          .or(jobFilters.join(","))
+          .order("published_at", { ascending: false })
+          .limit(4)
+      : Promise.resolve({ data: [] }),
+    bulletinFilters.length > 0
+      ? supabase
+          .from("public_bulletins")
+          .select("id, title, slug, category, summary, source_url, source_name, published_at")
+          .eq("status", "published")
+          .or(bulletinFilters.join(","))
+          .order("published_at", { ascending: false })
+          .limit(4)
+      : Promise.resolve({ data: [] }),
     supabase
       .from("news_articles")
       .select("id, title, slug, summary, source_name, source_url, published_at, category_slug")
@@ -266,8 +324,9 @@ export async function getAdminExams(
  */
 export async function getAdminExamById(id: string): Promise<GovExamDetailed | null> {
   const supabase = await createClient();
+  const cleanId = decodeURIComponent(id).trim();
 
-  const { data, error } = await supabase
+  let query = supabase
     .from("gov_exams")
     .select(
       `
@@ -284,9 +343,15 @@ export async function getAdminExamById(id: string): Promise<GovExamDetailed | nu
       centers:exam_centers(*),
       official_documents:exam_official_documents(*)
     `
-    )
-    .eq("id", id)
-    .single();
+    );
+
+  if (isUuid(cleanId)) {
+    query = query.eq("id", cleanId);
+  } else {
+    query = query.eq("slug", cleanId);
+  }
+
+  const { data, error } = await query.maybeSingle();
 
   if (error || !data) {
     return null;
