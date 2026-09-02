@@ -318,6 +318,75 @@ async function syncSourcesRegistry() {
       { onConflict: "code" }
     );
   }
+const BOILERPLATE_PATTERNS = [
+  /subscribed with another email/i,
+  /logout and login/i,
+  /sign in to continue/i,
+  /log in to your account/i,
+  /manage your subscription/i,
+  /active subscription/i,
+  /unlock these with/i,
+  /subscriber benefits/i,
+  /already a subscriber/i,
+  /subscribe to read/i,
+  /subscribe now/i,
+  /premium stories/i,
+  /comments have to be in english/i,
+  /new commenting platform/i,
+  /all rights reserved/i,
+  /copyright ©/i,
+  /terms & conditions/i,
+  /terms of service/i,
+  /privacy policy/i,
+  /cookie policy/i,
+  /download our app/i,
+  /follow us on/i,
+  /whatsapp channel/i,
+  /telegram channel/i,
+  /newsletter/i,
+  /also read:/i,
+  /read more:/i,
+  /photo credit:/i,
+  /file photo/i,
+  /published\s*-\s*/i,
+  /updated\s*-\s*/i,
+];
+
+function sanitizeArticleContent(rawText) {
+  if (!rawText) return null;
+  const clean = rawText
+    .replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, "")
+    .replace(/<style\b[^<]*(?:(?!<\/style>)<[^<]*)*<\/style>/gi, "")
+    .replace(/<!--[\s\S]*?-->/g, "");
+
+  const parts = clean.split(/\n\s*\n|<\/?p[^>]*>/gi);
+  const valid = [];
+
+  for (const part of parts) {
+    const text = part
+      .replace(/<[^>]*>/g, "")
+      .replace(/&nbsp;/gi, " ")
+      .replace(/&amp;/gi, "&")
+      .replace(/&quot;/gi, '"')
+      .replace(/&#39;|&rsquo;|&lsquo;/gi, "'")
+      .replace(/\s+/g, " ")
+      .trim();
+
+    if (text.length < 45) continue;
+    if ((text.match(/\//g) || []).length >= 3) continue;
+
+    const isBoilerplate = BOILERPLATE_PATTERNS.some((p) => p.test(text));
+    if (!isBoilerplate) {
+      valid.push(text);
+    }
+  }
+
+  if (valid.length >= 2) {
+    return valid.join("\n\n");
+  } else if (valid.length === 1 && valid[0].length >= 100) {
+    return valid[0];
+  }
+  return null;
 }
 
 async function processSource(source) {
@@ -407,10 +476,11 @@ async function processSource(source) {
           if (bySlug?.id) existingId = bySlug.id;
         }
 
+        const cleanedBody = sanitizeArticleContent(raw.content);
         const articlePayload = {
           title: cleanTitle,
           summary: cleanSummary,
-          content: raw.content ? truncate(raw.content, 1500) : null,
+          content: cleanedBody || (cleanSummary.length > 120 ? cleanSummary : null),
           source_id: source.id,
           source_name: source.name,
           source_url: raw.link,
