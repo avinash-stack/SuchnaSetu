@@ -3,6 +3,7 @@ import { createAdminClient } from "@/lib/supabase/admin";
 import { isUuid } from "@/lib/utils";
 import { NewsArticle, NewsArticleDetailed, NewsFilterParams } from "../types/article";
 import { CANONICAL_NEWS_ARTICLES } from "../constants/seed-articles";
+import { ArticleContentExtractor } from "../services/article-content-extractor";
 
 export async function getNewsArticles(
   filter: NewsFilterParams = {}
@@ -182,6 +183,16 @@ export async function getNewsArticleBySlug(slug: string): Promise<NewsArticleDet
       const matched = CANONICAL_NEWS_ARTICLES.find((a) => a.slug === cleanSlug);
       return matched || null;
     }
+
+    if (data) {
+      if (data.content) {
+        data.content = ArticleContentExtractor.cleanArticleText(data.content) || data.summary;
+      }
+      if (data.summary) {
+        data.summary = ArticleContentExtractor.sanitizeParagraph(data.summary) || data.summary;
+      }
+    }
+
     return data as NewsArticleDetailed;
   } catch {
     const matched = CANONICAL_NEWS_ARTICLES.find((a) => a.slug === slug);
@@ -217,8 +228,14 @@ export async function getRelatedNewsArticles(
       ).slice(0, limit);
     }
 
-    // Filter out same article in-memory if non-UUID ID
-    const filtered = (data as NewsArticle[]).filter((a) => a.id !== articleId);
+    // Filter out same article in-memory if non-UUID ID and sanitize
+    const filtered = (data as NewsArticle[])
+      .filter((a) => a.id !== articleId)
+      .map((a) => ({
+        ...a,
+        summary: ArticleContentExtractor.sanitizeParagraph(a.summary) || a.summary,
+        content: a.content ? ArticleContentExtractor.cleanArticleText(a.content) || a.summary : null,
+      }));
     return filtered.slice(0, limit);
   } catch {
     return CANONICAL_NEWS_ARTICLES.filter((a) => a.id !== articleId).slice(0, limit);
