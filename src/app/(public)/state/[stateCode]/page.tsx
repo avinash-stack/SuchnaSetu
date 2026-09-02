@@ -52,13 +52,13 @@ export async function generateMetadata({ params }: StatePageProps): Promise<Meta
       .select("id", { count: "exact", head: true })
       .eq("status", "published")
       .is("deleted_at", null)
-      .or(`state_code.eq.${state.code},state.ilike.%${state.name}%`),
+      .eq("state_code", state.code),
     supabase
       .from("gov_exams")
       .select("id", { count: "exact", head: true })
       .eq("status", "published")
       .is("deleted_at", null)
-      .or(`state_code.eq.${state.code},state.ilike.%${state.name}%`),
+      .eq("state_code", state.code),
   ]);
 
   const isEmptyPortal = (jobsCount || 0) + (examsCount || 0) === 0;
@@ -101,7 +101,7 @@ export default async function StatePortalPage({ params }: StatePageProps) {
     `)
     .eq("status", "published")
     .is("deleted_at", null)
-    .or(`state_code.eq.${state.code},state.ilike.%${state.name}%`)
+    .eq("state_code", state.code)
     .order("published_at", { ascending: false })
     .limit(30);
 
@@ -114,7 +114,7 @@ export default async function StatePortalPage({ params }: StatePageProps) {
     `)
     .eq("status", "published")
     .is("deleted_at", null)
-    .or(`state_code.eq.${state.code},state.ilike.%${state.name}%`)
+    .eq("state_code", state.code)
     .order("published_at", { ascending: false })
     .limit(20);
 

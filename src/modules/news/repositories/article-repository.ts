@@ -227,38 +227,101 @@ export async function getRelatedNewsArticles(
 
 export async function checkDuplicateArticle(
   contentHash: string,
-  sourceUrl: string
+  sourceUrl: string,
+  slug?: string
 ): Promise<boolean> {
   try {
     const supabase = createAdminClient();
-    const { data } = await (supabase as any)
-      .from("news_articles")
-      .select("id")
-      .or(`content_hash.eq.${contentHash},source_url.eq.${sourceUrl}`)
-      .limit(1);
 
-    return !!(data && data.length > 0);
+    // 1. Check content_hash
+    if (contentHash) {
+      const { data: byHash } = await (supabase as any)
+        .from("news_articles")
+        .select("id")
+        .eq("content_hash", contentHash)
+        .limit(1)
+        .maybeSingle();
+
+      if (byHash?.id) return true;
+    }
+
+    // 2. Check source_url safely using exact equality
+    if (sourceUrl) {
+      const { data: byUrl } = await (supabase as any)
+        .from("news_articles")
+        .select("id")
+        .eq("source_url", sourceUrl)
+        .limit(1)
+        .maybeSingle();
+
+      if (byUrl?.id) return true;
+    }
+
+    // 3. Check slug
+    if (slug) {
+      const { data: bySlug } = await (supabase as any)
+        .from("news_articles")
+        .select("id")
+        .eq("slug", slug)
+        .limit(1)
+        .maybeSingle();
+
+      if (bySlug?.id) return true;
+    }
+
+    return false;
   } catch {
     return false;
   }
 }
 
-export async function insertNewsArticle(
+export async function upsertNewsArticle(
   article: Partial<NewsArticle>
-): Promise<{ id?: string; error?: string }> {
+): Promise<{ id?: string; isUpdated?: boolean; error?: string }> {
   try {
     const supabase = createAdminClient();
-    const { data, error } = await (supabase as any)
-      .from("news_articles")
-      .insert({
-        slug: article.slug,
+    if (!article.slug || !article.title) {
+      return { error: "Missing required slug or title for news article" };
+    }
+
+    // 1. Idempotency Check: find existing article by slug, source_url, or content_hash
+    let existingId: string | null = null;
+
+    if (article.slug) {
+      const { data: bySlug } = await (supabase as any)
+        .from("news_articles")
+        .select("id")
+        .eq("slug", article.slug)
+        .limit(1)
+        .maybeSingle();
+      if (bySlug?.id) existingId = bySlug.id;
+    }
+
+    if (!existingId && article.source_url) {
+      const { data: byUrl } = await (supabase as any)
+        .from("news_articles")
+        .select("id")
+        .eq("source_url", article.source_url)
+        .limit(1)
+        .maybeSingle();
+      if (byUrl?.id) existingId = byUrl.id;
+    }
+
+    if (!existingId && article.content_hash) {
+      const { data: byHash } = await (supabase as any)
+        .from("news_articles")
+        .select("id")
+        .eq("content_hash", article.content_hash)
+        .limit(1)
+        .maybeSingle();
+      if (byHash?.id) existingId = byHash.id;
+    }
+
+    // 2. If article already exists, perform an UPDATE instead of a duplicate INSERT
+    if (existingId) {
+      const updatePayload: Record<string, any> = {
         title: article.title,
         summary: article.summary,
-        content: article.content || null,
-        source_id: article.source_id || null,
-        source_name: article.source_name,
-        source_url: article.source_url,
-        canonical_url: article.canonical_url || article.source_url,
         author: article.author || null,
         image_url: article.image_url || null,
         image_caption: article.image_caption || null,
@@ -271,22 +334,97 @@ export async function insertNewsArticle(
         ai_status: article.ai_status || "pending",
         ai_model: article.ai_model || null,
         content_hash: article.content_hash,
-        published_at: article.published_at || new Date().toISOString(),
-        is_published: true,
-        views_count: 0,
-      })
+        updated_at: new Date().toISOString(),
+      };
+
+      if (article.content) {
+        updatePayload.content = article.content;
+      }
+
+      const { error: updateError } = await (supabase as any)
+        .from("news_articles")
+        .update(updatePayload)
+        .eq("id", existingId);
+
+      if (updateError) {
+        return { error: updateError.message };
+      }
+
+      return { id: existingId, isUpdated: true };
+    }
+
+    // 3. If new, perform INSERT
+    const insertPayload = {
+      slug: article.slug,
+      title: article.title,
+      summary: article.summary,
+      content: article.content || null,
+      source_id: article.source_id || null,
+      source_name: article.source_name,
+      source_url: article.source_url,
+      canonical_url: article.canonical_url || article.source_url,
+      author: article.author || null,
+      image_url: article.image_url || null,
+      image_caption: article.image_caption || null,
+      category_slug: article.category_slug || "india",
+      subcategory: article.subcategory || null,
+      state_code: article.state_code || null,
+      tags: article.tags || [],
+      entities: article.entities || {},
+      importance: article.importance || "standard",
+      ai_status: article.ai_status || "pending",
+      ai_model: article.ai_model || null,
+      content_hash: article.content_hash,
+      published_at: article.published_at || new Date().toISOString(),
+      is_published: true,
+      views_count: 0,
+      updated_at: new Date().toISOString(),
+    };
+
+    const { data: inserted, error: insertError } = await (supabase as any)
+      .from("news_articles")
+      .insert(insertPayload)
       .select("id")
       .single();
 
-    if (error) {
-      return { error: error.message };
+    if (insertError) {
+      // Graceful fallback for concurrent conflict on news_articles_slug_key
+      if (
+        insertError.code === "23505" ||
+        insertError.message?.includes("news_articles_slug_key")
+      ) {
+        const { data: conflictRow } = await (supabase as any)
+          .from("news_articles")
+          .select("id")
+          .eq("slug", article.slug)
+          .limit(1)
+          .maybeSingle();
+
+        if (conflictRow?.id) {
+          await (supabase as any)
+            .from("news_articles")
+            .update({
+              title: article.title,
+              summary: article.summary,
+              content: article.content || undefined,
+              updated_at: new Date().toISOString(),
+            })
+            .eq("id", conflictRow.id);
+
+          return { id: conflictRow.id, isUpdated: true };
+        }
+      }
+
+      return { error: insertError.message };
     }
 
-    return { id: data.id };
+    return { id: inserted.id, isUpdated: false };
   } catch (err: any) {
-    return { error: err.message || "Failed to insert news article" };
+    return { error: err.message || "Failed to save news article" };
   }
 }
+
+export const insertNewsArticle = upsertNewsArticle;
 
 export async function recordIngestionLog(log: {
   sourceId?: string | null;

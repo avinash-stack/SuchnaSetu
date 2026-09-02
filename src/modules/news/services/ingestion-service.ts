@@ -26,14 +26,14 @@ export async function syncSingleNewsSource(source: NewsSource): Promise<Ingestio
         const normalized = await adapter.normalize(raw);
         if (!normalized) continue;
 
-        const isDuplicate = await isDuplicateNewsItem(normalized);
+        const slug = generateNewsSlug(normalized.title, normalized.publishedAt);
+        const contentHash = computeContentHash(normalized.title, normalized.summary);
+
+        const isDuplicate = await isDuplicateNewsItem(normalized, slug);
         if (isDuplicate) {
           duplicateCount++;
           continue;
         }
-
-        const slug = generateNewsSlug(normalized.title, normalized.publishedAt);
-        const contentHash = computeContentHash(normalized.title, normalized.summary);
 
         // Quick AI enrichment with fast fallback
         const enriched = await enrichNewsArticleWithAi(normalized);
@@ -62,7 +62,11 @@ export async function syncSingleNewsSource(source: NewsSource): Promise<Ingestio
         });
 
         if (insertRes.id) {
-          insertedCount++;
+          if (insertRes.isUpdated) {
+            duplicateCount++;
+          } else {
+            insertedCount++;
+          }
         } else {
           failedCount++;
         }
