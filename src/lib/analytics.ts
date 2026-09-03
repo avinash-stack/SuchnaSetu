@@ -31,6 +31,11 @@ export type ClickEventParams = {
   source?: string;
 };
 
+export const GA_MEASUREMENT_ID =
+  process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID ||
+  process.env.NEXT_PUBLIC_GA_ID ||
+  "G-GPENK8HFEH";
+
 /**
  * Safely dispatches a Google Analytics 4 event
  */
@@ -41,7 +46,7 @@ export function trackEvent(eventName: string, params: Record<string, any> = {}) 
     if (typeof window.gtag === "function") {
       window.gtag("event", eventName, {
         ...params,
-        send_to: process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID,
+        send_to: GA_MEASUREMENT_ID,
       });
     } else if (Array.isArray(window.dataLayer)) {
       window.dataLayer.push({
@@ -53,6 +58,45 @@ export function trackEvent(eventName: string, params: Record<string, any> = {}) 
     // Non-blocking telemetry silence
     console.debug("[Analytics Event Dispatch Error]", err);
   }
+}
+
+/**
+ * Dispatches a formal GA4 page_view event on Next.js client-side navigation.
+ * Crucial for multi-page session tracking, real bounce rate, and user movement.
+ */
+export function trackPageView(pagePath: string, pageTitle?: string) {
+  trackEvent("page_view", {
+    page_path: pagePath,
+    page_title: pageTitle || (typeof document !== "undefined" ? document.title : ""),
+    page_location: typeof window !== "undefined" ? window.location.href : "",
+  });
+}
+
+/**
+ * Tracks when a user moves from one module to another (News -> Job, Job -> Exam, etc.)
+ */
+export function trackInternalNavigation(
+  fromPage: string,
+  toPage: string,
+  itemType: "job" | "exam" | "news" | "bulletin",
+  itemTitle?: string
+) {
+  trackEvent("internal_navigation", {
+    from_page: fromPage,
+    to_page: toPage,
+    item_type: itemType,
+    item_title: itemTitle || "",
+  });
+}
+
+/**
+ * Tracks scroll depth on reading pages (25%, 50%, 75%, 100%)
+ */
+export function trackScrollDepth(depthPercent: number, pagePath: string) {
+  trackEvent("scroll_depth", {
+    depth_percent: depthPercent,
+    page_path: pagePath,
+  });
 }
 
 // 1. Search Started

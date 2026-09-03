@@ -6,7 +6,7 @@ import Image from "next/image";
 import { NewsArticleDetailed } from "../types/article";
 import { NewsSourceBadge } from "./news-source-badge";
 import { RelatedNewsStrip } from "./related-news-strip";
-import { formatDate } from "@/lib/utils";
+import { formatDate, formatNumber } from "@/lib/utils";
 import { NewsContentSynthesizer } from "../services/content-synthesizer";
 import {
   Clock,
@@ -17,6 +17,15 @@ import {
   CheckCircle2,
   GraduationCap,
   Languages,
+  Building2,
+  Calendar,
+  Users,
+  ArrowRight,
+  BookOpen,
+  Layers,
+  FileCheck,
+  Info,
+  ShieldCheck,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
@@ -45,16 +54,16 @@ export function NewsArticleView({
     }
   };
 
-  const isEducationOrGov =
-    article.category_slug === "education" || article.category_slug === "governance";
-
   // Generate complete, flowing full news report
   const report = React.useMemo(() => {
     return NewsContentSynthesizer.generateFullArticleBody(article, lang);
   }, [article, lang]);
 
+  const relatedJobs = article.related_jobs || [];
+  const relatedExams = article.related_exams || [];
+
   return (
-    <article className="mx-auto max-w-4xl px-4 py-8 sm:px-6 lg:px-8 space-y-8 font-sans">
+    <article className="mx-auto max-w-4xl px-4 py-8 sm:px-6 lg:px-8 space-y-8 font-sans text-slate-800">
       {/* 1. Breadcrumbs */}
       <nav className="flex items-center gap-1.5 text-xs text-slate-500 flex-wrap" aria-label="Breadcrumb">
         <Link href={`/news${lang === "hi" ? "?lang=hi" : ""}`} className="hover:text-[#013089] transition-colors">
@@ -159,96 +168,184 @@ export function NewsArticleView({
           />
           <figcaption className="sr-only">{article.title}</figcaption>
           <div className="absolute bottom-3 right-3 rounded-md bg-slate-900/70 backdrop-blur-xs px-2.5 py-1 text-[11px] font-medium text-slate-200 tracking-wide pointer-events-none shadow-xs">
-            {isHindi ? "AI दृश्य प्रस्तुति" : "AI Visual Representation"}
+            {isHindi ? "दृश्य प्रस्तुति" : "Visual Coverage"}
           </div>
         </figure>
       )}
 
       {/* 3. AI Summary at Top */}
-      <section className="rounded-2xl border border-blue-200/90 bg-gradient-to-r from-blue-50/70 to-indigo-50/40 p-5 sm:p-6 space-y-2.5 shadow-2xs">
+      <section className="rounded-2xl border border-blue-200/90 bg-gradient-to-r from-blue-50/80 to-indigo-50/50 p-5 sm:p-6 space-y-2.5 shadow-2xs">
         <div className="flex items-center gap-2 font-bold text-xs uppercase tracking-wider text-[#013089]">
           <Sparkles className="h-4 w-4 text-[#FE8D01]" />
-          <span>{isHindi ? "AI सारांश एवं मुख्य बिंदु" : "AI Summary & Key Takeaway"}</span>
+          <span>{isHindi ? "AI त्वरित सारांश एवं मुख्य बिंदु" : "AI Synopsis & Key Briefing"}</span>
         </div>
         <p className="text-base sm:text-lg font-semibold text-slate-900 leading-relaxed font-sans">
           {report.summary}
         </p>
       </section>
 
-      {/* 4. Full Article Content (Normal Journalistic Flowing Paragraphs) */}
-      <section className="space-y-5 text-base sm:text-lg text-slate-800 leading-relaxed font-normal">
-        {report.paragraphs.map((para, idx) => (
-          <p key={idx} className="leading-relaxed">
-            {para}
-          </p>
-        ))}
-      </section>
-
-      {/* 5. Original Source Attribution & Reference Link (Clean Footer Reference) */}
-      <section className="rounded-2xl border border-slate-200 bg-slate-50/90 p-5 sm:p-6 space-y-3 mt-8">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-          <div className="space-y-0.5">
-            <span className="text-[11px] font-bold uppercase tracking-wider text-slate-500">
-              {isHindi ? "मूल आधिकारिक स्रोत एवं संदर्भ" : "Original Source Attribution & Reference"}
-            </span>
-            <p className="text-base font-bold text-slate-900">
-              {article.source_name}
-            </p>
-            <p className="text-xs text-slate-500">
-              {isHindi ? "प्रकाशन तिथि:" : "Published:"} {formatDate(article.published_at)}
-            </p>
+      {/* 4. Executive Key Highlights (3-5 Bullet Points) */}
+      {report.keyHighlights.length > 0 && (
+        <section className="rounded-2xl border border-slate-200 bg-white p-5 sm:p-6 space-y-3.5 shadow-xs">
+          <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-slate-700">
+            <CheckCircle2 className="h-4 w-4 text-emerald-600" />
+            <span>{isHindi ? "मुख्य बिंदु एवं महत्वपूर्ण तथ्य" : "Key Highlights & Official Takeaways"}</span>
           </div>
-
-          <a
-            href={article.source_url}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-white hover:bg-slate-100 text-[#013089] border border-slate-300 font-bold text-xs shadow-2xs transition-all w-full sm:w-auto"
-          >
-            <span>{isHindi ? "मूल आधिकारिक स्रोत देखें" : "View Original Source"}</span>
-            <ExternalLink className="h-3.5 w-3.5" />
-          </a>
-        </div>
-        <p className="text-xs text-slate-500 leading-relaxed pt-2 border-t border-slate-200/70">
-          {isHindi
-            ? "सूचना सेतु पर प्रस्तुत समाचार आधिकारिक सार्वजनिक सूचनाओं के आधार पर संकलित किया जाता है। मूल सामग्री के सर्वाधिकार संबंधित प्राधिकरण अथवा समाचार संस्था के पास सुरक्षित हैं।"
-            : "SuchnaSetu provides verified structured reporting based on official public records and circulars. Primary publication and copyright remain with the issuing authority."}
-        </p>
-      </section>
-
-      {/* 6. Contextual Recruitment & Exam Links */}
-      {isEducationOrGov && (
-        <div className="rounded-2xl border border-blue-200/80 bg-blue-50/60 p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-          <div className="space-y-1">
-            <div className="flex items-center gap-1.5 font-bold text-xs text-[#013089] uppercase tracking-wider">
-              <GraduationCap className="h-4 w-4 text-[#FE8D01]" />
-              <span>{isHindi ? "संबंधित भर्ती एवं परीक्षा सूचनाएं" : "Related Recruitment & Exam Opportunities"}</span>
-            </div>
-            <p className="text-xs text-slate-700">
-              {isHindi
-                ? "क्या आप नवीनतम सरकारी नौकरी, परीक्षा तिथियां अथवा प्रवेश पत्र खोज रहे हैं?"
-                : "Explore active government recruitment notices, exam schedules, and admit cards."}
-            </p>
-          </div>
-
-          <div className="flex items-center gap-2 shrink-0">
-            <Link
-              href="/exams"
-              className="px-3 py-1.5 rounded-lg bg-white border border-slate-300 text-slate-800 text-xs font-bold hover:bg-slate-100 transition-colors"
-            >
-              {isHindi ? "परीक्षाएं" : "Exams"}
-            </Link>
-            <Link
-              href="/jobs"
-              className="px-3.5 py-1.5 rounded-lg bg-[#013089] text-white text-xs font-bold hover:bg-[#01246d] transition-colors"
-            >
-              {isHindi ? "सरकारी नौकरियां →" : "Govt Jobs →"}
-            </Link>
-          </div>
-        </div>
+          <ul className="space-y-2.5">
+            {report.keyHighlights.map((hl, idx) => (
+              <li key={idx} className="flex items-start gap-3 text-[15px] sm:text-base text-slate-800 leading-relaxed">
+                <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-emerald-100 text-emerald-800 text-xs font-bold mt-0.5">
+                  ✓
+                </span>
+                <span>{hl}</span>
+              </li>
+            ))}
+          </ul>
+        </section>
       )}
 
-      {/* 7. Tags */}
+      {/* 5. Complete Article Content (In-Depth Journalistic Flowing Paragraphs) */}
+      <section className="space-y-6 pt-2">
+        <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-slate-500 border-b border-slate-200 pb-2">
+          <BookOpen className="h-4 w-4 text-[#013089]" />
+          <span>{isHindi ? "विस्तृत समाचार एवं नीतिगत विवरण" : "Comprehensive News & Policy Report"}</span>
+        </div>
+
+        <div className="space-y-5 text-base sm:text-lg text-slate-800 leading-relaxed font-normal">
+          {report.paragraphs.map((para, idx) => (
+            <p key={idx} className="leading-relaxed">
+              {para}
+            </p>
+          ))}
+        </div>
+      </section>
+
+      {/* 6. Actionable Takeaways & Next Steps for Citizens / Aspirants */}
+      {report.actionableTakeaways.length > 0 && (
+        <section className="rounded-2xl border border-amber-200 bg-amber-50/60 p-5 sm:p-6 space-y-3">
+          <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-amber-900">
+            <Info className="h-4 w-4 text-amber-600" />
+            <span>{isHindi ? "अभ्यर्थियों एवं नागरिकों के लिए महत्वपूर्ण निर्देश" : "Actionable Steps for Aspirants & Citizens"}</span>
+          </div>
+          <ul className="space-y-2">
+            {report.actionableTakeaways.map((point, idx) => (
+              <li key={idx} className="flex items-start gap-2.5 text-[14px] sm:text-[15px] text-amber-950 leading-relaxed">
+                <span className="text-amber-600 font-bold">•</span>
+                <span>{point}</span>
+              </li>
+            ))}
+          </ul>
+        </section>
+      )}
+
+      {/* 7. Official Details Table */}
+      {report.officialOverview.length > 0 && (
+        <section className="rounded-xl border border-slate-200 overflow-hidden bg-white">
+          <div className="bg-slate-50 px-4 py-2.5 border-b border-slate-200 text-xs font-bold uppercase tracking-wider text-slate-600 flex items-center gap-2">
+            <FileCheck className="h-4 w-4 text-[#013089]" />
+            <span>{isHindi ? "आधिकारिक सूचना सार" : "Official Notice Specification"}</span>
+          </div>
+          <table className="w-full text-xs sm:text-sm text-slate-800">
+            <tbody className="divide-y divide-slate-100">
+              {report.officialOverview.map((row, idx) => (
+                <tr key={idx} className="hover:bg-slate-50/50">
+                  <th scope="row" className="py-2.5 px-4 font-semibold text-slate-500 w-1/3 text-left bg-slate-50/40">
+                    {row.label}
+                  </th>
+                  <td className="py-2.5 px-4 font-medium text-slate-900">
+                    {row.value}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </section>
+      )}
+
+      {/* 8. CONTEXTUAL RECRUITMENTS & EXAMINATIONS (INTERNAL DISCOVERY HUB) */}
+      {(relatedJobs.length > 0 || relatedExams.length > 0) && (
+        <section className="rounded-2xl border border-blue-200/90 bg-gradient-to-b from-blue-50/40 to-slate-50/80 p-5 sm:p-6 space-y-5">
+          <div className="flex items-center justify-between gap-2 flex-wrap">
+            <div className="flex items-center gap-2 font-bold text-sm text-[#013089]">
+              <GraduationCap className="h-5 w-5 text-[#FE8D01]" />
+              <span>{isHindi ? "संबंधित सरकारी नौकरियां एवं आगामी परीक्षाएं" : "Connected Government Jobs & Upcoming Exams"}</span>
+            </div>
+            <span className="text-xs text-slate-500 font-medium">
+              {isHindi ? "सूचना सेतु पर सक्रिय अवसर" : "Active on SuchnaSetu"}
+            </span>
+          </div>
+
+          {/* Related Jobs Grid */}
+          {relatedJobs.length > 0 && (
+            <div className="space-y-2.5">
+              <div className="text-xs font-bold uppercase tracking-wider text-slate-600 flex items-center gap-1.5">
+                <Building2 className="h-3.5 w-3.5 text-[#013089]" />
+                <span>{isHindi ? "सक्रिय भर्ती सूचनाएं (Govt Jobs)" : "Active Recruitment Notices (Govt Jobs)"}</span>
+              </div>
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                {relatedJobs.map((job) => (
+                  <Link
+                    key={job.id}
+                    href={`/jobs/${job.slug}`}
+                    className="p-3.5 rounded-xl border border-slate-200 bg-white hover:border-[#013089] hover:shadow-xs transition-all group flex flex-col justify-between"
+                  >
+                    <div className="space-y-1">
+                      <div className="text-xs font-bold text-[#013089] truncate">
+                        {job.organization?.acronym || job.organization?.name || "Govt Recruitment"}
+                      </div>
+                      <h4 className="text-xs sm:text-[13px] font-bold text-slate-900 group-hover:text-[#013089] line-clamp-2 leading-snug">
+                        {job.title}
+                      </h4>
+                    </div>
+                    <div className="pt-2 mt-2 border-t border-slate-100 flex items-center justify-between text-[11px] text-slate-500">
+                      <span>{job.total_vacancies ? `${formatNumber(job.total_vacancies)} Posts` : "Govt Post"}</span>
+                      <span className="font-bold text-[#013089] group-hover:translate-x-0.5 transition-transform flex items-center gap-0.5">
+                        Details <ArrowRight className="h-3 w-3" />
+                      </span>
+                    </div>
+                  </Link>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Related Exams Grid */}
+          {relatedExams.length > 0 && (
+            <div className="space-y-2.5 pt-1">
+              <div className="text-xs font-bold uppercase tracking-wider text-slate-600 flex items-center gap-1.5">
+                <Layers className="h-3.5 w-3.5 text-[#013089]" />
+                <span>{isHindi ? "संबद्ध परीक्षा समय-सारणी एवं सिलेबस" : "Linked Exam Schedules & Syllabus"}</span>
+              </div>
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                {relatedExams.map((exam) => (
+                  <Link
+                    key={exam.id}
+                    href={`/exams/${exam.slug}`}
+                    className="p-3.5 rounded-xl border border-slate-200 bg-white hover:border-[#013089] hover:shadow-xs transition-all group flex flex-col justify-between"
+                  >
+                    <div className="space-y-1">
+                      <div className="text-xs font-bold text-[#013089] truncate">
+                        {exam.organization?.acronym || exam.organization?.name || "Exam Board"}
+                      </div>
+                      <h4 className="text-xs sm:text-[13px] font-bold text-slate-900 group-hover:text-[#013089] line-clamp-2 leading-snug">
+                        {exam.title}
+                      </h4>
+                    </div>
+                    <div className="pt-2 mt-2 border-t border-slate-100 flex items-center justify-between text-[11px] text-slate-500">
+                      <span className="capitalize">{exam.mode ? exam.mode.replace("_", " ") : "Written / CBT"}</span>
+                      <span className="font-bold text-[#013089] group-hover:translate-x-0.5 transition-transform flex items-center gap-0.5">
+                        Syllabus <ArrowRight className="h-3 w-3" />
+                      </span>
+                    </div>
+                  </Link>
+                ))}
+              </div>
+            </div>
+          )}
+        </section>
+      )}
+
+      {/* 9. Tags */}
       {article.tags && article.tags.length > 0 && (
         <div className="flex items-center gap-1.5 flex-wrap pt-2">
           <span className="text-xs font-bold text-slate-400 mr-1">
@@ -266,12 +363,42 @@ export function NewsArticleView({
         </div>
       )}
 
-      {/* 8. Related News Section */}
+      {/* 10. Related News Section */}
       {article.related_articles && article.related_articles.length > 0 && (
         <div className="pt-4 border-t border-slate-200">
           <RelatedNewsStrip articles={article.related_articles} />
         </div>
       )}
+
+      {/* 11. Secondary Source Attribution & Provenance Reference */}
+      <footer className="rounded-2xl border border-slate-200 bg-slate-50/80 p-4 text-xs text-slate-600 space-y-2 mt-8">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+          <div className="flex items-center gap-2">
+            <ShieldCheck className="h-4 w-4 text-emerald-700 shrink-0" />
+            <span className="font-semibold text-slate-800">
+              {isHindi ? "आधिकारिक स्रोत संदर्भ: " : "Official Source Attribution: "}
+              <span className="font-bold text-slate-900">{article.source_name}</span>
+            </span>
+          </div>
+
+          {article.source_url && (
+            <a
+              href={article.source_url}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-1 text-[11px] font-medium text-slate-500 hover:text-[#013089] hover:underline"
+            >
+              <span>{isHindi ? "मूल स्रोत यूआरएल देखें" : "View Publisher Source Link"}</span>
+              <ExternalLink className="h-3 w-3" />
+            </a>
+          )}
+        </div>
+        <p className="text-[11px] text-slate-500 leading-relaxed border-t border-slate-200/60 pt-2">
+          {isHindi
+            ? "सूचना सेतु पर प्रस्तुत विवरण आधिकारिक सार्वजनिक सूचनाओं एवं गजट विज्ञप्तियों के आधार पर संकलित किया गया है। प्राथमिक कॉपीराइट संबंधित प्राधिकरण के पास सुरक्षित है।"
+            : "SuchnaSetu provides verified civic and public policy reports based on official notices. Primary publication and copyright remain with the respective government authority or publisher."}
+        </p>
+      </footer>
     </article>
   );
 }

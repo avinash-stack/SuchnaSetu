@@ -112,92 +112,227 @@ export async function getTopStories(limit = 7): Promise<NewsArticle[]> {
   }
 }
 
-export async function getNewsArticleBySlug(slug: string): Promise<NewsArticleDetailed | null> {
+export type NewsResolutionResult =
+  | { type: "found"; article: NewsArticleDetailed; redirectUrl?: string }
+  | { type: "cross_module_redirect"; redirectUrl: string }
+  | { type: "not_found" };
+
+/**
+ * Robust multi-tier slug resolution:
+ * 1. Exact case-insensitive match (.ilike)
+ * 2. Hash variation matching (strips hash or matches prefix)
+ * 3. Public bulletins legacy match
+ * 4. Cross-module match (Job or Exam slugs accidentally routed to /news/)
+ * 5. Title token keyword search
+ * 6. UUID lookup
+ * 7. Canonical fallback seed articles
+ */
+export async function resolveNewsArticleSlug(slug: string): Promise<NewsResolutionResult> {
   try {
     const supabase = createPublicClient();
-    const cleanSlug = decodeURIComponent(slug).trim();
+    const rawClean = decodeURIComponent(slug).trim().toLowerCase().replace(/\/+$/, "");
+    if (!rawClean) return { type: "not_found" };
 
-    // 1. Primary lookup: by slug in news_articles
-    let { data, error } = await (supabase as any)
+    const prepareArticle = (item: any): NewsArticleDetailed => {
+      if (item.content) {
+        item.content = ArticleContentExtractor.cleanArticleText(item.content) || item.summary;
+      }
+      if (item.summary) {
+        item.summary = ArticleContentExtractor.sanitizeParagraph(item.summary) || item.summary;
+      }
+      return item as NewsArticleDetailed;
+    };
+
+    // 1. Primary lookup: Case-insensitive exact match in news_articles
+    let { data: article } = await (supabase as any)
       .from("news_articles")
       .select("*, translations:news_translations(*)")
-      .eq("slug", cleanSlug)
+      .ilike("slug", rawClean)
+      .limit(1)
       .maybeSingle();
 
-    // 2. Secondary fallback: check public_bulletins for legacy bulletin URLs
-    if (!data) {
-      const { data: bulletin } = await (supabase as any)
-        .from("public_bulletins")
-        .select("*, organization:organizations(*), translations:bulletin_translations(*)")
-        .eq("slug", cleanSlug)
-        .eq("status", "published")
-        .maybeSingle();
+    if (article) {
+      const redirectUrl = article.slug !== slug ? `/news/${article.slug}` : undefined;
+      return { type: "found", article: prepareArticle(article), redirectUrl };
+    }
 
-      if (bulletin) {
+    // 2. Hash Variation Matching:
+    // If input slug ends with a hash (e.g. "title-foo-bar-1a2b3c" where 1a2b3c is 4-8 hex chars)
+    const hashMatch = rawClean.match(/^(.*?)-([a-f0-9]{4,8})$/);
+    if (hashMatch) {
+      const baseSlug = hashMatch[1];
+      const { data: prefixArticles } = await (supabase as any)
+        .from("news_articles")
+        .select("*, translations:news_translations(*)")
+        .ilike("slug", `${baseSlug}-%`)
+        .order("published_at", { ascending: false })
+        .limit(1);
+
+      if (prefixArticles && prefixArticles.length > 0) {
+        const matched = prefixArticles[0];
         return {
-          id: bulletin.id,
-          slug: bulletin.slug,
-          title: bulletin.title,
-          summary: bulletin.summary,
-          content: bulletin.content,
-          source_name: bulletin.source_name,
-          source_url: bulletin.source_url,
-          canonical_url: bulletin.source_url,
-          author: bulletin.author || bulletin.organization?.name || "SuchnaSetu Desk",
-          image_url: bulletin.image_url || null,
-          image_caption: null,
-          category_slug: bulletin.category || "governance",
-          subcategory: null,
-          state_code: null,
-          tags: bulletin.tags || [],
-          importance: bulletin.is_breaking ? "breaking" : "standard",
-          published_at: bulletin.published_at || bulletin.created_at || new Date().toISOString(),
-          created_at: bulletin.created_at || new Date().toISOString(),
-          updated_at: bulletin.created_at || new Date().toISOString(),
-          views_count: 0,
-          is_published: true,
-          ai_status: "not_started" as const,
-          content_hash: "",
-          category: {
-            slug: bulletin.category || "governance",
-            name: bulletin.category || "Public Notice",
-            name_hi: "सार्वजनिक सूचना",
-          },
-          organization: bulletin.organization || null,
-          translations: bulletin.translations || [],
-        } as unknown as NewsArticleDetailed;
+          type: "found",
+          article: prepareArticle(matched),
+          redirectUrl: `/news/${matched.slug}`,
+        };
+      }
+    } else {
+      // Input slug did NOT have a hash (e.g. truncated URL or indexed without hash)
+      const { data: suffixArticles } = await (supabase as any)
+        .from("news_articles")
+        .select("*, translations:news_translations(*)")
+        .ilike("slug", `${rawClean}-%`)
+        .order("published_at", { ascending: false })
+        .limit(1);
+
+      if (suffixArticles && suffixArticles.length > 0) {
+        const matched = suffixArticles[0];
+        return {
+          type: "found",
+          article: prepareArticle(matched),
+          redirectUrl: `/news/${matched.slug}`,
+        };
       }
     }
 
-    // 3. Fallback: only if cleanSlug is a valid UUID, allow ID lookup
-    if (!data && isUuid(cleanSlug)) {
+    // 3. Check public_bulletins for legacy bulletin URLs
+    const { data: bulletin } = await (supabase as any)
+      .from("public_bulletins")
+      .select("*, organization:organizations(*), translations:bulletin_translations(*)")
+      .ilike("slug", rawClean)
+      .eq("status", "published")
+      .limit(1)
+      .maybeSingle();
+
+    if (bulletin) {
+      const converted: NewsArticleDetailed = {
+        id: bulletin.id,
+        slug: bulletin.slug,
+        title: bulletin.title,
+        summary: bulletin.summary,
+        content: bulletin.content,
+        source_name: bulletin.source_name,
+        source_url: bulletin.source_url,
+        canonical_url: bulletin.source_url,
+        author: bulletin.author || bulletin.organization?.name || "SuchnaSetu Desk",
+        image_url: bulletin.image_url || null,
+        image_caption: null,
+        category_slug: bulletin.category || "governance",
+        subcategory: null,
+        state_code: null,
+        tags: bulletin.tags || [],
+        importance: bulletin.is_breaking ? "breaking" : "standard",
+        published_at: bulletin.published_at || bulletin.created_at || new Date().toISOString(),
+        created_at: bulletin.created_at || new Date().toISOString(),
+        updated_at: bulletin.created_at || new Date().toISOString(),
+        views_count: 0,
+        is_published: true,
+        ai_status: "not_started" as const,
+        content_hash: "",
+        category: {
+          slug: bulletin.category || "governance",
+          name: bulletin.category || "Public Notice",
+          name_hi: "सार्वजनिक सूचना",
+        },
+        organization: bulletin.organization || null,
+        translations: bulletin.translations || [],
+      } as unknown as NewsArticleDetailed;
+
+      return { type: "found", article: prepareArticle(converted) };
+    }
+
+    // 4. Cross-Module Resolution: Check if this slug belongs to a Job or Exam!
+    const { data: jobMatch } = await (supabase as any)
+      .from("gov_jobs")
+      .select("slug")
+      .ilike("slug", rawClean)
+      .limit(1)
+      .maybeSingle();
+
+    if (jobMatch?.slug) {
+      return { type: "cross_module_redirect", redirectUrl: `/jobs/${jobMatch.slug}` };
+    }
+
+    const { data: examMatch } = await (supabase as any)
+      .from("gov_exams")
+      .select("slug")
+      .ilike("slug", rawClean)
+      .limit(1)
+      .maybeSingle();
+
+    if (examMatch?.slug) {
+      return { type: "cross_module_redirect", redirectUrl: `/exams/${examMatch.slug}` };
+    }
+
+    // 5. Keyword search in news_articles for partial/migrated slugs
+    const cleanWords = rawClean
+      .split(/[-_]+/)
+      .filter((w: string) => w.length >= 4 && !["news", "suchna", "setu", "india", "govt", "post", "with", "this", "that", "from", "2024", "2025", "2026"].includes(w));
+
+    if (cleanWords.length >= 2) {
+      const searchPattern = `%${cleanWords.slice(0, 3).join("%")}%`;
+      const { data: fuzzyArticles } = await (supabase as any)
+        .from("news_articles")
+        .select("*, translations:news_translations(*)")
+        .ilike("title", searchPattern)
+        .order("published_at", { ascending: false })
+        .limit(1);
+
+      if (fuzzyArticles && fuzzyArticles.length > 0) {
+        const matched = fuzzyArticles[0];
+        return {
+          type: "found",
+          article: prepareArticle(matched),
+          redirectUrl: `/news/${matched.slug}`,
+        };
+      }
+    }
+
+    // 6. Fallback: only if cleanSlug is a valid UUID, allow ID lookup
+    if (isUuid(rawClean)) {
       const { data: byId } = await (supabase as any)
         .from("news_articles")
         .select("*, translations:news_translations(*)")
-        .eq("id", cleanSlug)
+        .eq("id", rawClean)
+        .limit(1)
         .maybeSingle();
-      if (byId) data = byId;
-    }
 
-    if (error || !data) {
-      const matched = CANONICAL_NEWS_ARTICLES.find((a) => a.slug === cleanSlug);
-      return matched || null;
-    }
-
-    if (data) {
-      if (data.content) {
-        data.content = ArticleContentExtractor.cleanArticleText(data.content) || data.summary;
-      }
-      if (data.summary) {
-        data.summary = ArticleContentExtractor.sanitizeParagraph(data.summary) || data.summary;
+      if (byId) {
+        return {
+          type: "found",
+          article: prepareArticle(byId),
+          redirectUrl: `/news/${byId.slug}`,
+        };
       }
     }
 
-    return data as NewsArticleDetailed;
-  } catch {
-    const matched = CANONICAL_NEWS_ARTICLES.find((a) => a.slug === slug);
-    return matched || null;
+    // 7. Canonical Seed Articles fallback
+    const canonicalMatch = CANONICAL_NEWS_ARTICLES.find(
+      (a) => a.slug.toLowerCase() === rawClean || a.slug.toLowerCase().startsWith(rawClean)
+    );
+    if (canonicalMatch) {
+      return { type: "found", article: canonicalMatch };
+    }
+
+    return { type: "not_found" };
+  } catch (err) {
+    console.error("[resolveNewsArticleSlug Error]", err);
+    const canonicalMatch = CANONICAL_NEWS_ARTICLES.find(
+      (a) => a.slug.toLowerCase() === slug.toLowerCase()
+    );
+    if (canonicalMatch) {
+      return { type: "found", article: canonicalMatch };
+    }
+    return { type: "not_found" };
   }
+}
+
+export async function getNewsArticleBySlug(slug: string): Promise<NewsArticleDetailed | null> {
+  const result = await resolveNewsArticleSlug(slug);
+  if (result.type === "found") {
+    return result.article;
+  }
+  return null;
 }
 
 export async function getRelatedNewsArticles(

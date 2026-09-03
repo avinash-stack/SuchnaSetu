@@ -64,6 +64,7 @@ export function JobDetailView({ job: rawJob }: JobDetailViewProps) {
   const relatedJobs = job.related_jobs || [];
   const relatedExams = job.related_exams || [];
   const relatedBulletins = job.related_bulletins || [];
+  const relatedNews = job.related_news || [];
 
   const isClosingSoon = job.application_end_date
     ? new Date(job.application_end_date).getTime() - Date.now() < 5 * 86400000 &&
@@ -789,6 +790,49 @@ export function JobDetailView({ job: rawJob }: JobDetailViewProps) {
                 </p>
               </div>
             )}
+
+            {/* Standard Exam Pattern & Marking Scheme Specification */}
+            <div className="mt-4 p-5 rounded-xl border border-slate-200 bg-slate-50/70 space-y-3">
+              <div className="flex items-center justify-between flex-wrap gap-2">
+                <div className="text-xs font-bold uppercase tracking-wider text-slate-700 flex items-center gap-1.5">
+                  <BookOpen className="h-4 w-4 text-[#013089]" />
+                  <span>Standard Examination Pattern &amp; Marking Scheme</span>
+                </div>
+                {relatedExams.length > 0 && (
+                  <Link
+                    href={`/exams/${relatedExams[0].slug}`}
+                    className="text-xs font-bold text-[#013089] hover:underline flex items-center gap-1"
+                  >
+                    <span>Detailed Syllabus Page</span>
+                    <ArrowRight className="h-3 w-3" />
+                  </Link>
+                )}
+              </div>
+
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5 text-xs">
+                <div className="bg-white p-3 rounded-lg border border-slate-200">
+                  <span className="text-slate-500 block">Exam Mode</span>
+                  <span className="font-bold text-slate-900">CBT / Written MCQ</span>
+                </div>
+                <div className="bg-white p-3 rounded-lg border border-slate-200">
+                  <span className="text-slate-500 block">Question Medium</span>
+                  <span className="font-bold text-slate-900">Bilingual (Hindi / Eng)</span>
+                </div>
+                <div className="bg-white p-3 rounded-lg border border-slate-200">
+                  <span className="text-slate-500 block">Standard Duration</span>
+                  <span className="font-bold text-slate-900">120 Minutes</span>
+                </div>
+                <div className="bg-white p-3 rounded-lg border border-slate-200">
+                  <span className="text-slate-500 block">Negative Marking</span>
+                  <span className="font-bold text-slate-900">0.25 / 0.33 Marks</span>
+                </div>
+              </div>
+
+              <div className="pt-2 border-t border-slate-200/80 text-xs sm:text-[13px] text-slate-600 leading-relaxed space-y-1">
+                <span className="font-semibold text-slate-800">Core Subject Modules: </span>
+                <span>(1) General Intelligence &amp; Reasoning, (2) General Awareness &amp; Current Affairs, (3) Quantitative Aptitude &amp; Numerical Ability, (4) Domain Technical / Language Comprehension.</span>
+              </div>
+            </div>
           </section>
         )}
 
@@ -1039,18 +1083,52 @@ export function JobDetailView({ job: rawJob }: JobDetailViewProps) {
           )}
         </section>
 
-        {/* SECTION 12: CONTEXTUAL RELATED RECRUITMENTS & EXAMS */}
-        {(relatedJobs.length > 0 || relatedExams.length > 0) && (
+        {/* SECTION 12: CONTEXTUAL RELATED RECRUITMENTS, EXAMS & NEWS */}
+        {(relatedJobs.length > 0 || relatedExams.length > 0 || relatedNews.length > 0) && (
           <section className="p-6 sm:p-8 space-y-6">
             <div className="flex items-center gap-2.5">
               <Layers className="h-5 w-5 text-[#013089]" />
               <h2 className="text-xl sm:text-2xl font-bold text-slate-900 tracking-tight">
-                12. Related Government Opportunities
+                12. Related Government Opportunities &amp; Updates
               </h2>
             </div>
 
-            {relatedJobs.length > 0 && (
+            {/* Related News & Circulars */}
+            {relatedNews.length > 0 && (
               <div className="space-y-3">
+                <h3 className="text-xs font-bold uppercase tracking-wider text-[#013089] flex items-center gap-1.5">
+                  <Sparkles className="h-3.5 w-3.5 text-[#FE8D01]" />
+                  <span>Latest News &amp; Circulars for this Recruitment</span>
+                </h3>
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                  {relatedNews.map((rn: any, idx: number) => (
+                    <Link
+                      key={idx}
+                      href={`/news/${rn.slug}`}
+                      className="p-3.5 rounded-xl border border-slate-200 bg-blue-50/30 hover:bg-white hover:border-[#013089] hover:shadow-xs transition-all group flex flex-col justify-between"
+                    >
+                      <div className="space-y-1">
+                        <div className="text-[11px] font-bold text-[#013089] uppercase tracking-wider">
+                          {rn.category_slug || "Public Notice"}
+                        </div>
+                        <h4 className="text-xs sm:text-[13px] font-bold text-slate-900 group-hover:text-[#013089] line-clamp-2 leading-snug">
+                          {rn.title}
+                        </h4>
+                      </div>
+                      <div className="pt-2 mt-2 border-t border-slate-200/60 flex items-center justify-between text-[11px] text-slate-500">
+                        <span>{formatDate(rn.published_at)}</span>
+                        <span className="font-bold text-[#013089] flex items-center gap-0.5 group-hover:translate-x-0.5 transition-transform">
+                          Read <ArrowRight className="h-3 w-3" />
+                        </span>
+                      </div>
+                    </Link>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {relatedJobs.length > 0 && (
+              <div className="space-y-3 pt-2">
                 <h3 className="text-xs font-bold uppercase tracking-wider text-slate-600">
                   More Recruitments by {org?.name || "this Authority"}
                 </h3>

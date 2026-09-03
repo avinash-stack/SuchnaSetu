@@ -58,7 +58,7 @@ export class ArticleContentExtractor {
 
     try {
       const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 4000);
+      const timeoutId = setTimeout(() => controller.abort(), 8000);
 
       const res = await fetch(targetUrl, {
         headers: {
@@ -117,10 +117,12 @@ export class ArticleContentExtractor {
 
     // 3. Locate standard semantic article body container
     const containerMatch = doc.match(
-      /<[^>]+(?:itemprop=["']articleBody["']|class=["'][^"']*(?:articlebodycontent|article-body|story-details|storycontent|story_body|mainArea|entry-content|post-content)[^"']*)[\s\S]*$/i
+      /<(?:article|div|main|section)[^>]+(?:itemprop=["']articleBody["']|id=["'][^"']*(?:article|story|content|release)[^"']*["']|class=["'][^"']*(?:articlebodycontent|article-body|article_body|story-details|storycontent|story_body|story_content|mainArea|entry-content|post-content|article-content|article-desc|field-name-body|release_detail|pib_content|article_text)[^"']*)[\s\S]*$/i
     );
 
-    const targetArea = containerMatch ? containerMatch[0] : doc;
+    const articleTagMatch = doc.match(/<article\b[^>]*>([\s\S]*?)<\/article>/i);
+
+    const targetArea = containerMatch ? containerMatch[0] : (articleTagMatch ? articleTagMatch[1] : doc);
 
     // 4. Extract all paragraph tags
     const pMatches = [...targetArea.matchAll(/<p[^>]*>([\s\S]*?)<\/p>/gi)];
@@ -133,7 +135,21 @@ export class ArticleContentExtractor {
       }
     }
 
-    // 5. Strict Quality Rejection Gate: Require at least 2 authentic paragraphs and >= 180 chars
+    // 5. If <p> tags were sparse (common in government press releases formatted with <div> and <br>)
+    if (validParas.length < 2) {
+      const brParts = targetArea
+        .replace(/<br\s*\/?>/gi, "\n")
+        .replace(/<\/div>/gi, "\n")
+        .split(/\n\s*\n|\n/)
+        .map((line) => this.sanitizeParagraph(line))
+        .filter((line): line is string => Boolean(line && line.length >= 60));
+
+      if (brParts.length >= 2) {
+        validParas.push(...brParts);
+      }
+    }
+
+    // 6. Strict Quality Rejection Gate: Require at least 2 authentic paragraphs and >= 180 chars
     if (validParas.length >= 2) {
       const combined = validParas.slice(0, 18).join("\n\n");
       if (combined.length >= 180) {

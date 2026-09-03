@@ -37,6 +37,7 @@ import {
   CheckCircle2,
   FileSpreadsheet,
   MapPinCheck,
+  Sparkles,
 } from "lucide-react";
 
 interface ExamDetailViewProps {
@@ -60,6 +61,7 @@ export function ExamDetailView({ exam: rawExam }: ExamDetailViewProps) {
   const relatedExams = exam.related_exams || [];
   const relatedJobs = exam.related_jobs || [];
   const relatedBulletins = exam.related_bulletins || [];
+  const relatedNews = exam.related_news || [];
 
   const appEndDate = dates.find(
     (d) => d.date_type === "application_end" || d.title.toLowerCase().includes("last") || d.title.toLowerCase().includes("closing")
@@ -832,18 +834,52 @@ export function ExamDetailView({ exam: rawExam }: ExamDetailViewProps) {
           </div>
         </section>
 
-        {/* SECTION 9: CONTEXTUAL RELATED EXAMS & RECRUITMENTS */}
-        {(relatedExams.length > 0 || relatedJobs.length > 0) && (
+        {/* SECTION 9: CONTEXTUAL RELATED EXAMS, RECRUITMENTS & NEWS */}
+        {(relatedExams.length > 0 || relatedJobs.length > 0 || relatedNews.length > 0) && (
           <section className="p-6 sm:p-8 space-y-6">
             <div className="flex items-center gap-2.5">
               <Layers className="h-5 w-5 text-[#013089]" />
               <h2 className="text-xl sm:text-2xl font-bold text-slate-900 tracking-tight">
-                9. Related Examinations &amp; Recruitment Notices
+                9. Related Examinations, Jobs &amp; Updates
               </h2>
             </div>
 
-            {relatedExams.length > 0 && (
+            {/* Related News & Circulars */}
+            {relatedNews.length > 0 && (
               <div className="space-y-3">
+                <h3 className="text-xs font-bold uppercase tracking-wider text-[#013089] flex items-center gap-1.5">
+                  <Sparkles className="h-3.5 w-3.5 text-[#FE8D01]" />
+                  <span>Latest News &amp; Advisories for this Examination</span>
+                </h3>
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                  {relatedNews.map((rn: any, idx: number) => (
+                    <Link
+                      key={idx}
+                      href={`/news/${rn.slug}`}
+                      className="p-3.5 rounded-xl border border-slate-200 bg-blue-50/30 hover:bg-white hover:border-[#013089] hover:shadow-xs transition-all group flex flex-col justify-between"
+                    >
+                      <div className="space-y-1">
+                        <div className="text-[11px] font-bold text-[#013089] uppercase tracking-wider">
+                          {rn.category_slug || "Exam Notice"}
+                        </div>
+                        <h4 className="text-xs sm:text-[13px] font-bold text-slate-900 group-hover:text-[#013089] line-clamp-2 leading-snug">
+                          {rn.title}
+                        </h4>
+                      </div>
+                      <div className="pt-2 mt-2 border-t border-slate-200/60 flex items-center justify-between text-[11px] text-slate-500">
+                        <span>{formatDate(rn.published_at)}</span>
+                        <span className="font-bold text-[#013089] flex items-center gap-0.5 group-hover:translate-x-0.5 transition-transform">
+                          Read <ArrowRight className="h-3 w-3" />
+                        </span>
+                      </div>
+                    </Link>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {relatedExams.length > 0 && (
+              <div className="space-y-3 pt-2">
                 <h3 className="text-xs font-bold uppercase tracking-wider text-slate-600">
                   More Examinations by {org?.name || "this Authority"}
                 </h3>

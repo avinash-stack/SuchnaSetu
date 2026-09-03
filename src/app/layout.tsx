@@ -4,6 +4,7 @@ import { constructMetadata, HeadScripts } from "@/lib/seo";
 import { LanguageProvider } from "@/lib/i18n/context";
 import { LanguageSuggestionBanner } from "@/components/shared/language-suggestion-banner";
 import { GoogleTranslator } from "@/components/shared/google-translator";
+import { AnalyticsRouteTracker } from "@/components/analytics/analytics-route-tracker";
 import "./globals.css";
 
 const inter = Inter({
@@ -31,6 +32,7 @@ export default function RootLayout({
         <HeadScripts />
       </head>
       <body className="min-h-screen bg-slate-50 text-slate-900 antialiased flex flex-col font-sans overflow-x-hidden max-w-full w-full">
+        <AnalyticsRouteTracker />
         <LanguageProvider>
           <LanguageSuggestionBanner />
           {children}

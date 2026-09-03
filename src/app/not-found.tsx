@@ -14,17 +14,26 @@ export default function NotFound() {
       <p className="max-w-md text-base text-slate-500 mb-8">
         The requested public notice or page could not be located. It may have been archived, rescheduled, or the link has changed.
       </p>
-      <div className="flex items-center gap-3">
-        <Link href="/">
+      <div className="flex flex-wrap items-center justify-center gap-3">
+        <Link href="/news">
           <Button variant="primary" className="gap-2">
-            <Home className="h-4 w-4" />
-            <span>Return to Homepage</span>
+            <span>Latest News &amp; Updates</span>
           </Button>
         </Link>
         <Link href="/jobs">
           <Button variant="outline" className="gap-2">
-            <ArrowLeft className="h-4 w-4" />
             <span>Browse Govt Jobs</span>
+          </Button>
+        </Link>
+        <Link href="/exams">
+          <Button variant="outline" className="gap-2">
+            <span>Check Exams</span>
+          </Button>
+        </Link>
+        <Link href="/">
+          <Button variant="ghost" className="gap-2 text-slate-500">
+            <Home className="h-4 w-4" />
+            <span>Homepage</span>
           </Button>
         </Link>
       </div>

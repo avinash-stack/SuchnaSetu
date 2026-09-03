@@ -62,6 +62,24 @@ export interface NewsArticleDetailed extends NewsArticle {
     state_code?: string | null;
   } | null;
   related_articles?: NewsArticle[];
+  related_jobs?: Array<{
+    id: string;
+    slug: string;
+    title: string;
+    total_vacancies?: number | null;
+    application_end_date?: string | null;
+    state_code?: string | null;
+    organization?: { name: string; acronym?: string | null } | null;
+  }>;
+  related_exams?: Array<{
+    id: string;
+    slug: string;
+    title: string;
+    mode?: string | null;
+    exam_code?: string | null;
+    published_at?: string | null;
+    organization?: { name: string; acronym?: string | null } | null;
+  }>;
 }
 
 export interface NewsFilterParams {
