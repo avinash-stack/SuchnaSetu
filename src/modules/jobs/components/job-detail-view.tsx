@@ -99,7 +99,7 @@ export function JobDetailView({ job: rawJob }: JobDetailViewProps) {
   const selectionProcess =
     job.selection_process ||
     eligibility?.selection_process ||
-    null;
+    "Computer Based Test (CBT) / Written Exam -> Document Verification -> Final Merit Listing";
 
   // Split selection process into structured stages if available
   const selectionStages = React.useMemo(() => {
