@@ -157,14 +157,14 @@ export function ManualSyncConsole() {
             </div>
           </div>
 
-          <div className="mt-4 flex items-center justify-between pt-3 border-t border-slate-100">
+          <div className="mt-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3 pt-3 border-t border-slate-100">
             <span className="text-[11px] font-medium text-slate-500">
               Direct RSS &bull; Multi-source &bull; AI Enrichment
             </span>
             <button
               onClick={() => handleTriggerSync("news")}
               disabled={syncState.isRunning}
-              className={`inline-flex items-center gap-2 rounded-lg px-4 py-2 text-xs font-bold text-white transition-all shadow-sm ${
+              className={`inline-flex items-center justify-center gap-2 rounded-lg px-4 py-2.5 text-xs font-bold text-white transition-all shadow-sm w-full sm:w-auto ${
                 syncState.isRunning && syncState.activeType === "news"
                   ? "bg-blue-400 cursor-not-allowed"
                   : "bg-blue-600 hover:bg-blue-700 active:scale-95"
@@ -196,14 +196,14 @@ export function ManualSyncConsole() {
             </div>
           </div>
 
-          <div className="mt-4 flex items-center justify-between pt-3 border-t border-slate-100">
+          <div className="mt-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3 pt-3 border-t border-slate-100">
             <span className="text-[11px] font-medium text-slate-500">
               135 Active Sources &bull; Batch Pipeline &bull; Durable
             </span>
             <button
               onClick={() => handleTriggerSync("full")}
               disabled={syncState.isRunning}
-              className={`inline-flex items-center gap-2 rounded-lg px-4 py-2 text-xs font-bold text-white transition-all shadow-sm ${
+              className={`inline-flex items-center justify-center gap-2 rounded-lg px-4 py-2.5 text-xs font-bold text-white transition-all shadow-sm w-full sm:w-auto ${
                 syncState.isRunning && syncState.activeType === "full"
                   ? "bg-slate-500 cursor-not-allowed"
                   : "bg-slate-900 hover:bg-slate-800 active:scale-95"
