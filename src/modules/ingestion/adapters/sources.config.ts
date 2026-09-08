@@ -1,3 +1,5 @@
+import { STATE_JOB_SOURCES_EXPANSION_CONFIG } from "./state-sources-expansion.config";
+
 export interface PostWiseVacancy {
   post_name: string;
   total: number;
@@ -4154,6 +4156,7 @@ export const GOV_JOB_SOURCES_CONFIG: GovJobSourceConfig[] = [
       }
     ]
   },
+  ...STATE_JOB_SOURCES_EXPANSION_CONFIG,
 ];
 
 
