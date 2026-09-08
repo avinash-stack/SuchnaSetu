@@ -145,12 +145,52 @@ Respond with a single raw JSON object matching:
 
     clearTimeout(timeoutId);
 
-    if (!res.ok) {
-      console.warn(`[News AI Enrichment HTTP ${res.status}] using fallback metadata`);
+    let activeResponse = res;
+    if (!activeResponse.ok && activeResponse.status === 429) {
+      const retryAfterHeader = activeResponse.headers.get("retry-after");
+      const retrySeconds = retryAfterHeader ? Math.min(Math.max(parseInt(retryAfterHeader, 10), 4), 10) : 5;
+      console.warn(`[News AI Enrichment HTTP 429] Rate limit reached. Backing off ${retrySeconds}s and retrying once...`);
+      await new Promise((r) => setTimeout(r, retrySeconds * 1000));
+      try {
+        const retryController = new AbortController();
+        const retryTimeout = setTimeout(() => retryController.abort(), config.timeoutMs || 8000);
+        activeResponse = await fetch(config.endpoint, {
+          method: "POST",
+          headers: {
+            "Authorization": `Bearer ${config.apiKey}`,
+            "Content-Type": "application/json",
+            "User-Agent": "SuchnaSetu-News-AI/1.0",
+          },
+          body: JSON.stringify({
+            model,
+            messages: [
+              {
+                role: "system",
+                content: "You are a professional factual news classifier and editor. Return only a valid JSON object without markdown fences.",
+              },
+              {
+                role: "user",
+                content: prompt,
+              },
+            ],
+            response_format: { type: "json_object" },
+            temperature: 0.1,
+            max_completion_tokens: 2500,
+          }),
+          signal: retryController.signal,
+        });
+        clearTimeout(retryTimeout);
+      } catch (retryErr) {
+        console.warn("[News AI Enrichment Retry Failed]:", retryErr);
+      }
+    }
+
+    if (!activeResponse.ok) {
+      console.warn(`[News AI Enrichment HTTP ${activeResponse.status}] using fallback metadata`);
       return defaultMetadata;
     }
 
-    const data = await res.json();
+    const data = await activeResponse.json();
     const rawAiResponse = data.choices?.[0]?.message?.content;
     if (!rawAiResponse) {
       return defaultMetadata;

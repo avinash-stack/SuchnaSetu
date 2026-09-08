@@ -1,0 +1,247 @@
+{
+  "provider": "groq",
+  "model": "openai/gpt-oss-120b",
+  "endpoint": "https://api.groq.com/openai/v1/chat/completions",
+  "securityCheck": {
+    "isServerSideOnly": true,
+    "hasKey": true,
+    "keyMasked": "gsk_Lzu...VdDw (len=56)"
+  },
+  "jobsResults": [
+    {
+      "jobId": "job-real-1",
+      "title": "Recruitment of Assistant Loco Pilot (ALP) across Railway Zones (CEN 01/2026)",
+      "status": "success",
+      "latencyMs": 6098,
+      "structuredOutput": {
+        "id": "job-real-1",
+        "language_code": "hi",
+        "title": "रेलवे ज़ोन में Assistant Loco Pilot (ALP) की भर्ती (CEN 01/2026)",
+        "post_name": "Assistant Loco Pilot (ALP)",
+        "qualification_summary": "मैट्रिकुलेशन / 10वीं पास साथ ही ITI / डिप्लोमा या संबंधित विषय में स्नातक डिग्री।",
+        "age_limit_summary": "समापन तिथि तक आयु 18 से 30 वर्ष, मानक वर्ग में छूट के साथ।",
+        "pay_scale_summary": "Level-2 of 7th CPC Pay Matrix के साथ प्रारम्भिक वेतन ₹19,900/- तथा भत्ते।",
+        "selection_process": "प्राथमिक कंप्यूटर आधारित परीक्षा (CBT), मुख्य लिखित परीक्षा, तथा दस्तावेज़ सत्यापन।",
+        "description": "आधिकारिक विज्ञापन: CEN 01/2026. कुल रिक्तियां: 18799. वेतनमान: Level-2 of 7th CPC Pay Matrix के साथ प्रारम्भिक वेतन ₹19,900/- तथा भत्ते।",
+        "summary": "रेलवे भर्ती बोर्ड ऑनलाइन आवेदन आमंत्रित करते हैं योग्य भारतीय नागरिकों से Assistant Loco Pilot के पद के लिए भर्ती हेतु।",
+        "short_title": null,
+        "eligibility_summary": null,
+        "meta_title": null,
+        "meta_description": null
+      },
+      "validation": {
+        "hasRequiredFields": true,
+        "indicTerminologyUsed": true,
+        "acronymsPreserved": true,
+        "issues": []
+      }
+    },
+    {
+      "jobId": "job-real-2",
+      "title": "UPSC Civil Services Examination (CSE) 2026 - Group A & B Gazetted Posts",
+      "status": "success",
+      "latencyMs": 6098,
+      "structuredOutput": {
+        "id": "job-real-2",
+        "language_code": "hi",
+        "title": "UPSC सिविल सर्विसेज परीक्षा (CSE) 2026 - समूह A एवं B गैजेटेड पद",
+        "post_name": null,
+        "qualification_summary": "मैट्रिकुलेशन / 10वीं पास साथ ही ITI / डिप्लोमा या संबंधित विषय में स्नातक डिग्री।",
+        "age_limit_summary": "समापन तिथि तक आयु 18 से 30 वर्ष, मानक वर्ग में छूट के साथ।",
+        "pay_scale_summary": "जूनियर टाइम स्केल Level 10 (₹56,100 - ₹1,77,500)",
+        "selection_process": "प्राथमिक कंप्यूटर आधारित परीक्षा (CBT), मुख्य लिखित परीक्षा, तथा दस्तावेज़ सत्यापन।",
+        "description": "आधिकारिक विज्ञापन: 04/2026-CSP. कुल रिक्तियां: 1056. वेतनमान: Junior Time Scale Level 10 (₹56,100 - ₹1,77,500)।",
+        "summary": "संघ लोक सेवा आयोग (UPSC) का नोटिस IAS, IPS, IFS और अन्य केंद्रीय सिविल सेवाओं की भर्ती हेतु प्राथमिक और मुख्य परीक्षाओं के माध्यम से।",
+        "short_title": null,
+        "eligibility_summary": null,
+        "meta_title": null,
+        "meta_description": null
+      },
+      "validation": {
+        "hasRequiredFields": true,
+        "indicTerminologyUsed": true,
+        "acronymsPreserved": true,
+        "issues": []
+      }
+    },
+    {
+      "jobId": "job-real-3",
+      "title": "Bihar BSSC 3rd Graduate Level Combined Competitive Exam (CGL) Recruitment",
+      "status": "success",
+      "latencyMs": 6098,
+      "structuredOutput": {
+        "id": "job-real-3",
+        "language_code": "hi",
+        "title": "बिहार BSSC 3rd ग्रेजुएट लेवल संयुक्त प्रतिस्पर्धी परीक्षा (CGL) भर्ती",
+        "post_name": "Secretariat Assistant & Planning Assistant",
+        "qualification_summary": "मैट्रिकुलेशन / 10वीं पास साथ ही ITI / डिप्लोमा या संबंधित विषय में स्नातक डिग्री।",
+        "age_limit_summary": "समापन तिथि तक आयु 18 से 30 वर्ष, मानक वर्ग में छूट के साथ।",
+        "pay_scale_summary": "Level 7 (₹44,900 - ₹1,42,400) सचिवालय सहायक एवं योजना सहायक के लिए",
+        "selection_process": "प्राथमिक कंप्यूटर आधारित परीक्षा (CBT), मुख्य लिखित परीक्षा, तथा दस्तावेज़ सत्यापन।",
+        "description": "आधिकारिक विज्ञापन: Advt No 02/2026. कुल रिक्तियां: 2187. वेतनमान: Level 7 (₹44,900 - ₹1,42,400) सचिवालय सहायक एवं योजना सहायक के लिए।",
+        "summary": "बिहार स्टाफ चयन आयोग ऑनलाइन आवेदन आमंत्रित करता है स्नातक स्तर के प्रशासनिक एवं योजना पदों के लिए राज्य विभागों में।",
+        "short_title": null,
+        "eligibility_summary": null,
+        "meta_title": null,
+        "meta_description": null
+      },
+      "validation": {
+        "hasRequiredFields": true,
+        "indicTerminologyUsed": true,
+        "acronymsPreserved": true,
+        "issues": []
+      }
+    }
+  ],
+  "jobIntentResults": [
+    {
+      "query": "Bihar BSSC 3rd CGL Graduate Level jobs",
+      "status": "success",
+      "latencyMs": 1570,
+      "intent": {
+        "module": "jobs",
+        "query": "BSSC 3rd CGL",
+        "state": "Bihar",
+        "state_code": "BR",
+        "qualification": [
+          "Graduate"
+        ],
+        "category": null,
+        "employment_type": null,
+        "status": "active",
+        "application_open": true,
+        "gender": null,
+        "salary_min": null,
+        "salary_max": null,
+        "deadline_before": null,
+        "sort": "relevance"
+      }
+    },
+    {
+      "query": "RRB Railway Assistant Loco Pilot 10th pass",
+      "status": "success",
+      "latencyMs": 1822,
+      "intent": {
+        "module": "jobs",
+        "query": "Railway Assistant Loco Pilot",
+        "state": null,
+        "state_code": null,
+        "qualification": [
+          "10th"
+        ],
+        "category": "Railway",
+        "employment_type": null,
+        "status": "active",
+        "application_open": true,
+        "gender": null,
+        "salary_min": null,
+        "salary_max": null,
+        "deadline_before": null,
+        "sort": "relevance"
+      }
+    },
+    {
+      "query": "UPSC Civil Services 2026 eligibility and age limit",
+      "status": "success",
+      "latencyMs": 1320,
+      "intent": {
+        "module": "jobs",
+        "query": null,
+        "state": null,
+        "state_code": null,
+        "qualification": null,
+        "category": "Administrative",
+        "employment_type": null,
+        "status": "active",
+        "application_open": true,
+        "gender": null,
+        "salary_min": null,
+        "salary_max": null,
+        "deadline_before": null,
+        "sort": "relevance"
+      }
+    }
+  ],
+  "newsResults": [
+    {
+      "articleId": "3059e089-135f-4dc0-977d-5919b2114ead",
+      "sourceName": "The Hindu BusinessLine Economy",
+      "title": "Singapore Airlines' investment record in other airlines",
+      "status": "success",
+      "latencyMs": 8550,
+      "aiStatus": "enriched",
+      "aiModel": "openai/gpt-oss-120b",
+      "summary": "Singapore Airlines, which holds a 25.1% stake in Air India, is being asked to inject an additional $1.5 billion in equity alongside Tata Sons. The move comes as Singapore’s transport minister urges the carrier to expand its overseas footprint.",
+      "contentParagraphsCount": 3,
+      "categorySlug": "business",
+      "tags": [
+        "Singapore Airlines",
+        "Air India",
+        "Equity Funding",
+        "Aviation Investment",
+        "Airline Industry"
+      ],
+      "validation": {
+        "isRelevantToSource": true,
+        "hasFactualStructure": true,
+        "noGenericFiller": true,
+        "issues": []
+      }
+    },
+    {
+      "articleId": "2b75d1eb-0580-4b32-87ca-0ac4021f89c2",
+      "sourceName": "The Hindu National",
+      "title": "Crocodile rescued, safely released at Tamil Nadu’s Kallanai",
+      "status": "success",
+      "latencyMs": 1977,
+      "aiStatus": "enriched",
+      "aiModel": "openai/gpt-oss-120b",
+      "summary": "On September 7, 2026, a joint team of the Tamil Nadu Forest Department and Fire and Rescue Services rescued a stray crocodile from the Rettamalai area near Tiruchirappalli and released it at Kallanai. The operation was completed safely by midday, averting potential danger to local laborers.",
+      "contentParagraphsCount": 3,
+      "categorySlug": "states",
+      "tags": [
+        "crocodile rescue",
+        "wildlife management",
+        "Tamil Nadu"
+      ],
+      "validation": {
+        "isRelevantToSource": true,
+        "hasFactualStructure": true,
+        "noGenericFiller": true,
+        "issues": []
+      }
+    },
+    {
+      "articleId": "ec229897-5923-46d4-bd7d-3527b493af59",
+      "sourceName": "Zee News National",
+      "title": "Satya Niketan collapse: CM Rekha Gupta announces Rs 5 lakh aid, orders immediate demolition of unsafe adjoining building",
+      "status": "success",
+      "latencyMs": 12531,
+      "aiStatus": "enriched",
+      "aiModel": "openai/gpt-oss-120b",
+      "summary": "Delhi Chief Minister Rekha Gupta visited AIIMS to meet victims of the Satya Niketan building collapse, pledging Rs 5 lakh assistance to affected families and ordering the demolition of a nearby unsafe structure. The tragedy claimed seven lives and left twelve injured, prompting police action and municipal safety measures.",
+      "contentParagraphsCount": 3,
+      "categorySlug": "india",
+      "tags": [
+        "building collapse",
+        "Delhi",
+        "government aid",
+        "public safety",
+        "police investigation"
+      ],
+      "validation": {
+        "isRelevantToSource": true,
+        "hasFactualStructure": true,
+        "noGenericFiller": true,
+        "issues": []
+      }
+    }
+  ],
+  "summary": {
+    "totalCalls": 9,
+    "successfulCalls": 9,
+    "averageLatencyMs": 3763,
+    "openRouterCalled": false,
+    "issuesFound": []
+  }
+}
