@@ -16,12 +16,11 @@ export async function POST(request: NextRequest) {
 async function handleNewsSync(request: NextRequest) {
   const authHeader = request.headers.get("authorization");
   const cronSecret = process.env.CRON_SECRET;
-  const isVercelCron = request.headers.get("x-vercel-cron") === "1";
 
   if (cronSecret) {
     const bearerToken = authHeader?.startsWith("Bearer ") ? authHeader.substring(7) : null;
     const apiKey = request.nextUrl.searchParams.get("key");
-    const isAuthorized = bearerToken === cronSecret || apiKey === cronSecret || isVercelCron;
+    const isAuthorized = bearerToken === cronSecret || apiKey === cronSecret;
 
     if (!isAuthorized) {
       return NextResponse.json(

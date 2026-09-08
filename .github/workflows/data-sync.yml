@@ -21,44 +21,115 @@ concurrency:
 
 jobs:
   sync-data-sources:
-    name: Sync Jobs, Exams & News Feeds
+    name: Sync Jobs & Exams (Batched)
     runs-on: ubuntu-latest
-    timeout-minutes: 10
+    timeout-minutes: 15
 
     steps:
-      - name: Trigger Secure Sync API Endpoint
+      - name: Batched Sequential Sync via Production API
         env:
           APP_URL: https://suchnasetu.in
           SYNC_SECRET: ${{ secrets.CRON_SECRET }}
+          # Each API call processes BATCH_SIZE × MAX_BATCHES sources (3 × 2 = 6 per call)
+          # With 135+ sources, ~23 iterations are needed, each staying under 60s Vercel Hobby limit
+          BATCH_SIZE: "3"
+          MAX_BATCHES_PER_CALL: "2"
         run: |
-          # Sanitize APP_URL (remove trailing slash if present)
           TARGET_URL="${APP_URL:-https://suchnasetu.in}"
           TARGET_URL="${TARGET_URL%/}"
           ENDPOINT="$TARGET_URL/api/cron/sync-all-sources"
-          
-          echo "⏰ [$(date -u '+%Y-%m-%d %H:%M:%S UTC')] Calling sync endpoint..."
-          
-          # Mask secret token from action logs
-          if [ -n "$SYNC_SECRET" ]; then
-            echo "::add-mask::$SYNC_SECRET"
-          fi
-          
-          RESPONSE=$(curl -s -S -w "\nHTTP_STATUS:%{http_code}" -X POST "$ENDPOINT" \
-            -H "Content-Type: application/json" \
-            -H "User-Agent: SuchnaSetu-GitHubActions-Scheduler/1.0" \
-            -H "Authorization: Bearer $SYNC_SECRET")
-          
-          HTTP_BODY=$(echo "$RESPONSE" | sed -e '$d')
-          HTTP_STATUS=$(echo "$RESPONSE" | tail -n1 | cut -d':' -f2)
 
-          echo "Response HTTP Status: $HTTP_STATUS"
-          
-          if [ "$HTTP_STATUS" -ne 200 ]; then
-            echo "❌ Synchronization request failed with HTTP $HTTP_STATUS"
-            echo "Error details: $HTTP_BODY"
+          echo "::add-mask::$SYNC_SECRET"
+
+          echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+          echo "⏰ [$(date -u '+%Y-%m-%d %H:%M:%S UTC')] Starting batched full sync"
+          echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+
+          BATCH_INDEX=0
+          ITERATION=1
+          MAX_ITERATIONS=50  # Safety cap: prevent infinite loops
+          TOTAL_INSERTED=0
+          TOTAL_UPDATED=0
+          TOTAL_EXTRACTED=0
+          TOTAL_FAILED=0
+          SYNC_COMPLETE="false"
+          HAD_ERRORS="false"
+
+          while [ "$SYNC_COMPLETE" != "true" ] && [ $ITERATION -le $MAX_ITERATIONS ]; do
+            echo ""
+            echo "🔄 Iteration $ITERATION — batchIndex=$BATCH_INDEX, batchSize=$BATCH_SIZE, maxBatches=$MAX_BATCHES_PER_CALL"
+
+            RESPONSE=$(curl -s -S --max-time 65 -w "\nHTTP_STATUS:%{http_code}" \
+              -X POST "$ENDPOINT?batchSize=$BATCH_SIZE&batchIndex=$BATCH_INDEX&maxBatches=$MAX_BATCHES_PER_CALL" \
+              -H "Content-Type: application/json" \
+              -H "User-Agent: SuchnaSetu-GitHubActions-Scheduler/2.0" \
+              -H "Authorization: Bearer $SYNC_SECRET")
+
+            HTTP_BODY=$(echo "$RESPONSE" | sed -e '$d')
+            HTTP_STATUS=$(echo "$RESPONSE" | tail -n1 | cut -d':' -f2)
+
+            echo "  HTTP Status: $HTTP_STATUS"
+
+            if [ "$HTTP_STATUS" -ne 200 ]; then
+              echo "  ❌ Batch request failed with HTTP $HTTP_STATUS"
+              echo "  Error: $HTTP_BODY"
+              HAD_ERRORS="true"
+              # Don't exit — try to continue with next batch index
+              BATCH_INDEX=$((BATCH_INDEX + ${MAX_BATCHES_PER_CALL}))
+              ITERATION=$((ITERATION + 1))
+              sleep 2
+              continue
+            fi
+
+            # Parse response JSON
+            IS_COMPLETE=$(echo "$HTTP_BODY" | jq -r '.batchExecution.isComplete // false')
+            NEXT_BATCH=$(echo "$HTTP_BODY" | jq -r '.batchExecution.nextBatchIndex // "null"')
+            BATCHES_DONE=$(echo "$HTTP_BODY" | jq -r '.batchExecution.batchesCompleted // 0')
+            BATCHES_TOTAL=$(echo "$HTTP_BODY" | jq -r '.batchExecution.batchesTotal // "?"')
+            INSERTED=$(echo "$HTTP_BODY" | jq -r '.summary.totalInserted // 0')
+            UPDATED=$(echo "$HTTP_BODY" | jq -r '.summary.totalUpdated // 0')
+            EXTRACTED=$(echo "$HTTP_BODY" | jq -r '.summary.totalExtracted // 0')
+            FAILED=$(echo "$HTTP_BODY" | jq -r '.summary.totalFailed // 0')
+
+            TOTAL_INSERTED=$((TOTAL_INSERTED + INSERTED))
+            TOTAL_UPDATED=$((TOTAL_UPDATED + UPDATED))
+            TOTAL_EXTRACTED=$((TOTAL_EXTRACTED + EXTRACTED))
+            TOTAL_FAILED=$((TOTAL_FAILED + FAILED))
+
+            echo "  ✅ Batches completed: $BATCHES_DONE/$BATCHES_TOTAL | Inserted: +$INSERTED | Updated: +$UPDATED | Failed: $FAILED"
+
+            if [ "$IS_COMPLETE" = "true" ] || [ "$NEXT_BATCH" = "null" ]; then
+              SYNC_COMPLETE="true"
+              echo ""
+              echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+              echo "🎉 Full sync completed in $ITERATION iteration(s)"
+            else
+              BATCH_INDEX=$NEXT_BATCH
+            fi
+
+            ITERATION=$((ITERATION + 1))
+            # Brief pause between API calls to avoid overloading
+            if [ "$SYNC_COMPLETE" != "true" ]; then
+              sleep 3
+            fi
+          done
+
+          echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+          echo "📊 Aggregate Summary:"
+          echo "   Total Extracted: $TOTAL_EXTRACTED"
+          echo "   Total Inserted:  +$TOTAL_INSERTED"
+          echo "   Total Updated:   +$TOTAL_UPDATED"
+          echo "   Total Failed:    $TOTAL_FAILED"
+          echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+
+          if [ "$SYNC_COMPLETE" != "true" ]; then
+            echo "⚠️  Sync did not complete within $MAX_ITERATIONS iterations."
             exit 1
           fi
 
-          echo "✅ Automated synchronization completed successfully."
-          echo "Sync Summary:"
-          echo "$HTTP_BODY" | jq '.summary // .' 2>/dev/null || echo "$HTTP_BODY"
+          if [ "$HAD_ERRORS" = "true" ]; then
+            echo "⚠️  Sync completed but some batches had HTTP errors."
+            exit 1
+          fi
+
+          echo "✅ Full data synchronization completed successfully."

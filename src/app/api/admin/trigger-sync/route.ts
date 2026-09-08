@@ -5,7 +5,7 @@ import { runNewsIngestionPipeline } from "@/modules/news/services/ingestion-serv
 import { BatchOrchestrator } from "@/modules/ingestion/core/batch-orchestrator";
 import { revalidatePath } from "next/cache";
 
-export const maxDuration = 300; // 5 minutes runtime
+export const maxDuration = 60; // Vercel Hobby plan: 60s hard limit
 export const dynamic = "force-dynamic";
 
 export async function POST(request: NextRequest) {
@@ -73,14 +73,14 @@ export async function POST(request: NextRequest) {
         );
       }
 
-      const batchSize = body.batchSize || 6;
+      const batchSize = body.batchSize || 3;
       const startBatchIndex = body.batchIndex || 0;
-      const maxBatchesToRun = body.maxBatches || 5;
+      const maxBatchesToRun = body.maxBatches || 2;
 
       const orchestrator = new BatchOrchestrator({
         batchSize,
-        sourceTimeoutMs: 18000,
-        maxFunctionDurationMs: 240000,
+        sourceTimeoutMs: 10000,
+        maxFunctionDurationMs: 50000, // 50s safe limit within 60s Hobby plan
       });
 
       const syncSummary = await orchestrator.orchestrateSequentialSync(sources, {

@@ -5,7 +5,7 @@ import { getSchedulerConfig, getNextScheduledSync } from "@/modules/ingestion/co
 import { SourceAdapterRegistry } from "@/modules/ingestion/core/registry";
 import { revalidatePath } from "next/cache";
 
-export const maxDuration = 300; // 5 minutes max duration for serverless cron execution
+export const maxDuration = 60; // Vercel Hobby plan: 60s hard limit
 export const dynamic = "force-dynamic";
 
 /**
@@ -23,15 +23,14 @@ export async function POST(request: NextRequest) {
 async function handleSync(request: NextRequest) {
   const config = getSchedulerConfig();
 
-  // 1. Security Verification: Validate CRON_SECRET, API Key, or Vercel Cron Header
+  // 1. Security Verification: Validate CRON_SECRET via Bearer token or query key
   const authHeader = request.headers.get("authorization");
   const cronSecret = process.env.CRON_SECRET;
-  const isVercelCron = request.headers.get("x-vercel-cron") === "1";
 
   if (cronSecret) {
     const bearerToken = authHeader?.startsWith("Bearer ") ? authHeader.substring(7) : null;
     const apiKey = request.nextUrl.searchParams.get("key");
-    const isAuthorized = bearerToken === cronSecret || apiKey === cronSecret || isVercelCron;
+    const isAuthorized = bearerToken === cronSecret || apiKey === cronSecret;
 
     if (!isAuthorized) {
       return NextResponse.json(
@@ -79,17 +78,17 @@ async function handleSync(request: NextRequest) {
 
   // Parse optional batch pagination controls from query params
   const searchParams = request.nextUrl.searchParams;
-  const batchSize = parseInt(searchParams.get("batchSize") || "4", 10) || 4;
+  const batchSize = parseInt(searchParams.get("batchSize") || "3", 10) || 3;
   const startBatchIndex = parseInt(searchParams.get("batchIndex") || "0", 10) || 0;
   const maxBatchesToRun = searchParams.get("maxBatches")
     ? parseInt(searchParams.get("maxBatches")!, 10)
-    : undefined;
+    : 2; // Default: process 2 batches per invocation to stay within 60s Hobby limit
 
   // 4. Execute with Durable Sequential Batch Orchestrator
   const orchestrator = new BatchOrchestrator({
     batchSize,
     sourceTimeoutMs: 10000, // 10s per-source timeout
-    maxFunctionDurationMs: 250000, // 250s safe time-budget guard within 300s limit
+    maxFunctionDurationMs: 50000, // 50s safe time-budget within 60s Vercel Hobby limit
   });
 
   const syncSummary = await orchestrator.orchestrateSequentialSync(sources, {
