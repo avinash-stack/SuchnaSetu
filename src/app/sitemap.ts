@@ -205,13 +205,6 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       });
     });
 
-    routes.push({
-      url: `${baseUrl}/news/search`,
-      lastModified: currentDate,
-      changeFrequency: "daily",
-      priority: 0.7,
-    });
-
     // 7. All Published News Articles
     const { data: newsArticles } = await (supabase as any)
       .from("news_articles")
