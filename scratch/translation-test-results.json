@@ -1,0 +1,65 @@
+{
+  "jobsTest": {
+    "passed": true,
+    "count": 2,
+    "samples": [
+      {
+        "englishTitle": "Railway Recruitment Board Assistant Loco Pilot (ALP) CEN 01/2026",
+        "hindiTitle": "रेलवे भर्ती बोर्ड सहायक लोको पायलट (एएलपी) CEN 01/2026",
+        "latency": 687,
+        "isTranslated": true
+      },
+      {
+        "englishTitle": "Union Public Service Commission Civil Services Examination (CSE) 2026",
+        "hindiTitle": "संघ लोक सेवा आयोग सिविल सेवा परीक्षा (सीएसई) 2026",
+        "latency": 503,
+        "isTranslated": true
+      }
+    ]
+  },
+  "newsTest": {
+    "passed": true,
+    "count": 2,
+    "samples": [
+      {
+        "englishTitle": "ISRO unveils roadmap for Bharatiya Antariksh Station and Chandrayaan-4",
+        "hindiTitle": "इसरो ने भारतीय अंतरिक्ष स्टेशन और चंद्रयान-4 के लिए रोडमैप का अनावरण किया",
+        "paragraphsCount": 3,
+        "latency": 412,
+        "isTranslated": true
+      },
+      {
+        "englishTitle": "Union Cabinet approves Delhi Metro Phase 4 expansion with two new corridors",
+        "hindiTitle": "केंद्रीय मंत्रिमंडल ने दो नए गलियारों के साथ दिल्ली मेट्रो चरण 4 के विस्तार को मंजूरी दी",
+        "paragraphsCount": 3,
+        "latency": 503,
+        "isTranslated": true
+      }
+    ]
+  },
+  "shortLongContentTest": {
+    "passed": true,
+    "shortLatency": 95,
+    "longLatency": 501,
+    "longChars": 1178
+  },
+  "cacheTest": {
+    "passed": true,
+    "initialMs": 98,
+    "memoryCacheMs": 0,
+    "dbCacheMs": 0
+  },
+  "deduplicationTest": {
+    "passed": true,
+    "parallelRequests": 10,
+    "identicalResults": true
+  },
+  "failureSimulationTest": {
+    "passed": true,
+    "fallbackRetainedOriginal": true
+  },
+  "originalContentIntegrityTest": {
+    "passed": true,
+    "englishUnchanged": true
+  }
+}

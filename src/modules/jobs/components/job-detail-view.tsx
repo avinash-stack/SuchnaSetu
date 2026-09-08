@@ -51,7 +51,56 @@ interface JobDetailViewProps {
 
 export function JobDetailView({ job: rawJob }: JobDetailViewProps) {
   const { language, t } = useLanguage();
-  const job = resolveLocalizedJob(rawJob, language);
+  const [activeJob, setActiveJob] = React.useState<GovJobDetailed>(rawJob);
+
+  // Synchronize when rawJob prop updates
+  React.useEffect(() => {
+    setActiveJob(rawJob);
+  }, [rawJob]);
+
+  // On-demand translation fetch if user selects Hindi and translation is not yet attached
+  React.useEffect(() => {
+    if (language !== "hi") return;
+
+    const existing = Array.isArray(activeJob.translations)
+      ? activeJob.translations.find((t: any) => t.language_code === "hi")
+      : null;
+
+    if (existing && existing.title) return;
+
+    let isCancelled = false;
+    fetch("/api/translate", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        type: "job",
+        id: activeJob.id,
+        slug: activeJob.slug,
+        targetLang: "hi",
+      }),
+    })
+      .then((res) => res.json())
+      .then((data) => {
+        if (!isCancelled && data.success && data.translation) {
+          setActiveJob((prev) => ({
+            ...prev,
+            translations: [
+              ...(prev.translations || []).filter((t: any) => t.language_code !== "hi"),
+              data.translation,
+            ],
+          }));
+        }
+      })
+      .catch((err) => {
+        console.warn("[JobDetailView Translation Error]:", err);
+      });
+
+    return () => {
+      isCancelled = true;
+    };
+  }, [language, activeJob.id, activeJob.slug, activeJob.translations]);
+
+  const job = resolveLocalizedJob(activeJob, language);
 
   const org = job.organization;
   const dept = job.department;

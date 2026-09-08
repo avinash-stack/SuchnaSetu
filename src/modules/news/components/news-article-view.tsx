@@ -28,6 +28,7 @@ import {
   ShieldCheck,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { useLanguage } from "@/lib/i18n/context";
 
 interface NewsArticleViewProps {
   article: NewsArticleDetailed;
@@ -37,14 +38,82 @@ interface NewsArticleViewProps {
 }
 
 export function NewsArticleView({
-  article,
-  lang = "en",
+  article: rawArticle,
+  lang: propLang = "en",
   isTranslated = false,
   originalLang = "en",
 }: NewsArticleViewProps) {
+  const { language } = useLanguage();
+  const activeLang = language || propLang || "en";
+  const [activeArticle, setActiveArticle] = React.useState<NewsArticleDetailed>(rawArticle);
   const [copied, setCopied] = React.useState(false);
 
-  const isHindi = lang === "hi";
+  React.useEffect(() => {
+    setActiveArticle(rawArticle);
+  }, [rawArticle]);
+
+  React.useEffect(() => {
+    if (activeLang !== "hi") return;
+
+    const existing = Array.isArray(activeArticle.translations)
+      ? activeArticle.translations.find((t) => t.language_code === "hi")
+      : null;
+
+    if (existing && existing.title && existing.summary) {
+      if (activeArticle.title !== existing.title) {
+        setActiveArticle((prev) => ({
+          ...prev,
+          title: existing.title,
+          summary: existing.summary,
+          content: existing.content || prev.content,
+        }));
+      }
+      return;
+    }
+
+    let isCancelled = false;
+    fetch("/api/translate", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        type: "news",
+        id: activeArticle.id,
+        slug: activeArticle.slug,
+        targetLang: "hi",
+      }),
+    })
+      .then((res) => res.json())
+      .then((data) => {
+        if (!isCancelled && data.success && data.translation) {
+          setActiveArticle((prev) => ({
+            ...prev,
+            title: data.translation.title,
+            summary: data.translation.summary,
+            content: data.translation.content || prev.content,
+            translations: [
+              ...(prev.translations || []).filter((t) => t.language_code !== "hi"),
+              data.translation,
+            ],
+          }));
+        }
+      })
+      .catch((err) => {
+        console.warn("[NewsArticleView Translation Error]:", err);
+      });
+
+    return () => {
+      isCancelled = true;
+    };
+  }, [activeLang, activeArticle.id, activeArticle.slug, activeArticle.translations, activeArticle.title]);
+
+  const displayArticle = React.useMemo(() => {
+    if (activeLang === "en") {
+      return rawArticle;
+    }
+    return activeArticle;
+  }, [activeLang, rawArticle, activeArticle]);
+
+  const isHindi = activeLang === "hi";
 
   const handleShare = () => {
     if (typeof window !== "undefined") {
@@ -56,22 +125,23 @@ export function NewsArticleView({
 
   // Generate complete, flowing full news report
   const report = React.useMemo(() => {
-    return NewsContentSynthesizer.generateFullArticleBody(article, lang);
-  }, [article, lang]);
+    return NewsContentSynthesizer.generateFullArticleBody(displayArticle, activeLang);
+  }, [displayArticle, activeLang]);
 
-  const relatedJobs = article.related_jobs || [];
-  const relatedExams = article.related_exams || [];
+  const relatedJobs = displayArticle.related_jobs || [];
+  const relatedExams = displayArticle.related_exams || [];
+  const article = displayArticle;
 
   return (
     <article className="mx-auto max-w-4xl px-4 py-8 sm:px-6 lg:px-8 space-y-8 font-sans text-slate-800">
       {/* 1. Breadcrumbs */}
       <nav className="flex items-center gap-1.5 text-xs text-slate-500 flex-wrap" aria-label="Breadcrumb">
-        <Link href={`/news${lang === "hi" ? "?lang=hi" : ""}`} className="hover:text-[#013089] transition-colors">
+        <Link href={`/news${isHindi ? "?lang=hi" : ""}`} className="hover:text-[#013089] transition-colors">
           {isHindi ? "समाचार मुख्य पृष्ठ" : "News Home"}
         </Link>
         <ChevronRight className="h-3 w-3 text-slate-400" />
         <Link
-          href={`/news/category/${article.category_slug}${lang === "hi" ? "?lang=hi" : ""}`}
+          href={`/news/category/${article.category_slug}${isHindi ? "?lang=hi" : ""}`}
           className="hover:text-[#013089] transition-colors uppercase font-bold text-[#013089]"
         >
           {article.category?.name || article.category_slug}
@@ -80,7 +150,7 @@ export function NewsArticleView({
           <>
             <ChevronRight className="h-3 w-3 text-slate-400" />
             <Link
-              href={`/news/state/${article.state_code.toLowerCase()}${lang === "hi" ? "?lang=hi" : ""}`}
+              href={`/news/state/${article.state_code.toLowerCase()}${isHindi ? "?lang=hi" : ""}`}
               className="hover:text-[#013089] transition-colors uppercase font-semibold"
             >
               {article.state_code}
@@ -354,7 +424,7 @@ export function NewsArticleView({
           {article.tags.map((tag) => (
             <Link
               key={tag}
-              href={`/news/search?q=${encodeURIComponent(tag)}${lang === "hi" ? "&lang=hi" : ""}`}
+              href={`/news/search?q=${encodeURIComponent(tag)}${isHindi ? "&lang=hi" : ""}`}
               className="text-[11.5px] font-medium bg-slate-100 hover:bg-slate-200 text-slate-700 px-2.5 py-1 rounded-md transition-colors"
             >
               #{tag}

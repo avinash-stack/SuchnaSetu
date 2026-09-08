@@ -14,6 +14,7 @@ export interface GovJobTranslation {
   pay_scale_summary?: string | null;
   selection_process?: string | null;
   description?: string | null;
+  summary?: string | null;
   fee_details?: Record<string, any> | null;
   meta_title?: string | null;
   meta_description?: string | null;

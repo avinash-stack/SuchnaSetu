@@ -1,59 +1,318 @@
 import { createAdminClient } from "@/lib/supabase/admin";
-import { LanguageCode, SUPPORTED_LANGUAGES } from "@/lib/i18n/config";
-import { getAiConfig } from "@/modules/ai/config";
+import { LanguageCode } from "@/lib/i18n/config";
+import { GovJobDetailed } from "@/modules/jobs/types";
+import { NewsArticle, NewsTranslation } from "@/modules/news/types/article";
+import { GovJobTranslation, resolveLocalizedJob } from "@/lib/i18n/localize";
+import {
+  translateTextWithGoogle,
+  clearTranslationCache,
+  getTranslationCacheStats,
+} from "./google-translate-engine";
 import { TranslationInputItem, TranslatedOutputItem, TranslationBatchResult } from "./types";
 
+export { translateTextWithGoogle, clearTranslationCache, getTranslationCacheStats };
+
 /**
- * Prompt builder for Indic recruitment content translation
+ * Translates and caches a Government Job Notice between English and Hindi using Google Translate.
+ * Translates title, post name, summary, description, qualification, age limit, pay scale, and selection process.
  */
-function buildTranslationPrompt(items: TranslationInputItem[], targetLang: LanguageCode): string {
-  const langName = SUPPORTED_LANGUAGES[targetLang]?.name || "Hindi";
-  
-  return `You are an expert Indian official government recruitment terminology translator.
-Translate the following array of government recruitment/exam notices from English into ${langName} (${targetLang}).
-
-STRICT RULES:
-1. Output ONLY a valid JSON array of objects with the exact schema.
-2. PRESERVE non-translatable tokens EXACTLY as they are:
-   - Organization acronyms: UPSC, SSC, RRB, BSSC, UPSSSC, IBPS, NTA, High Court, IIT, AIIMS, DRDO, ISRO.
-   - Notification/Advt numbers (e.g. Advt No. 04/2026, CEN 01/2026).
-   - Numerical figures, monetary amounts (e.g. ₹44,900, 10,000 vacancies), and dates (e.g. 15 Oct 2026).
-   - Official URLs, emails, portal domain names.
-3. Use formal, authentic administrative terminology suitable for Indian gazettes and employment portals:
-   - "Recruitment" -> "भर्ती"
-   - "Vacancies" -> "रिक्तियां"
-   - "Application Deadline" -> "आवेदन की अंतिम तिथि"
-   - "Eligibility" -> "पात्रता एवं योग्यता"
-   - "Selection Process" -> "चयन प्रक्रिया"
-   - "Admit Card" -> "प्रवेश पत्र"
-   - "Result" -> "परीक्षा परिणाम"
-   - "Answer Key" -> "उत्तर कुंजी"
-
-Input Items to Translate:
-${JSON.stringify(items, null, 2)}
-
-Required Output JSON Schema:
-[
-  {
-    "id": "string",
-    "title": "string (translated title)",
-    "post_name": "string or null",
-    "qualification_summary": "string or null",
-    "age_limit_summary": "string or null",
-    "pay_scale_summary": "string or null",
-    "selection_process": "string or null",
-    "description": "string or null",
-    "summary": "string or null",
-    "short_title": "string or null",
-    "eligibility_summary": "string or null",
-    "meta_title": "string or null",
-    "meta_description": "string or null"
+export async function translateJobNotice(
+  job: GovJobDetailed,
+  targetLang: "hi" | "en" = "hi"
+): Promise<{
+  job: GovJobDetailed;
+  translation: GovJobTranslation | null;
+  isTranslated: boolean;
+}> {
+  if (!job) {
+    return { job, translation: null, isTranslated: false };
   }
-]`;
+
+  if (targetLang === "en") {
+    return {
+      job: resolveLocalizedJob(job, "en"),
+      translation: null,
+      isTranslated: false,
+    };
+  }
+
+  const isGenuineHindi = (t?: string | null) => Boolean(t && /[\u0900-\u097F]/.test(t));
+
+  // 1. Check existing translations attached to the job object
+  const existingAttached = Array.isArray(job.translations)
+    ? job.translations.find((t: any) => t.language_code === targetLang)
+    : null;
+
+  if (existingAttached && isGenuineHindi(existingAttached.title)) {
+    return {
+      job: resolveLocalizedJob(job, targetLang),
+      translation: existingAttached as GovJobTranslation,
+      isTranslated: true,
+    };
+  }
+
+  // 2. Check Supabase DB for cached translation
+  try {
+    const supabase = createAdminClient();
+    const { data: dbTranslation } = await (supabase as any)
+      .from("gov_job_translations")
+      .select("*")
+      .eq("job_id", job.id)
+      .eq("language_code", targetLang)
+      .maybeSingle();
+
+    if (dbTranslation && isGenuineHindi(dbTranslation.title)) {
+      const updatedJob = {
+        ...job,
+        translations: [...(job.translations || []), dbTranslation],
+      };
+      return {
+        job: resolveLocalizedJob(updatedJob, targetLang),
+        translation: dbTranslation as GovJobTranslation,
+        isTranslated: true,
+      };
+    }
+  } catch (err: any) {
+    console.warn(`[Job Translation DB Cache Check Warning]: ${err.message}`);
+  }
+
+  // 3. Translate all non-empty fields using Google Translate Engine
+  try {
+    const [
+      translatedTitle,
+      translatedPostName,
+      translatedSummary,
+      translatedDescription,
+      translatedQual,
+      translatedAge,
+      translatedPay,
+      translatedSelection,
+    ] = await Promise.all([
+      translateTextWithGoogle(job.title, targetLang),
+      job.post_name ? translateTextWithGoogle(job.post_name, targetLang) : Promise.resolve(null),
+      job.summary ? translateTextWithGoogle(job.summary, targetLang) : Promise.resolve(null),
+      job.description ? translateTextWithGoogle(job.description, targetLang) : Promise.resolve(null),
+      job.qualification_summary ? translateTextWithGoogle(job.qualification_summary, targetLang) : Promise.resolve(null),
+      job.age_limit_summary ? translateTextWithGoogle(job.age_limit_summary, targetLang) : Promise.resolve(null),
+      job.pay_scale_details ? translateTextWithGoogle(job.pay_scale_details, targetLang) : Promise.resolve(null),
+      job.selection_process ? translateTextWithGoogle(job.selection_process, targetLang) : Promise.resolve(null),
+    ]);
+
+    const newTranslation: GovJobTranslation = {
+      id: `${job.id}-${targetLang}`,
+      job_id: job.id,
+      language_code: targetLang,
+      title: translatedTitle || job.title,
+      post_name: translatedPostName || job.post_name,
+      summary: translatedSummary || job.summary,
+      description: translatedDescription || job.description,
+      qualification_summary: translatedQual || job.qualification_summary,
+      age_limit_summary: translatedAge || job.age_limit_summary,
+      pay_scale_summary: translatedPay || job.pay_scale_details,
+      selection_process: translatedSelection || job.selection_process,
+    };
+
+    // 4. Persist to Supabase DB asynchronously so future page views are instant
+    try {
+      const supabase = createAdminClient();
+      await (supabase as any).from("gov_job_translations").upsert(
+        {
+          job_id: job.id,
+          language_code: targetLang,
+          title: newTranslation.title,
+          post_name: newTranslation.post_name,
+          qualification_summary: newTranslation.qualification_summary,
+          age_limit_summary: newTranslation.age_limit_summary,
+          pay_scale_summary: newTranslation.pay_scale_summary,
+          selection_process: newTranslation.selection_process,
+          description: newTranslation.description,
+          summary: newTranslation.summary,
+          is_verified: true,
+          updated_at: new Date().toISOString(),
+        },
+        { onConflict: "job_id,language_code" }
+      );
+    } catch (saveErr: any) {
+      console.warn(`[Job Translation DB Save Warning]: ${saveErr.message}`);
+    }
+
+    const updatedJob = {
+      ...job,
+      translations: [...(job.translations || []), newTranslation],
+    };
+
+    return {
+      job: resolveLocalizedJob(updatedJob, targetLang),
+      translation: newTranslation,
+      isTranslated: true,
+    };
+  } catch (err: any) {
+    console.warn(`[Job Translation Engine Error]: ${err.message}. Retaining English.`);
+    return {
+      job: resolveLocalizedJob(job, "en"),
+      translation: null,
+      isTranslated: false,
+    };
+  }
 }
 
 /**
- * Translates a batch of items into the target language using OpenRouter / Gemini
+ * Translates and caches a News Article between English and Hindi using Google Translate.
+ * Translates headline, summary, and full multi-paragraph article body.
+ */
+export async function translateNewsArticle(
+  article: NewsArticle,
+  targetLang: "hi" | "en" = "hi"
+): Promise<{
+  article: NewsArticle;
+  translation: NewsTranslation | null;
+  isTranslated: boolean;
+}> {
+  if (!article) {
+    return { article, translation: null, isTranslated: false };
+  }
+
+  if (targetLang === "en") {
+    return { article, translation: null, isTranslated: false };
+  }
+
+  const isGenuineHindi = (t?: string | null) => Boolean(t && /[\u0900-\u097F]/.test(t));
+
+  // 1. Check existing translations attached to the article
+  const existingAttached = Array.isArray(article.translations)
+    ? article.translations.find((t) => t.language_code === targetLang)
+    : null;
+
+  if (existingAttached && isGenuineHindi(existingAttached.title) && isGenuineHindi(existingAttached.summary)) {
+    return {
+      article: {
+        ...article,
+        title: existingAttached.title,
+        summary: existingAttached.summary,
+        content: existingAttached.content || article.content,
+      },
+      translation: existingAttached,
+      isTranslated: true,
+    };
+  }
+
+  // 2. Check Supabase DB for cached translation
+  try {
+    const supabase = createAdminClient();
+    const { data: dbTranslation } = await (supabase as any)
+      .from("news_translations")
+      .select("*")
+      .eq("article_id", article.id)
+      .eq("language_code", targetLang)
+      .maybeSingle();
+
+    if (dbTranslation && isGenuineHindi(dbTranslation.title) && isGenuineHindi(dbTranslation.summary)) {
+      return {
+        article: {
+          ...article,
+          title: dbTranslation.title,
+          summary: dbTranslation.summary,
+          content: dbTranslation.content || article.content,
+        },
+        translation: dbTranslation as NewsTranslation,
+        isTranslated: true,
+      };
+    }
+  } catch (err: any) {
+    console.warn(`[News Translation DB Cache Check Warning]: ${err.message}`);
+  }
+
+  // 3. Translate full content via Google Translate Engine
+  try {
+    const [translatedTitle, translatedSummary, translatedContent] = await Promise.all([
+      translateTextWithGoogle(article.title, targetLang),
+      translateTextWithGoogle(article.summary, targetLang),
+      article.content ? translateTextWithGoogle(article.content, targetLang) : Promise.resolve(null),
+    ]);
+
+    const newTranslation: NewsTranslation = {
+      id: `${article.id}-${targetLang}`,
+      article_id: article.id,
+      language_code: targetLang,
+      title: translatedTitle || article.title,
+      summary: translatedSummary || article.summary,
+      content: translatedContent || article.content || null,
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
+    };
+
+    // 4. Persist to Supabase DB asynchronously
+    try {
+      const supabase = createAdminClient();
+      await (supabase as any).from("news_translations").upsert(
+        {
+          article_id: article.id,
+          language_code: targetLang,
+          title: newTranslation.title,
+          summary: newTranslation.summary,
+          content: newTranslation.content,
+          updated_at: new Date().toISOString(),
+        },
+        { onConflict: "article_id,language_code" }
+      );
+    } catch (saveErr: any) {
+      console.warn(`[News Translation DB Save Warning]: ${saveErr.message}`);
+    }
+
+    return {
+      article: {
+        ...article,
+        title: newTranslation.title,
+        summary: newTranslation.summary,
+        content: newTranslation.content || article.content,
+      },
+      translation: newTranslation,
+      isTranslated: true,
+    };
+  } catch (err: any) {
+    console.warn(`[News Translation Engine Error]: ${err.message}. Retaining English.`);
+    return {
+      article,
+      translation: null,
+      isTranslated: false,
+    };
+  }
+}
+
+/**
+ * Backward-compatible helper for News Portal:
+ * Resolves or fetches on-demand translation for a detailed news article.
+ */
+export async function getOrTranslateNewsArticle<T extends NewsArticle>(
+  article: T,
+  targetLang: "en" | "hi" = "en"
+): Promise<{
+  article: T;
+  isTranslated: boolean;
+  originalLang: "en" | "hi";
+  targetLang: "en" | "hi";
+}> {
+  if (targetLang === "en") {
+    return {
+      article,
+      isTranslated: false,
+      originalLang: "en",
+      targetLang: "en",
+    };
+  }
+
+  const { article: translatedArticle, isTranslated } = await translateNewsArticle(article, "hi");
+  return {
+    article: translatedArticle as T,
+    isTranslated,
+    originalLang: "en",
+    targetLang: "hi",
+  };
+}
+
+/**
+ * Translates a batch of items into the target language using Google Translate Engine
+ * (Zero Groq/LLM calls).
  */
 export async function translateContentBatch(
   items: TranslationInputItem[],
@@ -63,82 +322,52 @@ export async function translateContentBatch(
     return [];
   }
 
-  const config = getAiConfig();
-  if (!config.apiKey) {
-    console.warn("[Translation Service] GROQ_API_KEY missing. Skipping dynamic AI translation.");
-    return [];
-  }
+  const results: TranslatedOutputItem[] = [];
 
-  const prompt = buildTranslationPrompt(items, targetLang);
-  const controller = new AbortController();
-  const timeoutId = setTimeout(() => controller.abort(), 12000); // 12s safety timeout
+  for (const item of items) {
+    try {
+      const [
+        title,
+        post_name,
+        summary,
+        description,
+        qualification_summary,
+        age_limit_summary,
+        pay_scale_summary,
+        selection_process,
+      ] = await Promise.all([
+        translateTextWithGoogle(item.title, targetLang),
+        item.post_name ? translateTextWithGoogle(item.post_name, targetLang) : Promise.resolve(null),
+        item.summary ? translateTextWithGoogle(item.summary, targetLang) : Promise.resolve(null),
+        item.description ? translateTextWithGoogle(item.description, targetLang) : Promise.resolve(null),
+        item.qualification_summary ? translateTextWithGoogle(item.qualification_summary, targetLang) : Promise.resolve(null),
+        item.age_limit_summary ? translateTextWithGoogle(item.age_limit_summary, targetLang) : Promise.resolve(null),
+        item.pay_scale_summary ? translateTextWithGoogle(item.pay_scale_summary, targetLang) : Promise.resolve(null),
+        item.selection_process ? translateTextWithGoogle(item.selection_process, targetLang) : Promise.resolve(null),
+      ]);
 
-  try {
-    const response = await fetch(config.endpoint, {
-      method: "POST",
-      headers: {
-        "Authorization": `Bearer ${config.apiKey}`,
-        "Content-Type": "application/json",
-        "User-Agent": "SuchnaSetu-Translation-AI/1.0",
-      },
-      body: JSON.stringify({
-        model: config.model,
-        messages: [
-          {
-            role: "system",
-            content: "You are a professional multilingual translator specialized in official government notifications and civic gazettes. Output ONLY a valid JSON array of objects.",
-          },
-          {
-            role: "user",
-            content: prompt,
-          },
-        ],
-        temperature: 0.1,
-        max_completion_tokens: 4000,
-      }),
-      signal: controller.signal,
-    });
-
-    clearTimeout(timeoutId);
-
-    if (!response.ok) {
-      const errBody = await response.text().catch(() => "");
-      console.warn(`[Translation Service HTTP ${response.status}]:`, errBody);
-      return [];
+      results.push({
+        id: item.id,
+        language_code: targetLang,
+        title: title || item.title,
+        post_name: post_name || item.post_name || null,
+        summary: summary || item.summary || null,
+        description: description || item.description || null,
+        qualification_summary: qualification_summary || item.qualification_summary || null,
+        age_limit_summary: age_limit_summary || item.age_limit_summary || null,
+        pay_scale_summary: pay_scale_summary || item.pay_scale_summary || null,
+        selection_process: selection_process || item.selection_process || null,
+        short_title: item.short_title || null,
+        eligibility_summary: item.eligibility_summary || null,
+        meta_title: null,
+        meta_description: null,
+      });
+    } catch (err: any) {
+      console.warn(`[Batch Translation Item Error for ${item.id}]:`, err.message);
     }
-
-    const data = await response.json();
-    const rawContent = data?.choices?.[0]?.message?.content || "";
-    if (!rawContent) return [];
-
-    const firstBracket = rawContent.indexOf("[");
-    const lastBracket = rawContent.lastIndexOf("]");
-    if (firstBracket === -1 || lastBracket === -1) return [];
-
-    const jsonStr = rawContent.slice(firstBracket, lastBracket + 1);
-    const parsed = JSON.parse(jsonStr) as any[];
-
-    return parsed.map((item) => ({
-      id: item.id,
-      language_code: targetLang,
-      title: item.title,
-      post_name: item.post_name || null,
-      qualification_summary: item.qualification_summary || null,
-      age_limit_summary: item.age_limit_summary || null,
-      pay_scale_summary: item.pay_scale_summary || null,
-      selection_process: item.selection_process || null,
-      description: item.description || null,
-      summary: item.summary || null,
-      short_title: item.short_title || null,
-      eligibility_summary: item.eligibility_summary || null,
-      meta_title: item.meta_title || null,
-      meta_description: item.meta_description || null,
-    }));
-  } catch (err: any) {
-    clearTimeout(timeoutId);
-    console.warn(`[Translation Service Error (${targetLang})]:`, err.message || err);
-    return [];
   }
+
+  return results;
 }
 
 /**
@@ -173,8 +402,7 @@ export async function persistTranslations(
             pay_scale_summary: item.pay_scale_summary,
             selection_process: item.selection_process,
             description: item.description,
-            meta_title: item.meta_title,
-            meta_description: item.meta_description,
+            summary: item.summary,
             is_verified: true,
             updated_at: new Date().toISOString(),
           },
@@ -192,8 +420,6 @@ export async function persistTranslations(
             short_title: item.short_title,
             description: item.description,
             eligibility_summary: item.eligibility_summary,
-            meta_title: item.meta_title,
-            meta_description: item.meta_description,
             is_verified: true,
             updated_at: new Date().toISOString(),
           },
@@ -210,8 +436,6 @@ export async function persistTranslations(
             title: item.title,
             summary: item.summary,
             content: item.content,
-            meta_title: item.meta_title,
-            meta_description: item.meta_description,
             is_verified: true,
             updated_at: new Date().toISOString(),
           },
@@ -223,7 +447,7 @@ export async function persistTranslations(
       }
     } catch (err: any) {
       result.failed++;
-      result.errors.push(`Item ${item.id} (${item.language_code}): ${err.message}`);
+      result.errors.push(`Failed to save ${type} ${item.id}: ${err.message}`);
     }
   }
 

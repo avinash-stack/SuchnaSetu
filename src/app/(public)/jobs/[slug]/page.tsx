@@ -7,6 +7,7 @@ import { resolveLocalizedJob } from "@/lib/i18n/localize";
 import { LanguageCode } from "@/lib/i18n/config";
 import { JobDetailView } from "@/modules/jobs/components/job-detail-view";
 import { generateVerifiedJobFaqs } from "@/modules/jobs/utils/generate-job-faqs";
+import { translateJobNotice } from "@/modules/translation/service";
 
 export const revalidate = 300; // 5 minutes cache for high performance & instant mobile rendering
 
@@ -32,7 +33,13 @@ export async function generateMetadata({ params, searchParams }: JobDetailPagePr
     });
   }
 
-  const translations = (rawJob.translations || []) as any[];
+  let jobToLocalize = rawJob;
+  if (requestedLang === "hi") {
+    const { job: translatedJob } = await translateJobNotice(rawJob, "hi");
+    jobToLocalize = translatedJob;
+  }
+
+  const translations = (jobToLocalize.translations || []) as any[];
   const hasGenuineRequestedTranslation = requestedLang === "en" || translations.some((t) => t.language_code === requestedLang);
   const isUntranslatedParameterRequest = requestedLang !== "en" && !hasGenuineRequestedTranslation;
 
@@ -44,7 +51,7 @@ export async function generateMetadata({ params, searchParams }: JobDetailPagePr
     }
   });
 
-  const job = resolveLocalizedJob(rawJob, requestedLang);
+  const job = resolveLocalizedJob(jobToLocalize, requestedLang);
   const orgName = job.organization?.name || "Government Authority";
   const orgAcronym = job.organization?.acronym || "";
   const postCount = job.total_vacancies ? ` (${job.total_vacancies} Posts)` : "";
@@ -73,10 +80,16 @@ export default async function PublicJobDetailPage({ params, searchParams }: JobD
   const resolvedSearchParams = searchParams ? await searchParams : {};
   const requestedLang = resolvedSearchParams?.lang || "en";
 
-  const job = await getPublicJobBySlug(slug);
+  const rawJob = await getPublicJobBySlug(slug);
 
-  if (!job) {
+  if (!rawJob) {
     notFound();
+  }
+
+  let job = rawJob;
+  if (requestedLang === "hi") {
+    const { job: translatedJob } = await translateJobNotice(rawJob, "hi");
+    job = translatedJob;
   }
 
   const translations = job.translations || [];
