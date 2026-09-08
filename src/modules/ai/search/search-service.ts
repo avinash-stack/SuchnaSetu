@@ -1,5 +1,5 @@
 import { getAiConfig } from "../config";
-import { callOpenRouterStructuredIntent } from "../openrouter-client";
+import { callGroqStructuredIntent } from "../groq-client";
 import { executeStructuredSearch } from "./search-intent";
 import { explainJobMatch, explainExamMatch } from "./match-explainer";
 import { AiEnhancedSearchResult, StructuredSearchIntent } from "./types";
@@ -10,8 +10,8 @@ import { parseSearchQuery } from "@/modules/search/query-parser";
  * Universal Search Service with Fail-Safe OpenRouter AI Query Understanding.
  *
  * Architecture:
- * 1. Checks if AI search is enabled (OPENROUTER_API_KEY + AI_SEARCH_ENABLED=true).
- * 2. If enabled, calls OpenRouter with structured JSON schema intent parsing.
+ * 1. Checks if AI search is enabled (GROQ_API_KEY + AI_SEARCH_ENABLED=true).
+ * 2. If enabled, calls Groq (GPT-OSS-120B) with structured JSON schema intent parsing.
  * 3. Executes targeted database queries using structured filters.
  * 4. If AI is disabled or fails (timeout, rate limit, invalid response), automatically falls back to keyword/filter search.
  * 5. Decorates results with authentic grounded match explanations.
@@ -51,7 +51,7 @@ export async function executeAiEnhancedSearch(
   // Step 1: Attempt AI query parsing if enabled
   if (aiConfig.isEnabled) {
     try {
-      const { intent: parsedIntent, error } = await callOpenRouterStructuredIntent(
+      const { intent: parsedIntent, error } = await callGroqStructuredIntent(
         cleanQuery,
         targetModule
       );

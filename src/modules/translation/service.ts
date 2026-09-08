@@ -65,7 +65,7 @@ export async function translateContentBatch(
 
   const config = getAiConfig();
   if (!config.apiKey) {
-    console.warn("[Translation Service] OpenRouter API key missing. Skipping dynamic AI translation.");
+    console.warn("[Translation Service] GROQ_API_KEY missing. Skipping dynamic AI translation.");
     return [];
   }
 
@@ -74,16 +74,15 @@ export async function translateContentBatch(
   const timeoutId = setTimeout(() => controller.abort(), 12000); // 12s safety timeout
 
   try {
-    const response = await fetch("https://openrouter.ai/api/v1/chat/completions", {
+    const response = await fetch(config.endpoint, {
       method: "POST",
       headers: {
         "Authorization": `Bearer ${config.apiKey}`,
-        "HTTP-Referer": "https://suchnasetu.in",
-        "X-Title": "SuchnaSetu Translation Engine",
         "Content-Type": "application/json",
+        "User-Agent": "SuchnaSetu-Translation-AI/1.0",
       },
       body: JSON.stringify({
-        model: config.searchModel || "google/gemini-2.5-flash",
+        model: config.model,
         messages: [
           {
             role: "system",
@@ -95,7 +94,7 @@ export async function translateContentBatch(
           },
         ],
         temperature: 0.1,
-        max_tokens: 3500,
+        max_completion_tokens: 4000,
       }),
       signal: controller.signal,
     });

@@ -17,8 +17,8 @@ envContent.split("\n").forEach((line) => {
 
 const supabaseUrl = env.NEXT_PUBLIC_SUPABASE_URL;
 const supabaseKey = env.SUPABASE_SERVICE_ROLE_KEY || env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
-const openRouterKey = env.OPENROUTER_API_KEY;
-const aiModel = env.NEWS_AI_MODEL || "google/gemini-2.5-flash";
+const groqKey = env.GROQ_API_KEY;
+const aiModel = env.GROQ_MODEL || "openai/gpt-oss-120b";
 
 if (!supabaseUrl || !supabaseKey) {
   console.error("❌ Missing NEXT_PUBLIC_SUPABASE_URL or SUPABASE_SERVICE_ROLE_KEY in .env.local");

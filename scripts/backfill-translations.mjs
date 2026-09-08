@@ -20,24 +20,24 @@ const supabase = createClient(
   env.SUPABASE_SERVICE_ROLE_KEY || env.NEXT_PUBLIC_SUPABASE_ANON_KEY
 );
 
-const OPENROUTER_KEY = env.OPENROUTER_API_KEY;
+const GROQ_KEY = env.GROQ_API_KEY;
+const GROQ_MODEL = env.GROQ_MODEL || "openai/gpt-oss-120b";
 
 async function callOpenRouter(prompt) {
-  if (!OPENROUTER_KEY) {
-    console.warn('OPENROUTER_API_KEY not configured.');
+  if (!GROQ_KEY) {
+    console.warn('GROQ_API_KEY not configured.');
     return null;
   }
 
-  const res = await fetch('https://openrouter.ai/api/v1/chat/completions', {
+  const res = await fetch('https://api.groq.com/openai/v1/chat/completions', {
     method: 'POST',
     headers: {
-      'Authorization': `Bearer ${OPENROUTER_KEY}`,
+      'Authorization': `Bearer ${GROQ_KEY}`,
       'Content-Type': 'application/json',
-      'HTTP-Referer': 'https://suchnasetu.gov.in',
-      'X-Title': 'SuchnaSetu Translation Engine',
+      'User-Agent': 'SuchnaSetu-Translation-Engine/1.0',
     },
     body: JSON.stringify({
-      model: 'google/gemini-2.5-flash',
+      model: GROQ_MODEL,
       messages: [
         {
           role: 'system',

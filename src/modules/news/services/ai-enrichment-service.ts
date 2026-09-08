@@ -73,7 +73,7 @@ export async function enrichNewsArticleWithAi(
     return defaultMetadata;
   }
 
-  const model = process.env.NEWS_AI_MODEL || config.searchModel || "google/gemini-2.5-flash";
+  const model = process.env.GROQ_MODEL || config.model;
 
   // Feed only factual, clean text into the AI
   const factualSourceContext = cleanedSourceContent
@@ -114,16 +114,15 @@ Respond with a single raw JSON object matching:
 }`;
 
   const controller = new AbortController();
-  const timeoutId = setTimeout(() => controller.abort(), 4500);
+  const timeoutId = setTimeout(() => controller.abort(), config.timeoutMs || 8000);
 
   try {
-    const res = await fetch("https://openrouter.ai/api/v1/chat/completions", {
+    const res = await fetch(config.endpoint, {
       method: "POST",
       headers: {
         "Authorization": `Bearer ${config.apiKey}`,
         "Content-Type": "application/json",
-        "HTTP-Referer": "https://suchnasetu.in",
-        "X-Title": "SuchnaSetu News AI Intelligence",
+        "User-Agent": "SuchnaSetu-News-AI/1.0",
       },
       body: JSON.stringify({
         model,
@@ -139,7 +138,7 @@ Respond with a single raw JSON object matching:
         ],
         response_format: { type: "json_object" },
         temperature: 0.1,
-        max_tokens: 1200,
+        max_completion_tokens: 2500,
       }),
       signal: controller.signal,
     });
