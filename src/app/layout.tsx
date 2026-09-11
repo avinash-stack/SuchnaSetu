@@ -5,6 +5,7 @@ import { LanguageProvider } from "@/lib/i18n/context";
 import { LanguageSuggestionBanner } from "@/components/shared/language-suggestion-banner";
 import { GoogleTranslator } from "@/components/shared/google-translator";
 import { AnalyticsRouteTracker } from "@/components/analytics/analytics-route-tracker";
+import { AdsterraSocialBar } from "@/modules/advertising";
 import "./globals.css";
 
 const inter = Inter({
@@ -37,8 +38,10 @@ export default function RootLayout({
           <LanguageSuggestionBanner />
           {children}
           <GoogleTranslator />
+          <AdsterraSocialBar />
         </LanguageProvider>
       </body>
     </html>
   );
 }
+

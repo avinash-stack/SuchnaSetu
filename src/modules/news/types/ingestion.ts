@@ -10,6 +10,14 @@ export interface IngestionResult {
   durationMs: number;
 }
 
+export interface NewsBatchExecution {
+  batchIndex: number;
+  batchSize: number;
+  batchesTotal: number;
+  isComplete: boolean;
+  nextBatchIndex: number | null;
+}
+
 export interface IngestionBatchSummary {
   startedAt: string;
   completedAt: string;
@@ -20,4 +28,5 @@ export interface IngestionBatchSummary {
   totalArticlesInserted: number;
   totalDuplicatesSkipped: number;
   results: IngestionResult[];
+  batchExecution?: NewsBatchExecution;
 }

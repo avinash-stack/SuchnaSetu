@@ -21,6 +21,7 @@ import { BreakingTicker } from "@/modules/bulletins/components/breaking-ticker";
 import { BulletinCard } from "@/modules/bulletins/components/bulletin-card";
 import { JobListTable } from "@/modules/jobs/components/job-list-table";
 import { ExamListTable } from "@/modules/exams/components/exam-list-table";
+import { AdSlot } from "@/modules/advertising";
 import { HomeHero } from "@/components/home/home-hero";
 import { HomeSectionHeader } from "@/components/home/home-section-header";
 import { RightActionPanel } from "@/components/home/right-action-panel";
@@ -439,6 +440,11 @@ export default async function HomePage({ searchParams }: HomePageProps) {
           </div>
         </section>
       )}
+
+      {/* HOMEPAGE NATIVE BANNER AD SLOT */}
+      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <AdSlot placement="homepage_native" />
+      </div>
 
       {/* ========================================================================= */}
       {/* CRAWLABLE SEARCH ENGINE DIRECTORY & INTERNAL LINKING MATRIX */}

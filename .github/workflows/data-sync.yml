@@ -2,12 +2,12 @@ name: Automatic Data Synchronization
 
 on:
   schedule:
+    # 01:30 AM IST -> 20:00 UTC
+    - cron: '0 20 * * *'
     # 08:00 AM IST -> 02:30 UTC
     - cron: '30 2 * * *'
     # 04:00 PM IST -> 10:30 UTC
     - cron: '30 10 * * *'
-    # 01:30 AM IST -> 20:00 UTC
-    - cron: '0 20 * * *'
   workflow_dispatch:
     inputs:
       reason:
@@ -23,17 +23,17 @@ jobs:
   sync-data-sources:
     name: Sync Jobs & Exams (Batched)
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    timeout-minutes: 30
 
     steps:
       - name: Batched Sequential Sync via Production API
         env:
           APP_URL: https://suchnasetu.in
           SYNC_SECRET: ${{ secrets.CRON_SECRET }}
-          # Each API call processes BATCH_SIZE × MAX_BATCHES sources (3 × 2 = 6 per call)
-          # With 135+ sources, ~23 iterations are needed, each staying under 60s Vercel Hobby limit
-          BATCH_SIZE: "3"
-          MAX_BATCHES_PER_CALL: "2"
+          # Each API call processes BATCH_SIZE × MAX_BATCHES sources (4 × 3 = 12 per call)
+          # With 270+ sources, ~23 iterations are executed comfortably within serverless safety limits
+          BATCH_SIZE: "4"
+          MAX_BATCHES_PER_CALL: "3"
         run: |
           TARGET_URL="${APP_URL:-https://suchnasetu.in}"
           TARGET_URL="${TARGET_URL%/}"
@@ -47,7 +47,7 @@ jobs:
 
           BATCH_INDEX=0
           ITERATION=1
-          MAX_ITERATIONS=50  # Safety cap: prevent infinite loops
+          MAX_ITERATIONS=100  # Safety cap: prevent infinite loops
           TOTAL_INSERTED=0
           TOTAL_UPDATED=0
           TOTAL_EXTRACTED=0
@@ -59,7 +59,7 @@ jobs:
             echo ""
             echo "🔄 Iteration $ITERATION — batchIndex=$BATCH_INDEX, batchSize=$BATCH_SIZE, maxBatches=$MAX_BATCHES_PER_CALL"
 
-            RESPONSE=$(curl -s -S --max-time 65 -w "\nHTTP_STATUS:%{http_code}" \
+            RESPONSE=$(curl -s -S --max-time 120 -w "\nHTTP_STATUS:%{http_code}" \
               -X POST "$ENDPOINT?batchSize=$BATCH_SIZE&batchIndex=$BATCH_INDEX&maxBatches=$MAX_BATCHES_PER_CALL" \
               -H "Content-Type: application/json" \
               -H "User-Agent: SuchnaSetu-GitHubActions-Scheduler/2.0" \

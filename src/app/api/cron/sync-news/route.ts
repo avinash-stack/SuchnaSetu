@@ -30,8 +30,20 @@ async function handleNewsSync(request: NextRequest) {
     }
   }
 
+  const searchParams = request.nextUrl.searchParams;
+  const batchSizeParam = searchParams.get("batchSize");
+  const batchIndexParam = searchParams.get("batchIndex");
+
+  const batchSize = batchSizeParam ? parseInt(batchSizeParam, 10) : undefined;
+  const batchIndex = batchIndexParam ? parseInt(batchIndexParam, 10) : 0;
+
   try {
-    const summary = await runNewsIngestionPipeline(3);
+    const summary = await runNewsIngestionPipeline({
+      concurrencyLimit: 4,
+      batchSize,
+      batchIndex,
+      maxDurationMs: 45000,
+    });
 
     if (summary.totalArticlesInserted > 0) {
       try {
@@ -45,6 +57,7 @@ async function handleNewsSync(request: NextRequest) {
     return NextResponse.json({
       success: true,
       executedAt: new Date().toISOString(),
+      batchExecution: summary.batchExecution,
       summary,
     });
   } catch (err: any) {

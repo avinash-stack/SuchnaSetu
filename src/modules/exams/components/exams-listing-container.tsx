@@ -7,6 +7,7 @@ import { ExamListTable } from "./exam-list-table";
 import { ExamCard } from "./exam-card";
 import { Button } from "@/components/ui/button";
 import { List, LayoutGrid } from "lucide-react";
+import { AdSlot } from "@/modules/advertising";
 
 export interface ExamsListingContainerProps {
   exams: GovExamDetailed[];
@@ -116,11 +117,27 @@ export function ExamsListingContainer({ exams, total, currentLimit = 20 }: Exams
 
       {/* Render Selected View */}
       {viewMode === "list" ? (
-        <ExamListTable exams={exams} />
+        <>
+          <ExamListTable exams={exams} />
+          {exams.length >= 4 && (
+            <AdSlot
+              placement="exams_listing_infeed"
+              containerClassName="mt-4"
+            />
+          )}
+        </>
       ) : (
         <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3">
-          {exams.map((exam) => (
-            <ExamCard key={exam.id} exam={exam} />
+          {exams.map((exam, idx) => (
+            <React.Fragment key={exam.id}>
+              <ExamCard exam={exam} />
+              {idx === 3 && (
+                <AdSlot
+                  placement="exams_listing_infeed"
+                  containerClassName="col-span-full"
+                />
+              )}
+            </React.Fragment>
           ))}
         </div>
       )}

@@ -118,16 +118,56 @@ export async function syncSingleNewsSource(source: NewsSource): Promise<Ingestio
   };
 }
 
+export interface NewsIngestionOptions {
+  concurrencyLimit?: number;
+  batchSize?: number;
+  batchIndex?: number;
+  maxDurationMs?: number;
+}
+
 export async function runNewsIngestionPipeline(
-  concurrencyLimit = 3
+  optionsOrConcurrency: number | NewsIngestionOptions = 3
 ): Promise<IngestionBatchSummary> {
   const startedAt = new Date().toISOString();
-  const sources = await getEnabledNewsSources();
+  const startTime = Date.now();
+
+  const options: NewsIngestionOptions =
+    typeof optionsOrConcurrency === "number"
+      ? { concurrencyLimit: optionsOrConcurrency }
+      : optionsOrConcurrency;
+
+  const concurrencyLimit = options.concurrencyLimit || 3;
+  const maxDurationMs = options.maxDurationMs || 45000;
+  const batchSize = options.batchSize;
+  const batchIndex = options.batchIndex || 0;
+
+  const allSources = await getEnabledNewsSources();
+  let sourcesToProcess: NewsSource[] = allSources;
+  let batchesTotal = 1;
+  let isComplete = true;
+  let nextBatchIndex: number | null = null;
+
+  if (batchSize && batchSize > 0) {
+    batchesTotal = Math.ceil(allSources.length / batchSize);
+    const startIdx = batchIndex * batchSize;
+    sourcesToProcess = allSources.slice(startIdx, startIdx + batchSize);
+    isComplete = batchIndex + 1 >= batchesTotal;
+    nextBatchIndex = isComplete ? null : batchIndex + 1;
+  }
+
   const results: IngestionResult[] = [];
 
-  // Bounded concurrency pool
-  for (let i = 0; i < sources.length; i += concurrencyLimit) {
-    const chunk = sources.slice(i, i + concurrencyLimit);
+  // Bounded concurrency pool with serverless duration safeguard
+  for (let i = 0; i < sourcesToProcess.length; i += concurrencyLimit) {
+    if (Date.now() - startTime > maxDurationMs) {
+      console.warn(
+        `[News Ingestion] Serverless time budget safeguard reached (${Date.now() - startTime}ms elapsed). ` +
+        `Gracefully completing batch.`
+      );
+      break;
+    }
+
+    const chunk = sourcesToProcess.slice(i, i + concurrencyLimit);
     const chunkResults = await Promise.all(
       chunk.map((source) =>
         syncSingleNewsSource(source).catch((err) => ({
@@ -156,12 +196,19 @@ export async function runNewsIngestionPipeline(
   return {
     startedAt,
     completedAt,
-    totalSources: sources.length,
+    totalSources: allSources.length,
     successfulSources,
     failedSources,
     totalArticlesFetched,
     totalArticlesInserted,
     totalDuplicatesSkipped,
     results,
+    batchExecution: {
+      batchIndex,
+      batchSize: batchSize || allSources.length,
+      batchesTotal,
+      isComplete,
+      nextBatchIndex,
+    },
   };
 }

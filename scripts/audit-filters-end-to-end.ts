@@ -449,7 +449,7 @@ async function auditFilters() {
         .is("deleted_at", null)
         .eq("qualification_id", qualRecord.id);
 
-      const allMatch = jobRes.jobs.every((j) => j.qualification_id === qualRecord.id || j.qualification?.slug === qualSlug);
+      const allMatch = jobRes.jobs.every((j) => (j as any).qualification_id === qualRecord.id || j.qualification?.slug === qualSlug || j.qualification?.id === qualRecord.id);
       if (jobRes.total === (dbCount || 0) && allMatch) {
         results.push({
           portal: "Jobs",

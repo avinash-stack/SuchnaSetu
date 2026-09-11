@@ -9,6 +9,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { constructMetadata, buildBreadcrumbJsonLd } from "@/lib/seo";
 import { Briefcase, ChevronLeft, ChevronRight, X } from "lucide-react";
+import { AdSlot } from "@/modules/advertising";
 
 export const revalidate = 120; // 2 minutes ISR cache for instant mobile listing rendering
 
@@ -135,6 +136,11 @@ export default async function PublicJobsPage({ searchParams }: JobsPageProps) {
               qualifications={taxonomies.qualifications}
               states={taxonomies.states}
             />
+
+            {/* Desktop-Only 160x300 Sidebar Banner */}
+            <div className="hidden lg:flex justify-center mt-6">
+              <AdSlot placement="sidebar_banner_160x300" />
+            </div>
           </aside>
 
           {/* Job Notice Grid / List */}
@@ -172,6 +178,9 @@ export default async function PublicJobsPage({ searchParams }: JobsPageProps) {
                     </div>
                   </div>
                 )}
+
+                {/* Optional Intentional Partner Resource CTA */}
+                <AdSlot placement="smartlink_cta" />
               </>
             ) : (
               <div className="space-y-4">

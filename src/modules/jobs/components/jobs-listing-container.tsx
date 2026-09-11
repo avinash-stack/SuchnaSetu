@@ -8,6 +8,8 @@ import { JobCard } from "./job-card";
 import { Button } from "@/components/ui/button";
 import { List, LayoutGrid } from "lucide-react";
 
+import { AdSlot } from "@/modules/advertising";
+
 export interface JobsListingContainerProps {
   jobs: GovJobDetailed[];
   total: number;
@@ -116,11 +118,27 @@ export function JobsListingContainer({ jobs, total, currentLimit = 20 }: JobsLis
 
       {/* Render Selected View */}
       {viewMode === "list" ? (
-        <JobListTable jobs={jobs} />
+        <>
+          <JobListTable jobs={jobs} />
+          {jobs.length >= 5 && (
+            <AdSlot
+              placement="jobs_listing_infeed"
+              containerClassName="mt-4"
+            />
+          )}
+        </>
       ) : (
         <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3">
-          {jobs.map((job) => (
-            <JobCard key={job.id} job={job} />
+          {jobs.map((job, idx) => (
+            <React.Fragment key={job.id}>
+              <JobCard job={job} />
+              {idx === 4 && (
+                <AdSlot
+                  placement="jobs_listing_infeed"
+                  containerClassName="col-span-full"
+                />
+              )}
+            </React.Fragment>
           ))}
         </div>
       )}

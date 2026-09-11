@@ -29,6 +29,7 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useLanguage } from "@/lib/i18n/context";
+import { AdSlot } from "@/modules/advertising";
 
 interface NewsArticleViewProps {
   article: NewsArticleDetailed;
@@ -290,6 +291,12 @@ export function NewsArticleView({
         </div>
       </section>
 
+      {/* ADSTERRA / AD SLOT: NEWS ARTICLE MIDDLE BANNER */}
+      <AdSlot
+        placement="news_article_middle"
+        containerClassName="my-6"
+      />
+
       {/* 6. Actionable Takeaways & Next Steps for Citizens / Aspirants */}
       {report.actionableTakeaways.length > 0 && (
         <section className="rounded-2xl border border-amber-200 bg-amber-50/60 p-5 sm:p-6 space-y-3">
@@ -432,6 +439,12 @@ export function NewsArticleView({
           ))}
         </div>
       )}
+
+      {/* ADSTERRA / AD SLOT: NEWS ARTICLE BOTTOM NATIVE RECOMMENDATIONS */}
+      <AdSlot
+        placement="news_article_bottom"
+        containerClassName="my-6"
+      />
 
       {/* 10. Related News Section */}
       {article.related_articles && article.related_articles.length > 0 && (
