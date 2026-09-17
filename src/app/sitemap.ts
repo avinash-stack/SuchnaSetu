@@ -123,6 +123,9 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
         .select("slug, updated_at, published_at")
         .eq("status", "published")
         .is("deleted_at", null)
+        .not("slug", "ilike", "mock-%")
+        .not("slug", "ilike", "test-%")
+        .not("title", "ilike", "%Benchmark Feed%")
         .order("published_at", { ascending: false })
         .range(from, to);
 
@@ -147,7 +150,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       }
     }
 
-    // 5. All Published Exams & Syllabi (Paginated)
+    // 5. All Published Exams & Syllabi (Paginated, excluding mock/test entries)
     let examsPage = 0;
     let hasMoreExams = true;
 
@@ -159,6 +162,9 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
         .select("id, slug, updated_at, published_at")
         .eq("status", "published")
         .is("deleted_at", null)
+        .not("slug", "ilike", "mock-%")
+        .not("slug", "ilike", "test-%")
+        .not("title", "ilike", "%Benchmark Feed%")
         .order("published_at", { ascending: false })
         .range(from, to);
 
@@ -205,11 +211,13 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       });
     });
 
-    // 7. All Published News Articles
+    // 7. All Published News Articles (excluding mock/test)
     const { data: newsArticles } = await (supabase as any)
       .from("news_articles")
       .select("slug, updated_at, published_at")
       .eq("is_published", true)
+      .not("slug", "ilike", "mock-%")
+      .not("slug", "ilike", "test-%")
       .order("published_at", { ascending: false })
       .limit(1000);
 
@@ -224,11 +232,13 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       });
     }
 
-    // 8. Legacy Bulletins (Backwards compatibility)
+    // 8. Legacy Bulletins (Backwards compatibility, excluding mock/test)
     const { data: bulletins } = await supabase
       .from("public_bulletins")
       .select("slug, published_at, created_at")
       .eq("status", "published")
+      .not("slug", "ilike", "mock-%")
+      .not("slug", "ilike", "test-%")
       .order("published_at", { ascending: false })
       .limit(500);
 

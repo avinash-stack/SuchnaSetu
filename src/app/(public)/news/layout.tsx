@@ -2,10 +2,7 @@ import { Metadata } from "next";
 import { NewsPwaRegister } from "@/components/shared/news-pwa-register";
 
 export const metadata: Metadata = {
-  title: {
-    template: "%s | SuchnaSetu News",
-    default: "SuchnaSetu News – Official Government, Education & Public Recruitment Updates",
-  },
+  title: "SuchnaSetu News – Official Government, Education & Public Recruitment Updates",
   description:
     "Real-time, verified public sector news, exam announcements, education alerts, and state government bulletins from across India.",
   manifest: "/news/manifest.webmanifest",

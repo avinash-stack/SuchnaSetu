@@ -30,7 +30,7 @@ export async function generateMetadata({ params, searchParams }: NewsArticlePage
 
   if (resolved.type === "cross_module_redirect" || resolved.type === "not_found" || !resolved.article) {
     return constructMetadata({
-      title: "Notice Not Found | SuchnaSetu",
+      title: "Notice Not Found",
       description: "The requested news story could not be found or has moved.",
       noIndex: true, // Prevent Google from indexing 404 pages
       manifest: "/news/manifest.webmanifest",

@@ -36,7 +36,17 @@ export async function updateSession(request: NextRequest) {
     }
   }
 
-  // 2. Initialize Supabase SSR Client
+  const isAuthRoute = request.nextUrl.pathname.startsWith("/admin/login");
+  const isAdminRoute = request.nextUrl.pathname.startsWith("/admin") || request.nextUrl.pathname.startsWith("/api/admin");
+
+  // For public routes (non-admin), bypass Supabase auth and session cookie management entirely.
+  // This preserves Vercel Edge caching, saves serverless execution time, and eliminates Supabase auth round-trips.
+  if (!isAdminRoute && !isAuthRoute) {
+    attachSecurityHeaders(supabaseResponse);
+    return supabaseResponse;
+  }
+
+  // 2. Initialize Supabase SSR Client ONLY for Admin Routes
   const supabase = createServerClient<Database>(
     process.env.NEXT_PUBLIC_SUPABASE_URL || "https://placeholder-project.supabase.co",
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || "placeholder-anon-token",
@@ -58,13 +68,10 @@ export async function updateSession(request: NextRequest) {
     }
   );
 
-  // 3. User Session Verification
+  // 3. User Session Verification for Admin Routes
   const {
     data: { user },
   } = await supabase.auth.getUser();
-
-  const isAuthRoute = request.nextUrl.pathname.startsWith("/admin/login");
-  const isAdminRoute = request.nextUrl.pathname.startsWith("/admin");
 
   // Protect /admin routes (except /admin/login)
   if (isAdminRoute && !isAuthRoute) {

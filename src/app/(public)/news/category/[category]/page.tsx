@@ -31,7 +31,7 @@ export async function generateMetadata({ params, searchParams }: CategoryPagePro
 
   if (!category) {
     return constructMetadata({
-      title: "Category Not Found | SuchnaSetu News",
+      title: "Category Not Found",
       description: "The requested news category could not be found.",
       manifest: "/news/manifest.webmanifest",
     });

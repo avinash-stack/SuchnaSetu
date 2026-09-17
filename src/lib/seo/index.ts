@@ -38,6 +38,45 @@ export function normalizeAdsenseId(rawId?: string | null): {
 }
 
 /**
+ * Deduplicates and formats a page title, ensuring no double or triple brand suffixes.
+ * Handles cases where a title already contains "| SuchnaSetu", "— SuchnaSetu News", etc.
+ */
+export function formatPageTitle(rawTitle?: string): string {
+  if (!rawTitle || !rawTitle.trim()) {
+    return `${SITE_CONFIG.name} - ${SITE_CONFIG.tagline}`;
+  }
+
+  const trimmed = rawTitle.trim();
+
+  // If the title starts with the brand name, keep it as is without appending
+  if (/^(SuchnaSetu|सूचना\s*सेतु)/i.test(trimmed)) {
+    return trimmed;
+  }
+
+  // Regex to match trailing brand suffixes (including chained/repeated ones)
+  const brandSuffixRegex = /(\s*(?:\||—|–|-)\s*(?:SuchnaSetu(?:\s+News)?|सूचना\s*सेतु(?:\s*समाचार)?))+\s*$/i;
+
+  if (brandSuffixRegex.test(trimmed)) {
+    const isNews = /SuchnaSetu\s+News|सूचना\s*सेतु\s*समाचार/i.test(trimmed);
+    const isHindi = /सूचना\s*सेतु/i.test(trimmed);
+    
+    // Clean all trailing brand suffixes first
+    const baseTitle = trimmed.replace(brandSuffixRegex, "").trim();
+    if (!baseTitle) {
+      return trimmed;
+    }
+
+    if (isNews) {
+      return `${baseTitle} | ${isHindi ? "सूचना सेतु समाचार" : "SuchnaSetu News"}`;
+    }
+    return `${baseTitle} | ${SITE_CONFIG.name}`;
+  }
+
+  // No brand suffix present at all -> append default brand name
+  return `${trimmed} | ${SITE_CONFIG.name}`;
+}
+
+/**
  * Generates standardized Next.js Metadata with OpenGraph, Twitter cards, and verification meta tags.
  * Guarantees absolute canonical HTTPS URL resolution using the production domain.
  * Strictly avoids emitting phantom/untranslated hreflang language variants to prevent Google Search Console duplicate indexing issues.
@@ -54,7 +93,7 @@ export function constructMetadata({
   manifest: manifestOverride,
 }: MetadataProps = {}): Metadata {
   const baseUrl = getCanonicalSiteUrl();
-  const pageTitle = title ? `${title} | ${SITE_CONFIG.name}` : `${SITE_CONFIG.name} - ${SITE_CONFIG.tagline}`;
+  const pageTitle = formatPageTitle(title);
   
   // Use canonicalPath if explicitly supplied, otherwise clean the path
   const targetPath = canonicalPath !== undefined ? canonicalPath : path;
