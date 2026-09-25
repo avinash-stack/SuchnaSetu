@@ -19,7 +19,7 @@ export async function syncSingleNewsSource(source: NewsSource): Promise<Ingestio
     const adapter = new RssAtomAdapter(source);
     const rawItems = await adapter.fetch();
     fetchedCount = rawItems.length;
-    const itemsToProcess = rawItems.slice(0, 15);
+    const itemsToProcess = rawItems.slice(0, 25);
 
     for (const raw of itemsToProcess) {
       try {

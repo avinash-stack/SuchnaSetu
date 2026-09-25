@@ -14,6 +14,8 @@ interface RelatedNewsStripProps {
 
 export function RelatedNewsStrip({ articles }: RelatedNewsStripProps) {
   const { language } = useLanguage();
+  const isHindi = language === "hi";
+  const langParam = isHindi ? "?lang=hi" : "";
 
   if (!articles || articles.length === 0) return null;
 
@@ -21,7 +23,9 @@ export function RelatedNewsStrip({ articles }: RelatedNewsStripProps) {
     <div className="rounded-2xl border border-slate-200 bg-white p-5 sm:p-6 space-y-4 shadow-2xs">
       <div className="flex items-center gap-2 border-b border-slate-100 pb-2">
         <Newspaper className="h-4 w-4 text-[#013089]" />
-        <h3 className="font-bold text-base text-slate-900 font-heading">Related News &amp; Coverage</h3>
+        <h3 className="font-bold text-base text-slate-900 font-heading">
+          {isHindi ? "संबंधित समाचार एवं कवरेज" : "Related News & Coverage"}
+        </h3>
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -37,7 +41,7 @@ export function RelatedNewsStrip({ articles }: RelatedNewsStripProps) {
                   {item.category_slug}
                 </span>
                 <Link
-                  href={`/news/${item.slug}`}
+                  href={`/news/${item.slug}${langParam}`}
                   className="font-bold text-xs sm:text-[13px] text-slate-900 hover:text-[#013089] transition-colors leading-snug line-clamp-2 block"
                 >
                   {item.title}

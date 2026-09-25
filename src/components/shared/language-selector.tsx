@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useRef, useEffect } from "react";
+import { useRouter, usePathname, useSearchParams } from "next/navigation";
 import { useLanguage } from "@/lib/i18n/context";
 import { SUPPORTED_LANGUAGES, LanguageCode } from "@/lib/i18n/config";
 import { Globe, ChevronDown, Check } from "lucide-react";
@@ -14,6 +15,9 @@ export function LanguageSelector({ variant = "capsule", className = "" }: Langua
   const { language, setLanguage } = useLanguage();
   const [isOpen, setIsOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
+  const router = useRouter();
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
 
   const currentLang = SUPPORTED_LANGUAGES[language] || SUPPORTED_LANGUAGES.en;
   const langList = Object.values(SUPPORTED_LANGUAGES);
@@ -36,6 +40,20 @@ export function LanguageSelector({ variant = "capsule", className = "" }: Langua
   const handleSelect = (code: LanguageCode) => {
     setLanguage(code, true);
     setIsOpen(false);
+
+    try {
+      const current = new URLSearchParams(searchParams?.toString() || "");
+      if (code === "hi") {
+        current.set("lang", "hi");
+      } else {
+        current.delete("lang");
+      }
+      const query = current.toString();
+      const newUrl = query ? `${pathname}?${query}` : pathname;
+      router.push(newUrl);
+    } catch {
+      // Fallback
+    }
   };
 
   // Base button styles per variant

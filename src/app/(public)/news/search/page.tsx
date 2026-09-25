@@ -10,6 +10,7 @@ import { NewsPagination } from "@/modules/news/components/news-pagination";
 import { NewsSearchBar } from "@/modules/news/components/news-search-bar";
 import { EmptyState } from "@/components/shared/empty-state";
 import { constructMetadata } from "@/lib/seo";
+import { getRequestedLanguage } from "@/lib/i18n/server";
 import { Search } from "lucide-react";
 
 interface NewsSearchPageProps {
@@ -25,7 +26,8 @@ interface NewsSearchPageProps {
 export async function generateMetadata({ searchParams }: NewsSearchPageProps): Promise<Metadata> {
   const params = await searchParams;
   const query = params.q || "";
-  const isHindi = params.lang === "hi";
+  const lang = await getRequestedLanguage(params);
+  const isHindi = lang === "hi";
   const title = query
     ? `"${query}" — ${isHindi ? "समाचार खोज" : "News Search"} | SuchnaSetu News`
     : `${isHindi ? "समाचार खोज" : "Search News & Public Affairs"} | SuchnaSetu News`;
@@ -33,7 +35,7 @@ export async function generateMetadata({ searchParams }: NewsSearchPageProps): P
   return constructMetadata({
     title,
     description: "Search verified Indian government news, public announcements, policy decisions, and state reports.",
-    path: "/news/search",
+    path: `/news/search${isHindi ? "?lang=hi" : ""}`,
     canonicalPath: "/news/search",
     manifest: "/news/manifest.webmanifest",
   });
@@ -46,7 +48,7 @@ export default async function NewsSearchPage({ searchParams }: NewsSearchPagePro
   const currentPage = Math.max(1, parseInt(params.page || "1", 10) || 1);
   const rawLimit = parseInt(params.limit || "20", 10);
   const limit = [20, 50, 100].includes(rawLimit) ? rawLimit : 20;
-  const lang = params.lang === "hi" ? "hi" : "en";
+  const lang = await getRequestedLanguage(params);
   const isHindi = lang === "hi";
 
   const [categories, searchResult] = await Promise.all([

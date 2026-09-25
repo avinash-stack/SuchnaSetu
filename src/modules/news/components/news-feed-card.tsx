@@ -17,6 +17,8 @@ interface NewsFeedCardProps {
 export function NewsFeedCard({ article: rawArticle, variant = "standard" }: NewsFeedCardProps) {
   const { language } = useLanguage();
   const article = resolveLocalizedNewsArticle(rawArticle, language);
+  const isHindi = language === "hi";
+  const langParam = isHindi ? "?lang=hi" : "";
 
   const isBreaking = article.importance === "breaking";
 
@@ -31,7 +33,7 @@ export function NewsFeedCard({ article: rawArticle, variant = "standard" }: News
           <span className="text-slate-500 font-mono">{formatDate(article.published_at)}</span>
         </div>
         <Link
-          href={`/news/${article.slug}`}
+          href={`/news/${article.slug}${langParam}`}
           className="font-bold text-sm text-slate-900 hover:text-[#013089] transition-colors leading-snug line-clamp-2 block"
         >
           {article.title}
@@ -53,11 +55,11 @@ export function NewsFeedCard({ article: rawArticle, variant = "standard" }: News
             {isBreaking && (
               <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-extrabold bg-red-600 text-white animate-pulse">
                 <Sparkles className="h-2.5 w-2.5" />
-                BREAKING
+                {isHindi ? "ताज़ा" : "BREAKING"}
               </span>
             )}
             <Link
-              href={`/news/category/${article.category_slug}`}
+              href={`/news/category/${article.category_slug}${langParam}`}
               className="font-bold text-[11px] uppercase tracking-wider text-[#013089] bg-blue-50 hover:bg-blue-100 px-2 py-0.5 rounded transition-colors"
             >
               {article.category_slug}
@@ -77,7 +79,7 @@ export function NewsFeedCard({ article: rawArticle, variant = "standard" }: News
         </div>
 
         {/* Title */}
-        <Link href={`/news/${article.slug}`} className="block">
+        <Link href={`/news/${article.slug}${langParam}`} className="block">
           <h3 className="font-bold text-base sm:text-lg text-slate-900 group-hover:text-[#013089] transition-colors leading-snug line-clamp-2 font-heading">
             {article.title}
           </h3>
@@ -94,10 +96,10 @@ export function NewsFeedCard({ article: rawArticle, variant = "standard" }: News
         <NewsSourceBadge name={article.source_name} sourceUrl={article.source_url} />
 
         <Link
-          href={`/news/${article.slug}`}
+          href={`/news/${article.slug}${langParam}`}
           className="text-[11.5px] font-bold text-[#013089] hover:underline shrink-0"
         >
-          Read Story →
+          {isHindi ? "पूरी खबर पढ़ें →" : "Read Story →"}
         </Link>
       </div>
     </article>

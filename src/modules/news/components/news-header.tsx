@@ -81,7 +81,7 @@ export function NewsHeader() {
         {/* Right Search, Language Selector & Mobile Toggle */}
         <div className="flex items-center gap-2.5">
           <Link
-            href="/news/search"
+            href={`/news/search${isHindi ? "?lang=hi" : ""}`}
             className="hidden sm:inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-600 text-xs font-semibold transition-colors border border-slate-200"
           >
             <Search className="h-3.5 w-3.5 text-slate-400" />
@@ -108,7 +108,7 @@ export function NewsHeader() {
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="flex items-center gap-1 overflow-x-auto py-2 no-scrollbar text-xs font-bold text-slate-700">
             <Link
-              href="/news"
+              href={`/news${isHindi ? "?lang=hi" : ""}`}
               className={`px-3 py-1 rounded-full whitespace-nowrap transition-colors ${
                 pathname === "/news"
                   ? "bg-[#013089] text-white"
@@ -119,8 +119,8 @@ export function NewsHeader() {
             </Link>
 
             {NEWS_CATEGORIES.map((cat) => {
-              const href = `/news/category/${cat.slug}`;
-              const isActive = pathname === href || pathname.startsWith(`${href}/`);
+              const href = `/news/category/${cat.slug}${isHindi ? "?lang=hi" : ""}`;
+              const isActive = pathname === `/news/category/${cat.slug}` || pathname.startsWith(`/news/category/${cat.slug}/`);
               return (
                 <Link
                   key={cat.slug}
@@ -142,7 +142,7 @@ export function NewsHeader() {
       {/* 4. Mobile Drawer */}
       {mobileMenuOpen && (
         <div className="sm:hidden border-t border-slate-200 bg-white p-4 space-y-3 shadow-lg">
-          <Link href="/news/search" className="block w-full">
+          <Link href={`/news/search${isHindi ? "?lang=hi" : ""}`} className="block w-full">
             <Button variant="outline" className="w-full justify-start text-xs font-semibold gap-2 h-10">
               <Search className="h-4 w-4 text-slate-400" />
               <span>{isHindi ? "समाचार खोजें..." : "Search news..."}</span>
@@ -157,7 +157,7 @@ export function NewsHeader() {
               {NEWS_CATEGORIES.map((cat) => (
                 <Link
                   key={cat.slug}
-                  href={`/news/category/${cat.slug}`}
+                  href={`/news/category/${cat.slug}${isHindi ? "?lang=hi" : ""}`}
                   onClick={() => setMobileMenuOpen(false)}
                   className="px-2.5 py-1.5 text-xs font-semibold text-slate-700 hover:bg-slate-100 rounded-md transition-colors block"
                 >

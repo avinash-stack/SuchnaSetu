@@ -363,7 +363,7 @@ export function NewsArticleView({
                 {relatedJobs.map((job) => (
                   <Link
                     key={job.id}
-                    href={`/jobs/${job.slug}`}
+                    href={`/jobs/${job.slug}${isHindi ? "?lang=hi" : ""}`}
                     className="p-3.5 rounded-xl border border-slate-200 bg-white hover:border-[#013089] hover:shadow-xs transition-all group flex flex-col justify-between"
                   >
                     <div className="space-y-1">
@@ -377,7 +377,7 @@ export function NewsArticleView({
                     <div className="pt-2 mt-2 border-t border-slate-100 flex items-center justify-between text-[11px] text-slate-500">
                       <span>{job.total_vacancies ? `${formatNumber(job.total_vacancies)} Posts` : "Govt Post"}</span>
                       <span className="font-bold text-[#013089] group-hover:translate-x-0.5 transition-transform flex items-center gap-0.5">
-                        Details <ArrowRight className="h-3 w-3" />
+                        {isHindi ? "विवरण" : "Details"} <ArrowRight className="h-3 w-3" />
                       </span>
                     </div>
                   </Link>
@@ -397,7 +397,7 @@ export function NewsArticleView({
                 {relatedExams.map((exam) => (
                   <Link
                     key={exam.id}
-                    href={`/exams/${exam.slug}`}
+                    href={`/exams/${exam.slug}${isHindi ? "?lang=hi" : ""}`}
                     className="p-3.5 rounded-xl border border-slate-200 bg-white hover:border-[#013089] hover:shadow-xs transition-all group flex flex-col justify-between"
                   >
                     <div className="space-y-1">
@@ -411,7 +411,7 @@ export function NewsArticleView({
                     <div className="pt-2 mt-2 border-t border-slate-100 flex items-center justify-between text-[11px] text-slate-500">
                       <span className="capitalize">{exam.mode ? exam.mode.replace("_", " ") : "Written / CBT"}</span>
                       <span className="font-bold text-[#013089] group-hover:translate-x-0.5 transition-transform flex items-center gap-0.5">
-                        Syllabus <ArrowRight className="h-3 w-3" />
+                        {isHindi ? "सिलेबस" : "Syllabus"} <ArrowRight className="h-3 w-3" />
                       </span>
                     </div>
                   </Link>

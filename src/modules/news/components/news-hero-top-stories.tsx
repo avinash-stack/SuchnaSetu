@@ -15,6 +15,8 @@ interface NewsHeroTopStoriesProps {
 
 export function NewsHeroTopStories({ articles }: NewsHeroTopStoriesProps) {
   const { language } = useLanguage();
+  const isHindi = language === "hi";
+  const langParam = isHindi ? "?lang=hi" : "";
 
   if (!articles || articles.length === 0) return null;
 
@@ -30,11 +32,11 @@ export function NewsHeroTopStories({ articles }: NewsHeroTopStoriesProps) {
           <div className="flex items-center gap-2">
             <Flame className="h-4 w-4 text-[#FE8D01]" />
             <h2 className="text-sm font-bold uppercase tracking-wider text-slate-900 font-heading">
-              Top Stories &amp; Major Developments
+              {isHindi ? "प्रमुख समाचार एवं महत्वपूर्ण घटनाक्रम" : "Top Stories & Major Developments"}
             </h2>
           </div>
           <span className="text-xs text-slate-400 font-medium hidden sm:inline">
-            Updated continuously from verified government &amp; national sources
+            {isHindi ? "सत्यापित सरकारी एवं राष्ट्रीय स्रोतों द्वारा निरंतर अद्यतन" : "Updated continuously from verified government & national sources"}
           </span>
         </div>
 
@@ -54,7 +56,7 @@ export function NewsHeroTopStories({ articles }: NewsHeroTopStoriesProps) {
                   </div>
                 </div>
 
-                <Link href={`/news/${leadStory.slug}`} className="block">
+                <Link href={`/news/${leadStory.slug}${langParam}`} className="block">
                   <h3 className="font-extrabold text-lg sm:text-2xl text-slate-900 group-hover:text-[#013089] transition-colors leading-tight font-heading">
                     {leadStory.title}
                   </h3>
@@ -68,10 +70,10 @@ export function NewsHeroTopStories({ articles }: NewsHeroTopStoriesProps) {
               <div className="pt-4 mt-4 border-t border-slate-100 flex items-center justify-between gap-2 text-xs">
                 <NewsSourceBadge name={leadStory.source_name} sourceUrl={leadStory.source_url} />
                 <Link
-                  href={`/news/${leadStory.slug}`}
+                  href={`/news/${leadStory.slug}${langParam}`}
                   className="font-bold text-[#013089] hover:underline inline-flex items-center gap-0.5"
                 >
-                  <span>Read Full Story</span>
+                  <span>{isHindi ? "पूरी खबर पढ़ें" : "Read Full Story"}</span>
                   <ChevronRight className="h-3 w-3" />
                 </Link>
               </div>
@@ -95,7 +97,7 @@ export function NewsHeroTopStories({ articles }: NewsHeroTopStoriesProps) {
                     </span>
                   </div>
 
-                  <Link href={`/news/${story.slug}`} className="block">
+                  <Link href={`/news/${story.slug}${langParam}`} className="block">
                     <h4 className="font-bold text-sm sm:text-base text-slate-900 group-hover:text-[#013089] transition-colors leading-snug line-clamp-2">
                       {story.title}
                     </h4>
@@ -110,8 +112,8 @@ export function NewsHeroTopStories({ articles }: NewsHeroTopStoriesProps) {
                   <span className="text-[11px] font-semibold text-slate-500 truncate max-w-[120px]">
                     {story.source_name}
                   </span>
-                  <Link href={`/news/${story.slug}`} className="font-bold text-[#013089] text-[11px] hover:underline">
-                    Details →
+                  <Link href={`/news/${story.slug}${langParam}`} className="font-bold text-[#013089] text-[11px] hover:underline">
+                    {isHindi ? "विवरण →" : "Details →"}
                   </Link>
                 </div>
               </div>
@@ -123,7 +125,7 @@ export function NewsHeroTopStories({ articles }: NewsHeroTopStoriesProps) {
             <div className="flex items-center justify-between border-b border-slate-100 pb-2">
               <div className="flex items-center gap-1.5 font-bold text-xs uppercase tracking-wider text-slate-800 font-heading">
                 <Sparkles className="h-3.5 w-3.5 text-[#013089]" />
-                <span>Latest Headlines</span>
+                <span>{isHindi ? "ताज़ा सुर्खियाँ" : "Latest Headlines"}</span>
               </div>
               <span className="flex h-2 w-2 rounded-full bg-emerald-500" />
             </div>
@@ -132,7 +134,7 @@ export function NewsHeroTopStories({ articles }: NewsHeroTopStoriesProps) {
               {sideHeadlines.map((headline) => (
                 <div key={headline.id} className="pt-2 first:pt-0 pb-1">
                   <Link
-                    href={`/news/${headline.slug}`}
+                    href={`/news/${headline.slug}${langParam}`}
                     className="font-bold text-xs sm:text-[13px] text-slate-800 hover:text-[#013089] transition-colors line-clamp-2 leading-snug block"
                   >
                     {headline.title}

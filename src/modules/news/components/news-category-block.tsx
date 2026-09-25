@@ -33,7 +33,7 @@ export function NewsCategoryBlock({ category, articles }: NewsCategoryBlockProps
           {isHindi ? category.name_hi : category.name}
         </h3>
         <Link
-          href={`/news/category/${category.slug}`}
+          href={`/news/category/${category.slug}${isHindi ? "?lang=hi" : ""}`}
           className="text-xs font-bold text-[#013089] hover:underline flex items-center gap-0.5"
         >
           <span>{isHindi ? "सभी देखें" : "View All"}</span>
@@ -53,7 +53,7 @@ export function NewsCategoryBlock({ category, articles }: NewsCategoryBlockProps
                 <span className="text-slate-400 font-mono">{formatDate(lead.published_at)}</span>
               </div>
 
-              <Link href={`/news/${lead.slug}`} className="block">
+              <Link href={`/news/${lead.slug}${isHindi ? "?lang=hi" : ""}`} className="block">
                 <h4 className="font-bold text-base text-slate-900 group-hover:text-[#013089] transition-colors leading-snug line-clamp-2">
                   {lead.title}
                 </h4>
@@ -66,8 +66,8 @@ export function NewsCategoryBlock({ category, articles }: NewsCategoryBlockProps
 
             <div className="pt-2 mt-2 border-t border-slate-100 flex items-center justify-between text-xs">
               <NewsSourceBadge name={lead.source_name} sourceUrl={lead.source_url} />
-              <Link href={`/news/${lead.slug}`} className="font-bold text-[#013089] text-[11.5px] hover:underline">
-                Read →
+              <Link href={`/news/${lead.slug}${isHindi ? "?lang=hi" : ""}`} className="font-bold text-[#013089] text-[11.5px] hover:underline">
+                {isHindi ? "पढ़ें →" : "Read →"}
               </Link>
             </div>
           </div>
@@ -78,7 +78,7 @@ export function NewsCategoryBlock({ category, articles }: NewsCategoryBlockProps
           {rest.map((item) => (
             <div key={item.id} className="py-2 first:pt-0 last:pb-0">
               <Link
-                href={`/news/${item.slug}`}
+                href={`/news/${item.slug}${isHindi ? "?lang=hi" : ""}`}
                 className="font-bold text-xs sm:text-[13px] text-slate-900 hover:text-[#013089] transition-colors line-clamp-2 leading-snug block"
               >
                 {item.title}

@@ -36,11 +36,19 @@ const ALLOWED_CATEGORIES = [
 
 import { ArticleContentExtractor } from "./article-content-extractor";
 import { NewsContentSynthesizer } from "./content-synthesizer";
+import { CategoryClassifier } from "./category-classifier";
 
 export async function enrichNewsArticleWithAi(
   payload: NormalizedNewsPayload
 ): Promise<EnrichedNewsMetadata> {
-  const fallbackCategory = (payload.categorySlug || "india").toLowerCase();
+  const fallbackCategory = CategoryClassifier.classify({
+    title: payload.title,
+    summary: payload.summary,
+    content: payload.content,
+    sourceDefaultCategory: payload.categorySlug,
+    sourceUrl: payload.sourceUrl,
+    tags: payload.tags,
+  });
 
   // Ensure source content sent to AI is strictly cleaned of any web chrome
   const cleanedSourceContent = ArticleContentExtractor.cleanArticleText(payload.content);
@@ -58,7 +66,7 @@ export async function enrichNewsArticleWithAi(
   const defaultMetadata: EnrichedNewsMetadata = {
     summary: cleanSummary,
     content: cleanedSourceContent || fallbackSynthesis.paragraphs.join("\n\n"),
-    categorySlug: ALLOWED_CATEGORIES.includes(fallbackCategory) ? fallbackCategory : "india",
+    categorySlug: fallbackCategory,
     subcategory: null,
     stateCode: payload.stateCode || null,
     tags: payload.tags && payload.tags.length > 0 ? payload.tags.slice(0, 5) : ["India News"],
@@ -168,9 +176,17 @@ Respond with a single raw JSON object matching:
     const validatedContent =
       ArticleContentExtractor.cleanArticleText(parsed.content) || defaultMetadata.content;
 
-    const categorySlug = ALLOWED_CATEGORIES.includes(parsed.category_slug?.toLowerCase())
-      ? parsed.category_slug.toLowerCase()
-      : defaultMetadata.categorySlug;
+    const aiCategory = parsed.category_slug?.toLowerCase();
+    let categorySlug = defaultMetadata.categorySlug;
+    if (ALLOWED_CATEGORIES.includes(aiCategory)) {
+      if (aiCategory !== "india") {
+        categorySlug = aiCategory;
+      } else if (defaultMetadata.categorySlug !== "india") {
+        categorySlug = defaultMetadata.categorySlug;
+      } else {
+        categorySlug = "india";
+      }
+    }
 
     return {
       summary: validatedSummary,

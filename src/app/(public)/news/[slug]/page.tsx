@@ -10,6 +10,8 @@ import { NewsHeader } from "@/modules/news/components/news-header";
 import { NewsArticleView } from "@/modules/news/components/news-article-view";
 import { constructMetadata, buildNewsArticleJsonLd, buildBreadcrumbJsonLd } from "@/lib/seo";
 
+import { getRequestedLanguage } from "@/lib/i18n/server";
+
 interface NewsArticlePageProps {
   params: Promise<{
     slug: string;
@@ -24,7 +26,7 @@ export const revalidate = 180; // 3 minutes ISR
 export async function generateMetadata({ params, searchParams }: NewsArticlePageProps): Promise<Metadata> {
   const { slug } = await params;
   const sParams = searchParams ? await searchParams : {};
-  const requestedLang = sParams.lang === "hi" ? "hi" : "en";
+  const requestedLang = await getRequestedLanguage(sParams);
 
   const resolved = await resolveArticleBySlug(slug);
 
@@ -58,7 +60,7 @@ export async function generateMetadata({ params, searchParams }: NewsArticlePage
 export default async function NewsArticleDetailPage({ params, searchParams }: NewsArticlePageProps) {
   const { slug } = await params;
   const sParams = searchParams ? await searchParams : {};
-  const requestedLang = sParams.lang === "hi" ? "hi" : "en";
+  const requestedLang = await getRequestedLanguage(sParams);
 
   const resolved = await resolveArticleBySlug(slug);
 

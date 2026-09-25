@@ -2,6 +2,7 @@ import { NewsSource, RawNewsFeedItem } from "../types/source";
 import { NewsSourceAdapter, NormalizedNewsPayload } from "./base-adapter";
 import { sanitizeHtml, truncateSummary, extractImageUrl } from "../utils/content-sanitizer";
 import { ArticleContentExtractor } from "../services/article-content-extractor";
+import { CategoryClassifier } from "../services/category-classifier";
 
 export class RssAtomAdapter implements NewsSourceAdapter {
   constructor(public source: NewsSource) {}
@@ -134,6 +135,15 @@ export class RssAtomAdapter implements NewsSourceAdapter {
       }
     }
 
+    const categorySlug = CategoryClassifier.classify({
+      title: cleanTitle,
+      summary: cleanSummary,
+      content: fullContent,
+      sourceDefaultCategory: this.source.default_category,
+      sourceUrl: rawItem.link,
+      tags: rawItem.categories,
+    });
+
     return {
       title: cleanTitle,
       summary: cleanSummary,
@@ -143,7 +153,7 @@ export class RssAtomAdapter implements NewsSourceAdapter {
       author: author || this.source.name,
       imageUrl,
       publishedAt,
-      categorySlug: this.source.default_category || "india",
+      categorySlug,
       stateCode: this.source.state_code || null,
       tags: rawItem.categories || [],
       rawItem,

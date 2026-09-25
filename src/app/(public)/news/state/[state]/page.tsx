@@ -6,6 +6,7 @@ import { NewsPagination } from "@/modules/news/components/news-pagination";
 import { EmptyState } from "@/components/shared/empty-state";
 import { constructMetadata, buildBreadcrumbJsonLd } from "@/lib/seo";
 import { getLocalizedStateName } from "@/lib/i18n/config";
+import { getRequestedLanguage } from "@/lib/i18n/server";
 import { MapPin } from "lucide-react";
 
 interface StateNewsPageProps {
@@ -24,7 +25,8 @@ export const revalidate = 180;
 export async function generateMetadata({ params, searchParams }: StateNewsPageProps): Promise<Metadata> {
   const { state: rawState } = await params;
   const sParams = await searchParams;
-  const isHindi = sParams.lang === "hi";
+  const lang = await getRequestedLanguage(sParams);
+  const isHindi = lang === "hi";
   const stateCode = rawState.toUpperCase();
   const stateName = getLocalizedStateName(stateCode, "en") || stateCode;
   const stateNameHi = getLocalizedStateName(stateCode, "hi") || stateName;
@@ -36,7 +38,7 @@ export async function generateMetadata({ params, searchParams }: StateNewsPagePr
     description: isHindi
       ? `${stateNameHi} से संबंधित नवीनतम सत्यापित समाचार, राज्य मंत्रिमंडल के निर्णय एवं स्थानीय सूचनाएं।`
       : `Latest verified news, state government announcements, cabinet decisions, and local updates from ${stateName}.`,
-    path: `/news/state/${rawState.toLowerCase()}`,
+    path: `/news/state/${rawState.toLowerCase()}${isHindi ? "?lang=hi" : ""}`,
     canonicalPath: `/news/state/${rawState.toLowerCase()}`,
     manifest: "/news/manifest.webmanifest",
   });
@@ -52,7 +54,7 @@ export default async function StateNewsPage({ params, searchParams }: StateNewsP
   const currentPage = Math.max(1, parseInt(sParams.page || "1", 10) || 1);
   const rawLimit = parseInt(sParams.limit || "20", 10);
   const limit = [20, 50, 100].includes(rawLimit) ? rawLimit : 20;
-  const lang = sParams.lang === "hi" ? "hi" : "en";
+  const lang = await getRequestedLanguage(sParams);
   const isHindi = lang === "hi";
 
   const { articles, total, totalPages } = await fetchNewsFeed({

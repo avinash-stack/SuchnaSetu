@@ -5,6 +5,16 @@ import { DEFAULT_NEWS_SOURCES } from "../constants/sources";
 export async function getEnabledNewsSources(): Promise<NewsSource[]> {
   try {
     const supabase = createAdminClient();
+
+    // Ensure all defined default news sources exist in the database
+    try {
+      await (supabase as any)
+        .from("news_sources")
+        .upsert(DEFAULT_NEWS_SOURCES, { onConflict: "code", ignoreDuplicates: true });
+    } catch {
+      // Continue if batch upsert fails
+    }
+
     const { data, error } = await (supabase as any)
       .from("news_sources")
       .select("*")

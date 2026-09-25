@@ -14,6 +14,8 @@ import { EmptyState } from "@/components/shared/empty-state";
 
 export const revalidate = 120; // 2 minutes ISR cache
 
+import { getRequestedLanguage } from "@/lib/i18n/server";
+
 interface NewsPortalPageProps {
   searchParams?: Promise<{
     page?: string;
@@ -27,7 +29,8 @@ interface NewsPortalPageProps {
 
 export async function generateMetadata({ searchParams }: NewsPortalPageProps): Promise<Metadata> {
   const sParams = searchParams ? await searchParams : {};
-  const isHindi = sParams.lang === "hi";
+  const lang = await getRequestedLanguage(sParams);
+  const isHindi = lang === "hi";
 
   return constructMetadata({
     title: isHindi
@@ -36,7 +39,7 @@ export async function generateMetadata({ searchParams }: NewsPortalPageProps): P
     description: isHindi
       ? "राष्ट्रीय घटनाक्रम, शिक्षा सुधार, कैबिनेट निर्णय, सरकारी नीतियां एवं राज्य सूचनाओं का सत्यापित और निष्पक्ष समाचार पोर्टल।"
       : "Direct verified reporting on national developments, education reforms, cabinet decisions, government policies, state circulars, and civic advisories.",
-    path: "/news",
+    path: `/news${isHindi ? "?lang=hi" : ""}`,
     canonicalPath: "/news",
     manifest: "/news/manifest.webmanifest",
   });
@@ -47,7 +50,7 @@ export default async function NewsPortalPage({ searchParams }: NewsPortalPagePro
   const currentPage = Math.max(1, parseInt(sParams.page || "1", 10) || 1);
   const rawLimit = parseInt(sParams.limit || "20", 10);
   const limit = [20, 50, 100].includes(rawLimit) ? rawLimit : 20;
-  const lang = sParams.lang === "hi" ? "hi" : "en";
+  const lang = await getRequestedLanguage(sParams);
   const isHindi = lang === "hi";
 
   const [topStories, newsResult, categories] = await Promise.all([

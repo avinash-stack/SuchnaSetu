@@ -9,6 +9,7 @@ import { NewsListViewItem } from "@/modules/news/components/news-list-view-item"
 import { NewsPagination } from "@/modules/news/components/news-pagination";
 import { EmptyState } from "@/components/shared/empty-state";
 import { constructMetadata, buildBreadcrumbJsonLd } from "@/lib/seo";
+import { getRequestedLanguage } from "@/lib/i18n/server";
 
 interface CategoryPageProps {
   params: Promise<{
@@ -26,7 +27,8 @@ export const revalidate = 180;
 export async function generateMetadata({ params, searchParams }: CategoryPageProps): Promise<Metadata> {
   const { category: rawCategory } = await params;
   const sParams = await searchParams;
-  const isHindi = sParams.lang === "hi";
+  const lang = await getRequestedLanguage(sParams);
+  const isHindi = lang === "hi";
   const category = await fetchCategoryBySlug(rawCategory);
 
   if (!category) {
@@ -44,7 +46,7 @@ export async function generateMetadata({ params, searchParams }: CategoryPagePro
     description: isHindi
       ? `${category.name_hi || category.name} से संबंधित नवीनतम सत्यापित समाचार एवं नीतियां।`
       : `Latest verified news, policy decisions, and national developments in ${category.name}.`,
-    path: `/news/category/${category.slug}`,
+    path: `/news/category/${category.slug}${isHindi ? "?lang=hi" : ""}`,
     canonicalPath: `/news/category/${category.slug}`,
     manifest: "/news/manifest.webmanifest",
   });
@@ -62,7 +64,7 @@ export default async function NewsCategoryPage({ params, searchParams }: Categor
   const currentPage = Math.max(1, parseInt(sParams.page || "1", 10) || 1);
   const rawLimit = parseInt(sParams.limit || "20", 10);
   const limit = [20, 50, 100].includes(rawLimit) ? rawLimit : 20;
-  const lang = sParams.lang === "hi" ? "hi" : "en";
+  const lang = await getRequestedLanguage(sParams);
   const isHindi = lang === "hi";
 
   const { articles, total, totalPages } = await fetchNewsFeed({
