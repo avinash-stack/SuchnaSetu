@@ -1,70 +1,30 @@
 import { NextRequest, NextResponse } from "next/server";
-import { runNewsIngestionPipeline } from "@/modules/news/services/ingestion-service";
-import { revalidatePath } from "next/cache";
 
-export const maxDuration = 60; // 60 seconds max runtime
 export const dynamic = "force-dynamic";
 
+/**
+ * Automated News Sync Endpoint Notice:
+ * News synchronization execution is permanently offloaded directly to GitHub Actions runners
+ * (scripts/run-scheduled-sync.ts news) to eliminate Vercel serverless compute and active CPU usage.
+ */
 export async function GET(request: NextRequest) {
-  return handleNewsSync(request);
+  return handleOffloadedNewsCron(request);
 }
 
 export async function POST(request: NextRequest) {
-  return handleNewsSync(request);
+  return handleOffloadedNewsCron(request);
 }
 
-async function handleNewsSync(request: NextRequest) {
-  const authHeader = request.headers.get("authorization");
-  const cronSecret = process.env.CRON_SECRET;
-
-  if (cronSecret) {
-    const bearerToken = authHeader?.startsWith("Bearer ") ? authHeader.substring(7) : null;
-    const apiKey = request.nextUrl.searchParams.get("key");
-    const isAuthorized = bearerToken === cronSecret || apiKey === cronSecret;
-
-    if (!isAuthorized) {
-      return NextResponse.json(
-        { error: "Unauthorized: Invalid or missing CRON_SECRET authorization token." },
-        { status: 401 }
-      );
-    }
-  }
-
-  const searchParams = request.nextUrl.searchParams;
-  const batchSizeParam = searchParams.get("batchSize");
-  const batchIndexParam = searchParams.get("batchIndex");
-
-  const batchSize = batchSizeParam ? parseInt(batchSizeParam, 10) : undefined;
-  const batchIndex = batchIndexParam ? parseInt(batchIndexParam, 10) : 0;
-
-  try {
-    const summary = await runNewsIngestionPipeline({
-      concurrencyLimit: 4,
-      batchSize,
-      batchIndex,
-      maxDurationMs: 45000,
-    });
-
-    if (summary.totalArticlesInserted > 0) {
-      try {
-        revalidatePath("/news");
-        revalidatePath("/");
-      } catch (revalErr) {
-        console.warn("News revalidation warning:", revalErr);
-      }
-    }
-
-    return NextResponse.json({
+async function handleOffloadedNewsCron(_request: NextRequest) {
+  return NextResponse.json(
+    {
       success: true,
-      executedAt: new Date().toISOString(),
-      batchExecution: summary.batchExecution,
-      summary,
-    });
-  } catch (err: any) {
-    console.error("[CRON SYNC-NEWS ERROR]:", err);
-    return NextResponse.json(
-      { success: false, error: err.message || "News sync failed" },
-      { status: 500 }
-    );
-  }
+      message:
+        "News synchronization has been migrated off Vercel serverless compute to GitHub Actions runner to preserve serverless compute quotas. Please execute via GitHub Actions (workflow_dispatch or scheduled workflow: .github/workflows/news-sync.yml).",
+      executionMode: "github_actions_runner",
+      runnerScript: "scripts/run-scheduled-sync.ts news",
+      timestamp: new Date().toISOString(),
+    },
+    { status: 200 }
+  );
 }

@@ -18,7 +18,8 @@ export { translateTextWithGoogle, clearTranslationCache, getTranslationCacheStat
  */
 export async function translateJobNotice(
   job: GovJobDetailed,
-  targetLang: "hi" | "en" = "hi"
+  targetLang: "hi" | "en" = "hi",
+  options?: { allowOnDemandNetwork?: boolean }
 ): Promise<{
   job: GovJobDetailed;
   translation: GovJobTranslation | null;
@@ -74,6 +75,15 @@ export async function translateJobNotice(
     }
   } catch (err: any) {
     console.warn(`[Job Translation DB Cache Check Warning]: ${err.message}`);
+  }
+
+  // Safeguard: Do not perform on-demand network calls during SSR page rendering to conserve Vercel compute
+  if (!options?.allowOnDemandNetwork) {
+    return {
+      job: resolveLocalizedJob(job, "en"),
+      translation: null,
+      isTranslated: false,
+    };
   }
 
   // 3. Translate all non-empty fields using Google Translate Engine
@@ -162,7 +172,8 @@ export async function translateJobNotice(
  */
 export async function translateNewsArticle(
   article: NewsArticle,
-  targetLang: "hi" | "en" = "hi"
+  targetLang: "hi" | "en" = "hi",
+  options?: { allowOnDemandNetwork?: boolean }
 ): Promise<{
   article: NewsArticle;
   translation: NewsTranslation | null;
@@ -222,7 +233,16 @@ export async function translateNewsArticle(
     console.warn(`[News Translation DB Cache Check Warning]: ${err.message}`);
   }
 
-  // 3. Translate full content via Google Translate Engine
+  // Safeguard: Do not perform on-demand network calls during SSR page rendering to conserve Vercel compute
+  if (!options?.allowOnDemandNetwork) {
+    return {
+      article,
+      translation: null,
+      isTranslated: false,
+    };
+  }
+
+  // 3. Translate full content via Google Translate Engine (only during background sync/batch)
   try {
     const [translatedTitle, translatedSummary, translatedContent] = await Promise.all([
       translateTextWithGoogle(article.title, targetLang),
@@ -281,11 +301,12 @@ export async function translateNewsArticle(
 
 /**
  * Backward-compatible helper for News Portal:
- * Resolves or fetches on-demand translation for a detailed news article.
+ * Resolves pre-cached translation from Supabase.
  */
 export async function getOrTranslateNewsArticle<T extends NewsArticle>(
   article: T,
-  targetLang: "en" | "hi" = "en"
+  targetLang: "en" | "hi" = "en",
+  options?: { allowOnDemandNetwork?: boolean }
 ): Promise<{
   article: T;
   isTranslated: boolean;
@@ -301,7 +322,7 @@ export async function getOrTranslateNewsArticle<T extends NewsArticle>(
     };
   }
 
-  const { article: translatedArticle, isTranslated } = await translateNewsArticle(article, "hi");
+  const { article: translatedArticle, isTranslated } = await translateNewsArticle(article, "hi", options);
   return {
     article: translatedArticle as T,
     isTranslated,

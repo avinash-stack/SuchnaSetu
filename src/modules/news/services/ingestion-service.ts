@@ -66,6 +66,23 @@ export async function syncSingleNewsSource(source: NewsSource): Promise<Ingestio
             duplicateCount++;
           } else {
             insertedCount++;
+            // Pre-translate to Hindi in background runner so public Vercel page requests are 100% prepared
+            try {
+              const { translateNewsArticle } = await import("@/modules/translation/service");
+              await translateNewsArticle(
+                {
+                  id: insertRes.id,
+                  slug,
+                  title: normalized.title,
+                  summary: enriched.summary || normalized.summary,
+                  content: enriched.content || normalized.content || null,
+                } as any,
+                "hi",
+                { allowOnDemandNetwork: true }
+              );
+            } catch (transErr: any) {
+              console.warn(`[Background News Translation Notice]: ${transErr?.message}`);
+            }
           }
         } else {
           failedCount++;

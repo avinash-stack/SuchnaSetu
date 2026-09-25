@@ -58,27 +58,13 @@ function getNextSyncTime() {
 
 async function triggerSync() {
   console.log(`\n⏰ [${new Date().toISOString()}] Triggering scheduled automatic synchronization...`);
-  const endpoint = `${SITE_URL}/api/cron/sync-all-sources`;
-
   try {
-    const headers = {
-      "Content-Type": "application/json",
-      "User-Agent": "SuchnaSetu-Scheduler-Daemon/1.0",
-    };
-    if (CRON_SECRET) {
-      headers["Authorization"] = `Bearer ${CRON_SECRET}`;
-    }
-
-    const res = await fetch(endpoint, {
-      method: "POST",
-      headers,
-    });
-
-    const data = await res.json();
-    console.log("✅ Sync execution response (HTTP " + res.status + "):", JSON.stringify(data.summary || data, null, 2));
-    console.log("Next Scheduled Sync:", data.nextScheduledSync?.formattedIST || "Calculated");
+    const { execSync } = await import("child_process");
+    console.log("Executing: npx tsx scripts/run-scheduled-sync.ts full");
+    execSync("npx tsx scripts/run-scheduled-sync.ts full", { stdio: "inherit" });
+    console.log("✅ Standalone sync execution completed.");
   } catch (err) {
-    console.error("❌ Failed to call sync endpoint:", err.message);
+    console.error("❌ Failed to execute standalone sync:", err.message);
   }
 }
 
