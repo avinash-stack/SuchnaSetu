@@ -92,6 +92,12 @@ export function PublicFooter() {
                 </Link>
               </li>
               <li>
+                <Link href="/resources" className="hover:text-white transition-colors flex items-center justify-between">
+                  <span>{t("nav.resources")}</span>
+                  <span className="rounded bg-indigo-700 px-1.5 py-0.2 text-[10px] text-white font-bold">Guide</span>
+                </Link>
+              </li>
+              <li>
                 <Link href="/answer-keys" className="hover:text-white transition-colors flex items-center justify-between">
                   <span>{t("nav.answer_keys")}</span>
                 </Link>

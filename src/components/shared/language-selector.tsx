@@ -11,7 +11,7 @@ interface LanguageSelectorProps {
   className?: string;
 }
 
-export function LanguageSelector({ variant = "capsule", className = "" }: LanguageSelectorProps) {
+function LanguageSelectorComponent({ variant = "capsule", className = "" }: LanguageSelectorProps) {
   const { language, setLanguage } = useLanguage();
   const [isOpen, setIsOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
@@ -115,5 +115,13 @@ export function LanguageSelector({ variant = "capsule", className = "" }: Langua
         </div>
       )}
     </div>
+  );
+}
+
+export function LanguageSelector(props: LanguageSelectorProps) {
+  return (
+    <React.Suspense fallback={<div className="h-8 w-20 rounded-full bg-slate-100/60 animate-pulse" />}>
+      <LanguageSelectorComponent {...props} />
+    </React.Suspense>
   );
 }

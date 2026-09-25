@@ -155,13 +155,63 @@ async function runFullSync() {
   return syncSummary;
 }
 
+async function runResourcesSync() {
+  console.log("=================================================================");
+  console.log("🚀 Starting AI Career Guidance Resources Generation & Sync");
+  console.log(`⏰ Time: ${new Date().toISOString()}`);
+  console.log("=================================================================\n");
+
+  const supabase = createAdminClient();
+  const existingSlugs = new Set<string>();
+
+  try {
+    const { data } = await (supabase.from("career_resources") as any)
+      .select("slug");
+    if (data) {
+      data.forEach((r: any) => existingSlugs.add(r.slug));
+    }
+  } catch (err: any) {
+    console.warn("Could not query existing slugs:", err?.message);
+  }
+
+  const { discoverNextTrendingTopic } = await import("../src/modules/resources/services/topic-discovery");
+  const { generateCareerResource } = await import("../src/modules/resources/services/ai-generator");
+  const { saveGeneratedResource } = await import("../src/modules/resources/service");
+
+  const topic = await discoverNextTrendingTopic(existingSlugs);
+  console.log(`Selected Candidate Topic: "${topic.suggestedTitle}" (${topic.organization})`);
+
+  const genResult = await generateCareerResource(topic);
+
+  if (!genResult.success || !genResult.resource) {
+    console.error("❌ Failed to generate resource:", genResult.error);
+    return;
+  }
+
+  console.log(`✅ Generated guide successfully in ${genResult.durationMs}ms:`);
+  console.log(`- Title:   ${genResult.resource.title}`);
+  console.log(`- Slug:    ${genResult.resource.slug}`);
+  console.log(`- FAQs:    ${(genResult.resource.faqs || []).length}`);
+  console.log(`- Words:   ~${(genResult.resource.content || "").split(/\s+/).length}`);
+
+  const saveResult = await saveGeneratedResource(genResult.resource);
+  if (saveResult.success) {
+    console.log(`✅ Published to Supabase with ID: ${saveResult.id}`);
+    await triggerVercelRevalidate(["/resources", `/resources/${genResult.resource.slug}`, "/sitemap.xml"]);
+  } else {
+    console.warn(`⚠️ Supabase save result (migration may need to be applied in Supabase dashboard):`, saveResult.error);
+  }
+}
+
 async function main() {
   if (targetType === "news") {
     await runNewsSync();
+  } else if (targetType === "resources") {
+    await runResourcesSync();
   } else if (targetType === "full" || targetType === "all") {
     await runFullSync();
   } else {
-    console.error(`❌ Unknown sync target: "${targetType}". Must be "news" or "full".`);
+    console.error(`❌ Unknown sync target: "${targetType}". Must be "news", "resources", or "full".`);
     process.exit(1);
   }
 }

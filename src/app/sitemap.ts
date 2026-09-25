@@ -72,6 +72,12 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       priority: 0.85,
     },
     {
+      url: `${baseUrl}/resources`,
+      lastModified: currentDate,
+      changeFrequency: "daily",
+      priority: 0.9,
+    },
+    {
       url: `${baseUrl}/directory`,
       lastModified: currentDate,
       changeFrequency: "daily",
@@ -251,6 +257,38 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
           priority: 0.75,
         });
       });
+    }
+    // 9. Career Guidance Resources & Aspirant Guides
+    try {
+      const { data: careerRes } = await (supabase as any)
+        .from("career_resources")
+        .select("slug, updated_at, published_at")
+        .eq("status", "published")
+        .order("published_at", { ascending: false })
+        .limit(200);
+
+      if (careerRes && careerRes.length > 0) {
+        careerRes.forEach((cr: any) => {
+          routes.push({
+            url: `${baseUrl}/resources/${cr.slug}`,
+            lastModified: cr.updated_at || cr.published_at || currentDate,
+            changeFrequency: "weekly",
+            priority: 0.85,
+          });
+        });
+      } else {
+        const { FALLBACK_PILLAR_RESOURCES } = await import("@/modules/resources/constants");
+        FALLBACK_PILLAR_RESOURCES.forEach((cr) => {
+          routes.push({
+            url: `${baseUrl}/resources/${cr.slug}`,
+            lastModified: cr.updated_at || cr.published_at || currentDate,
+            changeFrequency: "weekly",
+            priority: 0.85,
+          });
+        });
+      }
+    } catch {
+      // Non-blocking fallback
     }
   } catch (error) {
     console.error("Sitemap dynamic generation error:", error);

@@ -35,6 +35,7 @@ const MAIN_NAV_CONFIG: NavConfigItem[] = [
   { key: "nav.exams", href: "/exams" },
   { key: "nav.admit_cards", href: "/admit-cards", badge: "Live", badgeColor: "bg-[#FE8D01] text-white" },
   { key: "nav.results", href: "/results", badge: "New", badgeColor: "bg-emerald-600 text-white" },
+  { key: "nav.resources", href: "/resources" },
   { key: "nav.news", href: "/news" },
 ];
 
