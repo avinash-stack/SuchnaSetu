@@ -29,14 +29,14 @@ const fetchExamBySlugUncached = async (slug: string): Promise<GovExamDetailed | 
     .select(
       `
       *,
-      organization:organizations(*),
-      department:departments(*),
-      category:categories(*),
-      state:states_uts(*),
-      related_job:gov_jobs(*),
+      organization:organizations(id, name, acronym, slug, logo_url, website_url, state_code),
+      department:departments(id, name, acronym, slug),
+      category:categories(id, name, slug),
+      state:states_uts(code, name),
+      related_job:gov_jobs(id, title, slug),
       stages:exam_stages(*),
       schedules:exam_schedules(*),
-      eligibility:exam_eligibility(*, min_qualification:qualifications(*)),
+      eligibility:exam_eligibility(*, min_qualification:qualifications(id, name, slug)),
       important_dates:exam_important_dates(*),
       centers:exam_centers(*),
       official_documents:exam_official_documents(*),
@@ -55,14 +55,14 @@ const fetchExamBySlugUncached = async (slug: string): Promise<GovExamDetailed | 
       .select(
         `
         *,
-        organization:organizations(*),
-        department:departments(*),
-        category:categories(*),
-        state:states_uts(*),
-        related_job:gov_jobs(*),
+        organization:organizations(id, name, acronym, slug, logo_url, website_url, state_code),
+        department:departments(id, name, acronym, slug),
+        category:categories(id, name, slug),
+        state:states_uts(code, name),
+        related_job:gov_jobs(id, title, slug),
         stages:exam_stages(*),
         schedules:exam_schedules(*),
-        eligibility:exam_eligibility(*, min_qualification:qualifications(*)),
+        eligibility:exam_eligibility(*, min_qualification:qualifications(id, name, slug)),
         important_dates:exam_important_dates(*),
         centers:exam_centers(*),
         official_documents:exam_official_documents(*),
@@ -127,7 +127,7 @@ const fetchExamBySlugUncached = async (slug: string): Promise<GovExamDetailed | 
     bulletinFilters.push(`related_job_id.eq.${detailed.related_job_id}`);
   }
 
-  const [relatedExamsRes, relatedJobsRes, relatedBulletinsRes, relatedNewsRes] = await Promise.all([
+  const [relatedExamsRes, relatedJobsRes, relatedBulletinsRes] = await Promise.all([
     examFilters.length > 0 && isUuid(detailed.id)
       ? supabase
           .from("gov_exams")
@@ -158,18 +158,12 @@ const fetchExamBySlugUncached = async (slug: string): Promise<GovExamDetailed | 
           .order("published_at", { ascending: false })
           .limit(4)
       : Promise.resolve({ data: [] }),
-    supabase
-      .from("news_articles")
-      .select("id, title, slug, summary, source_name, source_url, published_at, category_slug")
-      .eq("is_published", true)
-      .order("published_at", { ascending: false })
-      .limit(3),
   ]);
 
   detailed.related_exams = (relatedExamsRes.data || []) as any[];
   detailed.related_jobs = (relatedJobsRes.data || []) as any[];
   detailed.related_bulletins = (relatedBulletinsRes.data || []) as any[];
-  detailed.related_news = (relatedNewsRes.data || []) as any[];
+  detailed.related_news = [] as any[];
 
   return detailed;
 };
@@ -187,31 +181,6 @@ export const getPublicExamBySlug = cache(async (slug: string): Promise<GovExamDe
 });
 
 /**
- * Fetches related exams from the same organization or category.
- */
-export async function getRelatedExams(organizationId: string, currentExamId: string, limit = 4) {
-  const supabase = createPublicClient();
-
-  const { data } = await supabase
-    .from("gov_exams")
-    .select(
-      `
-      *,
-      organization:organizations(*),
-      stages:exam_stages(*)
-    `
-    )
-    .eq("organization_id", organizationId)
-    .eq("status", "published")
-    .is("deleted_at", null)
-    .neq("id", currentExamId)
-    .order("published_at", { ascending: false })
-    .limit(limit);
-
-  return (data as unknown as GovExamDetailed[]) || [];
-}
-
-/**
  * Fetches master taxonomies required for filters and examination forms.
  * Cached for high-speed navigation.
  */
@@ -220,11 +189,11 @@ export const getExamTaxonomies = unstable_cache(
     const supabase = createPublicClient();
 
     const [categoriesRes, orgsRes, deptsRes, qualsRes, statesRes, jobsRes] = await Promise.all([
-      supabase.from("categories").select("*").eq("is_active", true).order("display_order"),
-      supabase.from("organizations").select("*").eq("is_active", true).order("name"),
-      supabase.from("departments").select("*").eq("is_active", true).order("name"),
-      supabase.from("qualifications").select("*").eq("is_active", true).order("display_order"),
-      supabase.from("states_uts").select("*").eq("is_active", true).order("name"),
+      supabase.from("categories").select("id, name, slug, display_order, is_active").eq("is_active", true).order("display_order"),
+      supabase.from("organizations").select("id, name, acronym, slug, is_active").eq("is_active", true).order("name"),
+      supabase.from("departments").select("id, name, acronym, slug, is_active").eq("is_active", true).order("name"),
+      supabase.from("qualifications").select("id, name, slug, display_order, is_active").eq("is_active", true).order("display_order"),
+      supabase.from("states_uts").select("code, name, is_active").eq("is_active", true).order("name"),
       supabase.from("gov_jobs").select("id, title, slug, organization_id").is("deleted_at", null).order("title"),
     ]);
 

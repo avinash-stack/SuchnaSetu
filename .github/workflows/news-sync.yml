@@ -2,7 +2,7 @@ name: Automatic News Synchronization
 
 on:
   schedule:
-    # Trigger news ingestion every 15 minutes
+    # Trigger news ingestion every 15 minutes directly on GitHub runner
     - cron: '*/15 * * * *'
   workflow_dispatch:
     inputs:
@@ -41,4 +41,4 @@ jobs:
           GROQ_API_KEY: ${{ secrets.GROQ_API_KEY }}
           CRON_SECRET: ${{ secrets.CRON_SECRET }}
           APP_URL: https://suchnasetu.in
-        run: npx -y tsx scripts/run-scheduled-sync.ts news
+        run: node scripts/run-scheduled-sync.mjs news

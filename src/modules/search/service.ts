@@ -289,15 +289,32 @@ export async function searchJobs(params: JobFilterParams = {}): Promise<{
   let query = (supabase.from("gov_jobs") as any)
     .select(
       `
-      *,
-      organization:organizations(*),
-      department:departments(*),
-      category:categories(*),
-      qualification:qualifications(*),
-      state:states_uts(*),
-      vacancies:job_vacancies(*),
-      important_dates:job_important_dates(*),
-      translations:gov_job_translations(*)
+      id,
+      slug,
+      title,
+      summary,
+      notification_number,
+      organization_id,
+      category_id,
+      min_qualification_id,
+      state_code,
+      employment_type,
+      total_vacancies,
+      salary_min,
+      salary_max,
+      pay_scale_details,
+      application_start_date,
+      application_end_date,
+      official_notification_url,
+      is_featured,
+      published_at,
+      status,
+      created_at,
+      organization:organizations(id, name, acronym, slug),
+      category:categories(id, name, slug),
+      qualification:qualifications(id, name, slug),
+      state:states_uts(code, name),
+      translations:gov_job_translations(language_code, title, post_name, qualification_summary, age_limit_summary, pay_scale_summary, description)
     `,
       { count: "exact" }
     )
@@ -454,14 +471,27 @@ export async function searchExams(params: ExamFilterParams = {}): Promise<{
   let query = (supabase.from("gov_exams") as any)
     .select(
       `
-      *,
-      organization:organizations(*),
-      department:departments(*),
-      category:categories(*),
-      state:states_uts(*),
-      stages:exam_stages(*),
-      important_dates:exam_important_dates(*),
-      translations:gov_exam_translations(*)
+      id,
+      slug,
+      title,
+      short_title,
+      exam_code,
+      description,
+      organization_id,
+      category_id,
+      state_code,
+      mode,
+      frequency,
+      is_featured,
+      published_at,
+      status,
+      created_at,
+      organization:organizations(id, name, acronym, slug),
+      category:categories(id, name, slug),
+      state:states_uts(code, name),
+      stages:exam_stages(id, stage_name, stage_order, status),
+      important_dates:exam_important_dates(id, title, event_date, date_type, display_order),
+      translations:gov_exam_translations(language_code, title, short_title, description)
     `,
       { count: "exact" }
     )

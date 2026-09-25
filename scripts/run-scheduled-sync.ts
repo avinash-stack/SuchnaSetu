@@ -23,7 +23,7 @@ if (fs.existsSync(envLocalPath)) {
   });
 }
 
-// Support SUPABASE_URL / SUPABASE_KEY fallbacks if named differently in CI
+// Support alternative secret variable names in CI/runners
 if (process.env.SUPABASE_URL && !process.env.NEXT_PUBLIC_SUPABASE_URL) {
   process.env.NEXT_PUBLIC_SUPABASE_URL = process.env.SUPABASE_URL;
 }
@@ -36,9 +36,15 @@ const appUrl = (process.env.APP_URL || process.env.NEXT_PUBLIC_SITE_URL || proce
 const cronSecret = process.env.CRON_SECRET || "";
 
 /**
- * Triggers lightweight cache revalidation on Vercel after ingestion completes
+ * Triggers lightweight cache revalidation on Vercel after ingestion completes.
+ * Note: This only revalidates ISR page caches (<100ms); it does NOT execute any scraping or ingestion compute.
  */
 async function triggerVercelRevalidate(paths?: string[]) {
+  if (!cronSecret) {
+    console.log("ℹ️ No CRON_SECRET provided; skipping remote cache revalidation.");
+    return;
+  }
+
   if (!appUrl || appUrl.includes("localhost")) {
     console.log("ℹ️ Skipping remote revalidation in local environment.");
     return;
@@ -70,7 +76,11 @@ async function triggerVercelRevalidate(paths?: string[]) {
   }
 }
 
-async function runNewsSync() {
+/**
+ * News Ingestion execution directly on GitHub Actions runner.
+ * Bounded concurrency, safe timeouts, per-source fault tolerance.
+ */
+export async function runNewsSync() {
   console.log("=================================================================");
   console.log("🚀 Starting Standalone News Ingestion (GitHub Actions Runner)");
   console.log(`⏰ Time: ${new Date().toISOString()}`);
@@ -102,9 +112,13 @@ async function runNewsSync() {
   return summary;
 }
 
-async function runFullSync() {
+/**
+ * Jobs & Exams Ingestion execution directly on GitHub Actions runner.
+ * Sequential bounded batches (batchSize: 4, safe per-source timeouts).
+ */
+export async function runJobsExamsSync() {
   console.log("=================================================================");
-  console.log("🚀 Starting Standalone Full Sync (Jobs & Exams on GitHub Runner)");
+  console.log("🚀 Starting Standalone Jobs & Exams Ingestion (GitHub Runner)");
   console.log(`⏰ Time: ${new Date().toISOString()}`);
   console.log("=================================================================\n");
 
@@ -119,7 +133,7 @@ async function runFullSync() {
 
   if (sourcesError || !sources || sources.length === 0) {
     console.warn("⚠️ No enabled sources found to synchronize:", sourcesError?.message);
-    return;
+    return null;
   }
 
   console.log(`Found ${sources.length} enabled sources to synchronize.`);
@@ -137,25 +151,31 @@ async function runFullSync() {
   });
 
   console.log("\n=================================================================");
-  console.log("📊 Full Ingestion Execution Summary:");
+  console.log("📊 Jobs & Exams Ingestion Execution Summary:");
   console.log(`- Total Sources Evaluated: ${syncSummary.totalSources}`);
   console.log(`- Batches Total:           ${syncSummary.batchesTotal}`);
   console.log(`- Batches Completed:       ${syncSummary.batchesCompleted}`);
+  console.log(`- Successful Sources:      ${syncSummary.successfulSources}`);
+  console.log(`- Failed Sources:          ${syncSummary.failedSources}`);
+  console.log(`- Timed Out Sources:       ${syncSummary.timedOutSources}`);
   console.log(`- Total Extracted:         ${syncSummary.summary.totalExtracted}`);
   console.log(`- Total Inserted:          +${syncSummary.summary.totalInserted}`);
   console.log(`- Total Updated:           +${syncSummary.summary.totalUpdated}`);
-  console.log(`- Total Failed:            ${syncSummary.summary.totalFailed}`);
   console.log(`- Overall Duration:        ${Math.round(syncSummary.overallDurationMs / 1000)}s`);
   console.log("=================================================================\n");
 
   if (syncSummary.summary.totalInserted > 0 || syncSummary.summary.totalUpdated > 0) {
-    await triggerVercelRevalidate(["/jobs", "/exams", "/news", "/sitemap.xml", "/"]);
+    await triggerVercelRevalidate(["/jobs", "/exams", "/sitemap.xml", "/"]);
   }
 
   return syncSummary;
 }
 
-async function runResourcesSync() {
+/**
+ * AI Career Guidance Resources Generation directly on GitHub Actions runner.
+ * Employs Groq AI integration with candidate topic discovery.
+ */
+export async function runResourcesSync() {
   console.log("=================================================================");
   console.log("🚀 Starting AI Career Guidance Resources Generation & Sync");
   console.log(`⏰ Time: ${new Date().toISOString()}`);
@@ -185,7 +205,7 @@ async function runResourcesSync() {
 
   if (!genResult.success || !genResult.resource) {
     console.error("❌ Failed to generate resource:", genResult.error);
-    return;
+    return { success: false, error: genResult.error };
   }
 
   console.log(`✅ Generated guide successfully in ${genResult.durationMs}ms:`);
@@ -198,20 +218,87 @@ async function runResourcesSync() {
   if (saveResult.success) {
     console.log(`✅ Published to Supabase with ID: ${saveResult.id}`);
     await triggerVercelRevalidate(["/resources", `/resources/${genResult.resource.slug}`, "/sitemap.xml"]);
+    return { success: true, id: saveResult.id, slug: genResult.resource.slug };
   } else {
     console.warn(`⚠️ Supabase save result (migration may need to be applied in Supabase dashboard):`, saveResult.error);
+    return { success: false, error: saveResult.error };
   }
+}
+
+/**
+ * Full Scheduled Synchronization:
+ * Executes Jobs & Exams, News, and Career Resources sequentially on the runner.
+ */
+export async function runFullSync() {
+  console.log("#################################################################");
+  console.log("🌟 INITIATING COMPLETE SCHEDULED DATA SYNCHRONIZATION");
+  console.log("   Includes: 1. Jobs & Exams  |  2. News Feeds  |  3. Career Resources");
+  console.log(`   Time: ${new Date().toISOString()}`);
+  console.log("#################################################################\n");
+
+  const fullStart = Date.now();
+
+  // 1. Ingest Jobs & Exams
+  const jobsSummary = await runJobsExamsSync();
+
+  // 2. Ingest Live News
+  const newsSummary = await runNewsSync();
+
+  // 3. Generate Trending Career Guidance Resources
+  let resourcesSummary: any = null;
+  try {
+    resourcesSummary = await runResourcesSync();
+  } catch (resErr: any) {
+    console.warn("⚠️ Resources generation step encountered error:", resErr?.message);
+    resourcesSummary = { success: false, error: resErr?.message };
+  }
+
+  const overallSec = Math.round((Date.now() - fullStart) / 1000);
+
+  console.log("\n#################################################################");
+  console.log("🏁 OVERALL FULL SYNCHRONIZATION RUN COMPLETE");
+  console.log(`- Total Duration:       ${overallSec}s`);
+  console.log(`- Jobs & Exams Sources: ${jobsSummary ? `${jobsSummary.successfulSources}/${jobsSummary.totalSources} succeeded` : "N/A"}`);
+  console.log(`- News Sources:         ${newsSummary.successfulSources}/${newsSummary.totalSources} succeeded`);
+  console.log(`- Career Resources:     ${resourcesSummary?.success ? "Generated & Saved" : "Skipped/Failed"}`);
+  console.log("#################################################################\n");
+
+  return {
+    jobsSummary,
+    newsSummary,
+    resourcesSummary,
+    overallSec,
+  };
 }
 
 async function main() {
   if (targetType === "news") {
-    await runNewsSync();
+    const summary = await runNewsSync();
+    if (summary.totalSources > 0 && summary.successfulSources === 0) {
+      console.error("❌ Critical Failure: All news sources failed in this execution run.");
+      process.exit(1);
+    }
+  } else if (targetType === "jobs" || targetType === "exams") {
+    const summary = await runJobsExamsSync();
+    if (summary && summary.totalSources > 0 && summary.successfulSources === 0) {
+      console.error("❌ Critical Failure: All jobs/exams sources failed in this execution run.");
+      process.exit(1);
+    }
   } else if (targetType === "resources") {
-    await runResourcesSync();
+    const result = await runResourcesSync();
+    if (!result.success) {
+      console.warn("⚠️ Resource generation did not complete successfully.");
+    }
   } else if (targetType === "full" || targetType === "all") {
-    await runFullSync();
+    const result = await runFullSync();
+    const jobsFailed = result.jobsSummary && result.jobsSummary.totalSources > 0 && result.jobsSummary.successfulSources === 0;
+    const newsFailed = result.newsSummary.totalSources > 0 && result.newsSummary.successfulSources === 0;
+    if (jobsFailed && newsFailed) {
+      console.error("❌ Critical Failure: Both Jobs/Exams and News ingestions completely failed.");
+      process.exit(1);
+    }
   } else {
-    console.error(`❌ Unknown sync target: "${targetType}". Must be "news", "resources", or "full".`);
+    console.error(`❌ Unknown sync target: "${targetType}". Must be "news", "jobs", "exams", "resources", or "full".`);
     process.exit(1);
   }
 }

@@ -6,7 +6,7 @@ on:
     - cron: '0 20 * * *'
     # 08:00 AM IST -> 02:30 UTC
     - cron: '30 2 * * *'
-    # 04:00 PM IST -> 10:30 UTC
+    # 04:00 PM IST (16:00 IST) -> 10:30 UTC
     - cron: '30 10 * * *'
   workflow_dispatch:
     inputs:
@@ -21,9 +21,9 @@ concurrency:
 
 jobs:
   sync-data-sources:
-    name: Sync Jobs & Exams (Runner Execution)
+    name: Sync Jobs, Exams, News & Career Resources (GitHub Runner Execution)
     runs-on: ubuntu-latest
-    timeout-minutes: 30
+    timeout-minutes: 35
 
     steps:
       - name: Checkout Repository
@@ -42,15 +42,7 @@ jobs:
         env:
           NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL || secrets.SUPABASE_URL }}
           SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY || secrets.SUPABASE_KEY }}
-          CRON_SECRET: ${{ secrets.CRON_SECRET }}
-          APP_URL: https://suchnasetu.in
-        run: npx -y tsx scripts/run-scheduled-sync.ts full
-
-      - name: Generate Trending AI Career Guidance Resources
-        env:
-          NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL || secrets.SUPABASE_URL }}
-          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY || secrets.SUPABASE_KEY }}
           GROQ_API_KEY: ${{ secrets.GROQ_API_KEY }}
           CRON_SECRET: ${{ secrets.CRON_SECRET }}
           APP_URL: https://suchnasetu.in
-        run: npx -y tsx scripts/run-scheduled-sync.ts resources
+        run: node scripts/run-scheduled-sync.mjs full

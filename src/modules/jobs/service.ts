@@ -35,11 +35,11 @@ const fetchJobBySlugUncached = async (slug: string): Promise<GovJobDetailed | nu
     .select(
       `
       *,
-      organization:organizations(*),
-      department:departments(*),
-      category:categories(*),
-      qualification:qualifications(*),
-      state:states_uts(*),
+      organization:organizations(id, name, acronym, slug, logo_url, website_url, state_code),
+      department:departments(id, name, acronym, slug),
+      category:categories(id, name, slug),
+      qualification:qualifications(id, name, slug),
+      state:states_uts(code, name),
       vacancies:job_vacancies(*),
       important_dates:job_important_dates(*),
       eligibility:job_eligibility(*),
@@ -58,11 +58,11 @@ const fetchJobBySlugUncached = async (slug: string): Promise<GovJobDetailed | nu
       .select(
         `
         *,
-        organization:organizations(*),
-        department:departments(*),
-        category:categories(*),
-        qualification:qualifications(*),
-        state:states_uts(*),
+        organization:organizations(id, name, acronym, slug, logo_url, website_url, state_code),
+        department:departments(id, name, acronym, slug),
+        category:categories(id, name, slug),
+        qualification:qualifications(id, name, slug),
+        state:states_uts(code, name),
         vacancies:job_vacancies(*),
         important_dates:job_important_dates(*),
         eligibility:job_eligibility(*),
@@ -101,7 +101,7 @@ const fetchJobBySlugUncached = async (slug: string): Promise<GovJobDetailed | nu
     examFilters.push(`organization_id.eq.${rawJob.organization_id}`);
   }
 
-  const [relatedJobsRes, relatedExamsRes, relatedBulletinsRes, relatedNewsRes] = await Promise.all([
+  const [relatedJobsRes, relatedExamsRes, relatedBulletinsRes] = await Promise.all([
     jobFilters.length > 0
       ? (() => {
           let q = supabase
@@ -132,12 +132,6 @@ const fetchJobBySlugUncached = async (slug: string): Promise<GovJobDetailed | nu
           .order("published_at", { ascending: false })
           .limit(4)
       : Promise.resolve({ data: [] }),
-    supabase
-      .from("news_articles")
-      .select("id, title, slug, summary, source_name, source_url, published_at, category_slug")
-      .eq("is_published", true)
-      .order("published_at", { ascending: false })
-      .limit(3),
   ]);
 
   const detailedJob: GovJobDetailed = {
@@ -152,7 +146,7 @@ const fetchJobBySlugUncached = async (slug: string): Promise<GovJobDetailed | nu
     related_jobs: (relatedJobsRes.data || []) as any[],
     related_exams: (relatedExamsRes.data || []) as any[],
     related_bulletins: (relatedBulletinsRes.data || []) as any[],
-    related_news: (relatedNewsRes.data || []) as any[],
+    related_news: [] as any[],
   };
 
   return detailedJob;
@@ -185,11 +179,11 @@ export const getJobTaxonomies = unstable_cache(
     const supabase = createPublicClient();
 
     const [categoriesRes, organizationsRes, departmentsRes, qualificationsRes, statesRes] = await Promise.all([
-      supabase.from("categories").select("*").eq("is_active", true).order("display_order", { ascending: true }),
-      supabase.from("organizations").select("*").eq("is_active", true).order("name", { ascending: true }),
-      (supabase.from("departments") as any).select("*").eq("is_active", true).order("name", { ascending: true }),
-      (supabase.from("qualifications") as any).select("*").eq("is_active", true).order("display_order", { ascending: true }),
-      supabase.from("states_uts").select("*").eq("is_active", true).order("name", { ascending: true }),
+      supabase.from("categories").select("id, name, slug, display_order, is_active").eq("is_active", true).order("display_order", { ascending: true }),
+      supabase.from("organizations").select("id, name, acronym, slug, is_active").eq("is_active", true).order("name", { ascending: true }),
+      (supabase.from("departments") as any).select("id, name, acronym, slug, is_active").eq("is_active", true).order("name", { ascending: true }),
+      (supabase.from("qualifications") as any).select("id, name, slug, display_order, is_active").eq("is_active", true).order("display_order", { ascending: true }),
+      supabase.from("states_uts").select("code, name, is_active").eq("is_active", true).order("name", { ascending: true }),
     ]);
 
     return {

@@ -461,51 +461,54 @@ export async function checkDuplicateArticle(
 ): Promise<boolean> {
   try {
     const supabase = createAdminClient();
+    const checks: Promise<any>[] = [];
 
-    // 1. Check content_hash
+    // Check content_hash, slug, and source_url in parallel rather than sequential waterfall
     if (contentHash) {
-      const { data: byHash } = await (supabase as any)
-        .from("news_articles")
-        .select("id")
-        .eq("content_hash", contentHash)
-        .limit(1)
-        .maybeSingle();
-
-      if (byHash?.id) return true;
+      checks.push(
+        (supabase as any)
+          .from("news_articles")
+          .select("id")
+          .eq("content_hash", contentHash)
+          .limit(1)
+          .maybeSingle()
+      );
     }
 
-    // 2. Check source_url safely using exact equality
-    if (sourceUrl) {
-      const { data: byUrl } = await (supabase as any)
-        .from("news_articles")
-        .select("id")
-        .eq("source_url", sourceUrl)
-        .limit(1)
-        .maybeSingle();
-
-      if (byUrl?.id) return true;
-    }
-
-    // 3. Check slug
     if (slug) {
-      const { data: bySlug } = await (supabase as any)
-        .from("news_articles")
-        .select("id")
-        .eq("slug", slug)
-        .limit(1)
-        .maybeSingle();
-
-      if (bySlug?.id) return true;
+      checks.push(
+        (supabase as any)
+          .from("news_articles")
+          .select("id")
+          .eq("slug", slug)
+          .limit(1)
+          .maybeSingle()
+      );
     }
 
-    return false;
+    if (sourceUrl) {
+      checks.push(
+        (supabase as any)
+          .from("news_articles")
+          .select("id")
+          .eq("source_url", sourceUrl)
+          .limit(1)
+          .maybeSingle()
+      );
+    }
+
+    if (checks.length === 0) return false;
+
+    const results = await Promise.all(checks);
+    return results.some((res) => !!res?.data?.id);
   } catch {
     return false;
   }
 }
 
 export async function upsertNewsArticle(
-  article: Partial<NewsArticle>
+  article: Partial<NewsArticle>,
+  options?: { skipPreCheck?: boolean }
 ): Promise<{ id?: string; isUpdated?: boolean; error?: string }> {
   try {
     const supabase = createAdminClient();
@@ -516,34 +519,36 @@ export async function upsertNewsArticle(
     // 1. Idempotency Check: find existing article by slug, source_url, or content_hash
     let existingId: string | null = null;
 
-    if (article.slug) {
-      const { data: bySlug } = await (supabase as any)
-        .from("news_articles")
-        .select("id")
-        .eq("slug", article.slug)
-        .limit(1)
-        .maybeSingle();
-      if (bySlug?.id) existingId = bySlug.id;
-    }
+    if (!options?.skipPreCheck) {
+      if (article.slug) {
+        const { data: bySlug } = await (supabase as any)
+          .from("news_articles")
+          .select("id")
+          .eq("slug", article.slug)
+          .limit(1)
+          .maybeSingle();
+        if (bySlug?.id) existingId = bySlug.id;
+      }
 
-    if (!existingId && article.source_url) {
-      const { data: byUrl } = await (supabase as any)
-        .from("news_articles")
-        .select("id")
-        .eq("source_url", article.source_url)
-        .limit(1)
-        .maybeSingle();
-      if (byUrl?.id) existingId = byUrl.id;
-    }
+      if (!existingId && article.source_url) {
+        const { data: byUrl } = await (supabase as any)
+          .from("news_articles")
+          .select("id")
+          .eq("source_url", article.source_url)
+          .limit(1)
+          .maybeSingle();
+        if (byUrl?.id) existingId = byUrl.id;
+      }
 
-    if (!existingId && article.content_hash) {
-      const { data: byHash } = await (supabase as any)
-        .from("news_articles")
-        .select("id")
-        .eq("content_hash", article.content_hash)
-        .limit(1)
-        .maybeSingle();
-      if (byHash?.id) existingId = byHash.id;
+      if (!existingId && article.content_hash) {
+        const { data: byHash } = await (supabase as any)
+          .from("news_articles")
+          .select("id")
+          .eq("content_hash", article.content_hash)
+          .limit(1)
+          .maybeSingle();
+        if (byHash?.id) existingId = byHash.id;
+      }
     }
 
     // 2. If article already exists, perform an UPDATE instead of a duplicate INSERT

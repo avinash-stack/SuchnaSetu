@@ -1,15 +1,30 @@
 import { MetadataRoute } from "next";
-import { SYSTEM_MODULES, getCanonicalSiteUrl } from "@/lib/constants";
+import { getCanonicalSiteUrl } from "@/lib/constants";
 import { INDIAN_STATES } from "@/lib/constants/states";
-import { createAdminClient } from "@/lib/supabase/admin";
+import { createPublicClient } from "@/lib/supabase/public";
 
-export const revalidate = 1800; // 30 minutes cache
+/**
+ * Sitemap revalidation: 6 hours.
+ * Sitemap entries change at most a few times per day (new jobs/exams published,
+ * news articles ingested). A 6-hour window avoids re-querying Supabase on every
+ * crawler/bot hit while still reflecting new content within a reasonable period.
+ *
+ * During the revalidation window Next.js serves the cached XML, so no Supabase
+ * queries are executed at all.
+ */
+export const revalidate = 21600; // 6 hours
+
+/**
+ * Minimal column projection for sitemap entries.
+ * Only slug (URL identifier) and date fields are required.
+ */
+const SITEMAP_PROJECTION_SLUG_DATES = "slug, updated_at, published_at";
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const baseUrl = getCanonicalSiteUrl();
   const currentDate = new Date().toISOString();
 
-  // 1. Core Public Hubs
+  // 1. Core Public Hubs (static — no DB queries)
   const routes: MetadataRoute.Sitemap = [
     {
       url: `${baseUrl}`,
@@ -85,7 +100,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     },
   ];
 
-  // 2. All Indian States Portals
+  // 2. All Indian States Portals (static — no DB queries)
   INDIAN_STATES.forEach((state) => {
     routes.push({
       url: `${baseUrl}/state/${state.code.toLowerCase()}`,
@@ -95,28 +110,79 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     });
   });
 
+  // 3. News Categories (static — no DB queries)
+  const NEWS_CATEGORIES_SLUGS = [
+    "india", "states", "education", "governance", "business",
+    "technology", "politics", "world", "health", "sports", "entertainment"
+  ];
+  NEWS_CATEGORIES_SLUGS.forEach((catSlug) => {
+    routes.push({
+      url: `${baseUrl}/news/category/${catSlug}`,
+      lastModified: currentDate,
+      changeFrequency: "hourly",
+      priority: 0.85,
+    });
+  });
+
   try {
-    const supabase = createAdminClient();
+    const supabase = createPublicClient();
 
-    // 3. All Government Organizations / Authorities
-    const { data: orgs } = await supabase
-      .from("organizations")
-      .select("id, acronym, updated_at")
-      .limit(1000);
+    // ─── Batch all DB queries in a single Promise.all ─────────────────
+    // Each query fetches ONLY slug + date columns.
+    // Mock/test/benchmark slugs are excluded at the database level.
+    const [orgsRes, newsRes, bulletinsRes, careerRes] = await Promise.all([
+      // Organizations / Authorities
+      supabase
+        .from("organizations")
+        .select("acronym, updated_at")
+        .eq("is_active", true)
+        .limit(1000),
 
-    if (orgs) {
-      (orgs as any[]).forEach((org) => {
-        const slug = org.acronym?.toLowerCase() || org.id;
-        routes.push({
-          url: `${baseUrl}/authorities/${slug}`,
-          lastModified: org.updated_at || currentDate,
-          changeFrequency: "daily",
-          priority: 0.85,
-        });
+      // News Articles
+      (supabase as any)
+        .from("news_articles")
+        .select(SITEMAP_PROJECTION_SLUG_DATES)
+        .eq("is_published", true)
+        .not("slug", "ilike", "mock-%")
+        .not("slug", "ilike", "test-%")
+        .order("published_at", { ascending: false })
+        .limit(1000),
+
+      // Bulletins (legacy, backwards compatibility)
+      supabase
+        .from("public_bulletins")
+        .select("slug, published_at, created_at")
+        .eq("status", "published")
+        .not("slug", "ilike", "mock-%")
+        .not("slug", "ilike", "test-%")
+        .order("published_at", { ascending: false })
+        .limit(500),
+
+      // Career Guidance Resources
+      (supabase as any)
+        .from("career_resources")
+        .select(SITEMAP_PROJECTION_SLUG_DATES)
+        .eq("status", "published")
+        .order("published_at", { ascending: false })
+        .limit(200),
+    ]);
+
+    // ─── Process Organizations ────────────────────────────────────────
+    if (orgsRes.data) {
+      (orgsRes.data as any[]).forEach((org) => {
+        const slug = org.acronym?.toLowerCase();
+        if (slug) {
+          routes.push({
+            url: `${baseUrl}/authorities/${slug}`,
+            lastModified: org.updated_at || currentDate,
+            changeFrequency: "daily",
+            priority: 0.85,
+          });
+        }
       });
     }
 
-    // 4. All Published Jobs (Paginated to bypass 1000-row limit)
+    // ─── Paginated Jobs (slug + dates only) ───────────────────────────
     let jobsPage = 0;
     const pageSize = 1000;
     let hasMoreJobs = true;
@@ -126,7 +192,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       const to = from + pageSize - 1;
       const { data: jobsChunk, error: jobsError } = await supabase
         .from("gov_jobs")
-        .select("slug, updated_at, published_at")
+        .select(SITEMAP_PROJECTION_SLUG_DATES)
         .eq("status", "published")
         .is("deleted_at", null)
         .not("slug", "ilike", "mock-%")
@@ -149,14 +215,11 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
         });
       });
 
-      if (jobsChunk.length < pageSize) {
-        hasMoreJobs = false;
-      } else {
-        jobsPage++;
-      }
+      hasMoreJobs = jobsChunk.length >= pageSize;
+      jobsPage++;
     }
 
-    // 5. All Published Exams & Syllabi (Paginated, excluding mock/test entries)
+    // ─── Paginated Exams + Syllabus pages (slug + dates only) ─────────
     let examsPage = 0;
     let hasMoreExams = true;
 
@@ -165,7 +228,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       const to = from + pageSize - 1;
       const { data: examsChunk, error: examsError } = await supabase
         .from("gov_exams")
-        .select("id, slug, updated_at, published_at")
+        .select(SITEMAP_PROJECTION_SLUG_DATES)
         .eq("status", "published")
         .is("deleted_at", null)
         .not("slug", "ilike", "mock-%")
@@ -188,47 +251,23 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
         });
 
         // Dedicated Syllabus page for exam
-        routes.push({
-          url: `${baseUrl}/syllabus/${exam.slug || exam.id}`,
-          lastModified: exam.updated_at || exam.published_at || currentDate,
-          changeFrequency: "weekly",
-          priority: 0.8,
-        });
+        if (exam.slug) {
+          routes.push({
+            url: `${baseUrl}/syllabus/${exam.slug}`,
+            lastModified: exam.updated_at || exam.published_at || currentDate,
+            changeFrequency: "weekly",
+            priority: 0.8,
+          });
+        }
       });
 
-      if (examsChunk.length < pageSize) {
-        hasMoreExams = false;
-      } else {
-        examsPage++;
-      }
+      hasMoreExams = examsChunk.length >= pageSize;
+      examsPage++;
     }
 
-    // 6. News Categories and Search Hub
-    const NEWS_CATEGORIES_SLUGS = [
-      "india", "states", "education", "governance", "business",
-      "technology", "politics", "world", "health", "sports", "entertainment"
-    ];
-    NEWS_CATEGORIES_SLUGS.forEach((catSlug) => {
-      routes.push({
-        url: `${baseUrl}/news/category/${catSlug}`,
-        lastModified: currentDate,
-        changeFrequency: "hourly",
-        priority: 0.85,
-      });
-    });
-
-    // 7. All Published News Articles (excluding mock/test)
-    const { data: newsArticles } = await (supabase as any)
-      .from("news_articles")
-      .select("slug, updated_at, published_at")
-      .eq("is_published", true)
-      .not("slug", "ilike", "mock-%")
-      .not("slug", "ilike", "test-%")
-      .order("published_at", { ascending: false })
-      .limit(1000);
-
-    if (newsArticles && newsArticles.length > 0) {
-      (newsArticles as any[]).forEach((a: any) => {
+    // ─── Process News Articles ────────────────────────────────────────
+    if (newsRes.data && newsRes.data.length > 0) {
+      (newsRes.data as any[]).forEach((a: any) => {
         routes.push({
           url: `${baseUrl}/news/${a.slug}`,
           lastModified: a.updated_at || a.published_at || currentDate,
@@ -238,18 +277,9 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       });
     }
 
-    // 8. Legacy Bulletins (Backwards compatibility, excluding mock/test)
-    const { data: bulletins } = await supabase
-      .from("public_bulletins")
-      .select("slug, published_at, created_at")
-      .eq("status", "published")
-      .not("slug", "ilike", "mock-%")
-      .not("slug", "ilike", "test-%")
-      .order("published_at", { ascending: false })
-      .limit(500);
-
-    if (bulletins) {
-      (bulletins as any[]).forEach((b: any) => {
+    // ─── Process Bulletins (legacy) ───────────────────────────────────
+    if (bulletinsRes.data) {
+      (bulletinsRes.data as any[]).forEach((b: any) => {
         routes.push({
           url: `${baseUrl}/news/${b.slug}`,
           lastModified: b.published_at || b.created_at || currentDate,
@@ -258,17 +288,11 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
         });
       });
     }
-    // 9. Career Guidance Resources & Aspirant Guides
-    try {
-      const { data: careerRes } = await (supabase as any)
-        .from("career_resources")
-        .select("slug, updated_at, published_at")
-        .eq("status", "published")
-        .order("published_at", { ascending: false })
-        .limit(200);
 
-      if (careerRes && careerRes.length > 0) {
-        careerRes.forEach((cr: any) => {
+    // ─── Process Career Resources ─────────────────────────────────────
+    try {
+      if (careerRes.data && careerRes.data.length > 0) {
+        careerRes.data.forEach((cr: any) => {
           routes.push({
             url: `${baseUrl}/resources/${cr.slug}`,
             lastModified: cr.updated_at || cr.published_at || currentDate,

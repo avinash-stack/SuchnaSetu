@@ -6,6 +6,7 @@ import { enrichNewsArticleWithAi } from "./ai-enrichment-service";
 import { generateNewsSlug, computeContentHash } from "../utils/slugify";
 import { IngestionResult, IngestionBatchSummary } from "../types/ingestion";
 import { NewsSource } from "../types/source";
+import { createAdminClient } from "@/lib/supabase/admin";
 
 export async function syncSingleNewsSource(source: NewsSource): Promise<IngestionResult> {
   const startTime = Date.now();
@@ -21,15 +22,72 @@ export async function syncSingleNewsSource(source: NewsSource): Promise<Ingestio
     fetchedCount = rawItems.length;
     const itemsToProcess = rawItems.slice(0, 25);
 
+    // 1. Pre-normalize all candidate items
+    const candidates: Array<{
+      normalized: any;
+      slug: string;
+      contentHash: string;
+    }> = [];
+
     for (const raw of itemsToProcess) {
       try {
         const normalized = await adapter.normalize(raw);
         if (!normalized) continue;
-
         const slug = generateNewsSlug(normalized.title, normalized.publishedAt);
         const contentHash = computeContentHash(normalized.title, normalized.summary);
+        candidates.push({ normalized, slug, contentHash });
+      } catch {
+        // Skip unparseable raw item
+      }
+    }
 
-        const isDuplicate = await isDuplicateNewsItem(normalized, slug);
+    // 2. High-performance batch deduplication pre-check: 2 parallel queries for the entire feed
+    const candidateHashes = candidates.map((c) => c.contentHash).filter(Boolean);
+    const candidateSlugs = candidates.map((c) => c.slug).filter(Boolean);
+
+    const existingHashes = new Set<string>();
+    const existingSlugs = new Set<string>();
+    const existingUrls = new Set<string>();
+
+    if (candidateHashes.length > 0 || candidateSlugs.length > 0) {
+      try {
+        const supabase = createAdminClient();
+        const [hashRes, slugRes] = await Promise.all([
+          candidateHashes.length > 0
+            ? (supabase.from("news_articles") as any)
+                .select("content_hash, source_url, slug")
+                .in("content_hash", candidateHashes)
+            : Promise.resolve({ data: [] }),
+          candidateSlugs.length > 0
+            ? (supabase.from("news_articles") as any)
+                .select("content_hash, source_url, slug")
+                .in("slug", candidateSlugs)
+            : Promise.resolve({ data: [] }),
+        ]);
+
+        (hashRes.data || []).forEach((r: any) => {
+          if (r.content_hash) existingHashes.add(r.content_hash);
+          if (r.slug) existingSlugs.add(r.slug);
+          if (r.source_url) existingUrls.add(r.source_url);
+        });
+        (slugRes.data || []).forEach((r: any) => {
+          if (r.content_hash) existingHashes.add(r.content_hash);
+          if (r.slug) existingSlugs.add(r.slug);
+          if (r.source_url) existingUrls.add(r.source_url);
+        });
+      } catch (batchErr) {
+        console.warn("[News Batch Deduplication Notice] Falling back to individual check:", batchErr);
+      }
+    }
+
+    // 3. Process candidate items without redundant database round trips
+    for (const { normalized, slug, contentHash } of candidates) {
+      try {
+        const isDuplicate =
+          existingHashes.has(contentHash) ||
+          existingSlugs.has(slug) ||
+          existingUrls.has(normalized.sourceUrl);
+
         if (isDuplicate) {
           duplicateCount++;
           continue;
@@ -38,30 +96,36 @@ export async function syncSingleNewsSource(source: NewsSource): Promise<Ingestio
         // Quick AI enrichment with fast fallback
         const enriched = await enrichNewsArticleWithAi(normalized);
 
-        const insertRes = await insertNewsArticle({
-          slug,
-          title: normalized.title,
-          summary: enriched.summary || normalized.summary,
-          content: enriched.content || normalized.content || null,
-          source_id: source.id?.startsWith("source-seed") ? null : source.id,
-          source_name: source.name,
-          source_url: normalized.sourceUrl,
-          canonical_url: normalized.canonicalUrl || normalized.sourceUrl,
-          author: normalized.author,
-          image_url: normalized.imageUrl,
-          category_slug: enriched.categorySlug || source.default_category || "india",
-          subcategory: enriched.subcategory,
-          state_code: enriched.stateCode || source.state_code,
-          tags: enriched.tags,
-          entities: enriched.entities,
-          importance: enriched.importance,
-          ai_status: enriched.aiStatus,
-          ai_model: enriched.aiModel,
-          content_hash: contentHash,
-          published_at: normalized.publishedAt,
-        });
+        const insertRes = await insertNewsArticle(
+          {
+            slug,
+            title: normalized.title,
+            summary: enriched.summary || normalized.summary,
+            content: enriched.content || normalized.content || null,
+            source_id: source.id?.startsWith("source-seed") ? null : source.id,
+            source_name: source.name,
+            source_url: normalized.sourceUrl,
+            canonical_url: normalized.canonicalUrl || normalized.sourceUrl,
+            author: normalized.author,
+            image_url: normalized.imageUrl,
+            category_slug: enriched.categorySlug || source.default_category || "india",
+            subcategory: enriched.subcategory,
+            state_code: enriched.stateCode || source.state_code,
+            tags: enriched.tags,
+            entities: enriched.entities,
+            importance: enriched.importance,
+            ai_status: enriched.aiStatus,
+            ai_model: enriched.aiModel,
+            content_hash: contentHash,
+            published_at: normalized.publishedAt,
+          },
+          { skipPreCheck: true }
+        );
 
         if (insertRes.id) {
+          existingHashes.add(contentHash);
+          existingSlugs.add(slug);
+          existingUrls.add(normalized.sourceUrl);
           if (insertRes.isUpdated) {
             duplicateCount++;
           } else {
