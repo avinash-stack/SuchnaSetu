@@ -14,7 +14,6 @@ import {
   trackNotificationClicked,
   trackSyllabusClicked,
 } from "@/lib/analytics";
-import { AdSlot } from "@/modules/advertising";
 import {
   Building2,
   Calendar,
@@ -804,11 +803,6 @@ export function JobDetailView({ job: rawJob }: JobDetailViewProps) {
           </section>
         )}
 
-        {/* ADSTERRA / AD SLOT: JOBS DETAIL MIDDLE */}
-        <AdSlot
-          placement="jobs_detail_middle"
-          containerClassName="my-6"
-        />
 
         {/* SECTION 8: SELECTION PROCESS STAGES */}
         {selectionProcess && (
@@ -1264,11 +1258,6 @@ export function JobDetailView({ job: rawJob }: JobDetailViewProps) {
           </section>
         )}
 
-        {/* ADSTERRA / AD SLOT: JOBS DETAIL BOTTOM */}
-        <AdSlot
-          placement="jobs_detail_bottom"
-          containerClassName="my-6"
-        />
       </main>
 
       {/* FOOTER: OFFICIAL PROVENANCE & TRANSPARENCY */}

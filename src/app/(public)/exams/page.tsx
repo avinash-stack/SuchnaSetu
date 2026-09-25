@@ -9,7 +9,6 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { constructMetadata, buildBreadcrumbJsonLd } from "@/lib/seo";
 import { Calendar, ChevronLeft, ChevronRight, X } from "lucide-react";
-import { AdSlot } from "@/modules/advertising";
 
 export const revalidate = 120; // 2 minutes ISR cache for instant mobile listing rendering
 
@@ -134,10 +133,6 @@ export default async function PublicExamsPage({ searchParams }: ExamsPageProps) 
               states={taxonomies.states}
             />
 
-            {/* Desktop-Only 160x300 Sidebar Banner */}
-            <div className="hidden lg:flex justify-center mt-6">
-              <AdSlot placement="sidebar_banner_160x300" />
-            </div>
           </aside>
 
           {/* Exam Grid / List */}
@@ -176,8 +171,6 @@ export default async function PublicExamsPage({ searchParams }: ExamsPageProps) 
                   </div>
                 )}
 
-                {/* Optional Intentional Partner Resource CTA */}
-                <AdSlot placement="smartlink_cta" />
               </>
             ) : (
               <div className="space-y-4">

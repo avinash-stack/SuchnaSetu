@@ -13,7 +13,6 @@ import {
   trackNotificationClicked,
   trackSyllabusClicked,
 } from "@/lib/analytics";
-import { AdSlot } from "@/modules/advertising";
 import {
   Building2,
   Calendar,
@@ -625,11 +624,6 @@ export function ExamDetailView({ exam: rawExam }: ExamDetailViewProps) {
           </section>
         )}
 
-        {/* ADSTERRA / AD SLOT: EXAMS DETAIL MIDDLE */}
-        <AdSlot
-          placement="exams_detail_middle"
-          containerClassName="my-6"
-        />
 
         {/* SECTION 6: ELIGIBILITY & AGE LIMIT */}
         {(educationalQualification || ageLimits || eligibility?.nationality_criteria || eligibility?.physical_standards) && (
