@@ -44,25 +44,29 @@ async function triggerVercelRevalidate(paths?: string[]) {
     return;
   }
 
-  const endpoint = paths && paths.length > 0
-    ? `${appUrl}/api/revalidate?secret=${encodeURIComponent(cronSecret)}&path=${encodeURIComponent(paths[0])}`
-    : `${appUrl}/api/revalidate?secret=${encodeURIComponent(cronSecret)}`;
+  const pathsToRevalidate = paths && paths.length > 0 ? paths : [undefined];
 
-  try {
-    console.log(`📡 Triggering Vercel cache revalidation: ${endpoint.replace(cronSecret, "***")}`);
-    const res = await fetch(endpoint, {
-      method: "POST",
-      headers: {
-        "User-Agent": "SuchnaSetu-GitHubActions-SyncRunner/1.0",
-      },
-    });
-    if (res.ok) {
-      console.log("✅ Vercel cache revalidation succeeded.");
-    } else {
-      console.warn(`⚠️ Vercel revalidation returned HTTP ${res.status}`);
+  for (const p of pathsToRevalidate) {
+    const endpoint = p
+      ? `${appUrl}/api/revalidate?secret=${encodeURIComponent(cronSecret)}&path=${encodeURIComponent(p)}`
+      : `${appUrl}/api/revalidate?secret=${encodeURIComponent(cronSecret)}`;
+
+    try {
+      console.log(`📡 Triggering Vercel cache revalidation: ${endpoint.replace(cronSecret, "***")}`);
+      const res = await fetch(endpoint, {
+        method: "POST",
+        headers: {
+          "User-Agent": "SuchnaSetu-GitHubActions-SyncRunner/1.0",
+        },
+      });
+      if (res.ok) {
+        console.log(`✅ Vercel cache revalidation succeeded for ${p || "all primary hubs"}.`);
+      } else {
+        console.warn(`⚠️ Vercel revalidation returned HTTP ${res.status}`);
+      }
+    } catch (err: any) {
+      console.warn("⚠️ Failed to trigger Vercel revalidation:", err?.message || err);
     }
-  } catch (err: any) {
-    console.warn("⚠️ Failed to trigger Vercel revalidation:", err?.message || err);
   }
 }
 

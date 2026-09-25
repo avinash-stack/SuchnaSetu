@@ -44,4 +44,4 @@ jobs:
           SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY || secrets.SUPABASE_KEY }}
           CRON_SECRET: ${{ secrets.CRON_SECRET }}
           APP_URL: https://suchnasetu.in
-        run: npx tsx scripts/run-scheduled-sync.ts full
+        run: npx -y tsx scripts/run-scheduled-sync.ts full
