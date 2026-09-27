@@ -13,6 +13,7 @@ import { Newspaper, Sparkles } from "lucide-react";
 import { EmptyState } from "@/components/shared/empty-state";
 
 export const revalidate = 120; // 2 minutes ISR cache
+export const dynamic = "force-static";
 
 import { getRequestedLanguage } from "@/lib/i18n/server";
 
@@ -27,9 +28,8 @@ interface NewsPortalPageProps {
   }>;
 }
 
-export async function generateMetadata({ searchParams }: NewsPortalPageProps): Promise<Metadata> {
-  const sParams = searchParams ? await searchParams : {};
-  const lang = await getRequestedLanguage(sParams);
+export async function generateMetadata(): Promise<Metadata> {
+  const lang = await getRequestedLanguage();
   const isHindi = lang === "hi";
 
   return constructMetadata({
@@ -41,6 +41,10 @@ export async function generateMetadata({ searchParams }: NewsPortalPageProps): P
       : "Direct verified reporting on national developments, education reforms, cabinet decisions, government policies, state circulars, and civic advisories.",
     path: `/news${isHindi ? "?lang=hi" : ""}`,
     canonicalPath: "/news",
+    availableLanguages: {
+      en: "https://suchnasetu.in/news",
+      hi: "https://suchnasetu.in/news?lang=hi",
+    },
     manifest: "/news/manifest.webmanifest",
   });
 }

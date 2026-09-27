@@ -7,6 +7,7 @@ import { EmptyState } from "@/components/shared/empty-state";
 import { constructMetadata, buildBreadcrumbJsonLd } from "@/lib/seo";
 import { getLocalizedStateName } from "@/lib/i18n/config";
 import { getRequestedLanguage } from "@/lib/i18n/server";
+import { INDIAN_STATES } from "@/lib/constants/states";
 import { MapPin } from "lucide-react";
 
 interface StateNewsPageProps {
@@ -22,24 +23,26 @@ interface StateNewsPageProps {
 
 export const revalidate = 180;
 
-export async function generateMetadata({ params, searchParams }: StateNewsPageProps): Promise<Metadata> {
+export async function generateStaticParams() {
+  return INDIAN_STATES.map((s) => ({
+    state: s.code.toLowerCase(),
+  }));
+}
+
+export async function generateMetadata({ params }: { params: Promise<{ state: string }> }): Promise<Metadata> {
   const { state: rawState } = await params;
-  const sParams = await searchParams;
-  const lang = await getRequestedLanguage(sParams);
-  const isHindi = lang === "hi";
   const stateCode = rawState.toUpperCase();
   const stateName = getLocalizedStateName(stateCode, "en") || stateCode;
-  const stateNameHi = getLocalizedStateName(stateCode, "hi") || stateName;
 
   return constructMetadata({
-    title: isHindi
-      ? `${stateNameHi} समाचार एवं प्रादेशिक अपडेट — SuchnaSetu News`
-      : `${stateName} News & Regional Updates — SuchnaSetu News`,
-    description: isHindi
-      ? `${stateNameHi} से संबंधित नवीनतम सत्यापित समाचार, राज्य मंत्रिमंडल के निर्णय एवं स्थानीय सूचनाएं।`
-      : `Latest verified news, state government announcements, cabinet decisions, and local updates from ${stateName}.`,
-    path: `/news/state/${rawState.toLowerCase()}${isHindi ? "?lang=hi" : ""}`,
+    title: `${stateName} News & Regional Updates — SuchnaSetu News`,
+    description: `Latest verified news, state government announcements, cabinet decisions, and local updates from ${stateName}.`,
+    path: `/news/state/${rawState.toLowerCase()}`,
     canonicalPath: `/news/state/${rawState.toLowerCase()}`,
+    availableLanguages: {
+      en: `https://suchnasetu.in/news/state/${rawState.toLowerCase()}`,
+      hi: `https://suchnasetu.in/news/state/${rawState.toLowerCase()}?lang=hi`,
+    },
     manifest: "/news/manifest.webmanifest",
   });
 }

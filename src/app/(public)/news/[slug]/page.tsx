@@ -4,6 +4,7 @@ import Link from "next/link";
 import {
   resolveArticleBySlug,
   fetchRelatedArticles,
+  fetchNewsFeed,
 } from "@/modules/news/services/news-query-service";
 import { getOrTranslateNewsArticle } from "@/modules/news/services/translation-service";
 import { NewsHeader } from "@/modules/news/components/news-header";
@@ -22,11 +23,21 @@ interface NewsArticlePageProps {
 }
 
 export const revalidate = 180; // 3 minutes ISR
+export const dynamicParams = true;
 
-export async function generateMetadata({ params, searchParams }: NewsArticlePageProps): Promise<Metadata> {
+export async function generateStaticParams() {
+  try {
+    const { articles } = await fetchNewsFeed({ limit: 25, sort: "latest" });
+    return articles.map((article) => ({
+      slug: article.slug,
+    }));
+  } catch {
+    return [];
+  }
+}
+
+export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }): Promise<Metadata> {
   const { slug } = await params;
-  const sParams = searchParams ? await searchParams : {};
-  const requestedLang = await getRequestedLanguage(sParams);
 
   const resolved = await resolveArticleBySlug(slug);
 
@@ -40,18 +51,16 @@ export async function generateMetadata({ params, searchParams }: NewsArticlePage
   }
 
   const rawArticle = resolved.article;
-  const { article } = await getOrTranslateNewsArticle(rawArticle, requestedLang);
-  const isHindi = requestedLang === "hi";
 
   return constructMetadata({
-    title: `${article.title} | ${isHindi ? "सूचना सेतु समाचार" : "SuchnaSetu News"}`,
-    description: article.summary,
-    path: `/news/${article.slug}${isHindi ? "?lang=hi" : ""}`,
-    canonicalPath: `/news/${article.slug}`,
-    image: article.image_url || undefined,
+    title: `${rawArticle.title} | SuchnaSetu News`,
+    description: rawArticle.summary,
+    path: `/news/${rawArticle.slug}`,
+    canonicalPath: `/news/${rawArticle.slug}`,
+    image: rawArticle.image_url || undefined,
     availableLanguages: {
-      en: `https://suchnasetu.in/news/${article.slug}`,
-      hi: `https://suchnasetu.in/news/${article.slug}?lang=hi`,
+      en: `https://suchnasetu.in/news/${rawArticle.slug}`,
+      hi: `https://suchnasetu.in/news/${rawArticle.slug}?lang=hi`,
     },
     manifest: "/news/manifest.webmanifest",
   });

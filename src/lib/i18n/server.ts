@@ -1,14 +1,21 @@
-import { cookies } from "next/headers";
-import { LanguageCode, LANGUAGE_COOKIE_NAME } from "./config";
+import { LanguageCode } from "./config";
 
 /**
- * Resolves requested language for server components.
+ * Resolves requested language for public server components.
  * Priority:
  * 1. Explicit URL search parameter (?lang=hi / ?lang=en)
- * 2. User preference cookie (suchnasetu_lang=hi / suchnasetu_lang=en)
- * 3. Default fallback ("en")
+ * 2. Default fallback ("en")
+ *
+ * NOTE: We deliberately do NOT call await cookies() here.
+ * Calling cookies() in Next.js Server Components opts the route into
+ * dynamic server rendering (ƒ Dynamic) on every request, completely breaking
+ * Incremental Static Regeneration (ISR) and Edge Caching.
+ * User language preference is maintained client-side in LanguageProvider
+ * via localStorage and document.cookie.
  */
-export async function getRequestedLanguage(searchParams?: { lang?: string } | Record<string, string | string[] | undefined>): Promise<LanguageCode> {
+export async function getRequestedLanguage(
+  searchParams?: { lang?: string } | Record<string, string | string[] | undefined>
+): Promise<LanguageCode> {
   // 1. Explicit search param has highest precedence
   if (searchParams) {
     const langParam = typeof searchParams.lang === "string" ? searchParams.lang : undefined;
@@ -16,15 +23,7 @@ export async function getRequestedLanguage(searchParams?: { lang?: string } | Re
     if (langParam === "en") return "en";
   }
 
-  // 2. Cookie fallback for persistent language preference across all routes
-  try {
-    const cookieStore = await cookies();
-    const cookieLang = cookieStore.get(LANGUAGE_COOKIE_NAME)?.value;
-    if (cookieLang === "hi") return "hi";
-    if (cookieLang === "en") return "en";
-  } catch {
-    // cookies() unavailable in non-request contexts
-  }
-
+  // 2. Default fallback is English (no request-time cookies)
   return "en";
 }
+

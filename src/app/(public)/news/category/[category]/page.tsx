@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import {
   fetchNewsFeed,
   fetchCategoryBySlug,
+  fetchCategoryList,
 } from "@/modules/news/services/news-query-service";
 import { NewsHeader } from "@/modules/news/components/news-header";
 import { NewsListViewItem } from "@/modules/news/components/news-list-view-item";
@@ -24,11 +25,15 @@ interface CategoryPageProps {
 
 export const revalidate = 180;
 
-export async function generateMetadata({ params, searchParams }: CategoryPageProps): Promise<Metadata> {
+export async function generateStaticParams() {
+  const categories = await fetchCategoryList();
+  return categories.map((c) => ({
+    category: c.slug,
+  }));
+}
+
+export async function generateMetadata({ params }: { params: Promise<{ category: string }> }): Promise<Metadata> {
   const { category: rawCategory } = await params;
-  const sParams = await searchParams;
-  const lang = await getRequestedLanguage(sParams);
-  const isHindi = lang === "hi";
   const category = await fetchCategoryBySlug(rawCategory);
 
   if (!category) {
@@ -40,14 +45,14 @@ export async function generateMetadata({ params, searchParams }: CategoryPagePro
   }
 
   return constructMetadata({
-    title: isHindi
-      ? `${category.name_hi || category.name} समाचार एवं अपडेट — SuchnaSetu News`
-      : `${category.name} News & Policy Updates — SuchnaSetu News`,
-    description: isHindi
-      ? `${category.name_hi || category.name} से संबंधित नवीनतम सत्यापित समाचार एवं नीतियां।`
-      : `Latest verified news, policy decisions, and national developments in ${category.name}.`,
-    path: `/news/category/${category.slug}${isHindi ? "?lang=hi" : ""}`,
+    title: `${category.name} News & Policy Updates — SuchnaSetu News`,
+    description: `Latest verified news, policy decisions, and national developments in ${category.name}.`,
+    path: `/news/category/${category.slug}`,
     canonicalPath: `/news/category/${category.slug}`,
+    availableLanguages: {
+      en: `https://suchnasetu.in/news/category/${category.slug}`,
+      hi: `https://suchnasetu.in/news/category/${category.slug}?lang=hi`,
+    },
     manifest: "/news/manifest.webmanifest",
   });
 }
