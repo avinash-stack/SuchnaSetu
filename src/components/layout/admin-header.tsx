@@ -12,12 +12,16 @@ interface AdminHeaderProps {
   userEmail?: string;
   userRole?: string;
   onMenuToggle?: () => void;
+  supabaseUrl?: string;
+  supabaseAnonKey?: string;
 }
 
 export function AdminHeader({
   userEmail = "admin@suchnasetu.in",
   userRole = "super_admin",
   onMenuToggle,
+  supabaseUrl,
+  supabaseAnonKey,
 }: AdminHeaderProps) {
   const router = useRouter();
   const [isLoggingOut, setIsLoggingOut] = React.useState(false);
@@ -25,7 +29,7 @@ export function AdminHeader({
   const handleLogout = async () => {
     try {
       setIsLoggingOut(true);
-      const supabase = createClient();
+      const supabase = createClient(supabaseUrl, supabaseAnonKey);
       await supabase.auth.signOut();
       router.push("/admin/login");
       router.refresh();

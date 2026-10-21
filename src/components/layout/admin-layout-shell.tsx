@@ -5,11 +5,28 @@ import { usePathname } from "next/navigation";
 import { AdminSidebar } from "@/components/layout/admin-sidebar";
 import { AdminHeader } from "@/components/layout/admin-header";
 import { AdminPwaRegister } from "@/components/shared/admin-pwa-register";
+import { setBrowserClientConfig } from "@/lib/supabase/client";
 
-export function AdminLayoutShell({ children }: { children: React.ReactNode }) {
+interface AdminLayoutShellProps {
+  children: React.ReactNode;
+  supabaseUrl?: string;
+  supabaseAnonKey?: string;
+}
+
+export function AdminLayoutShell({
+  children,
+  supabaseUrl,
+  supabaseAnonKey,
+}: AdminLayoutShellProps) {
   const [sidebarOpen, setSidebarOpen] = React.useState(false);
   const pathname = usePathname();
   const isLoginPage = pathname === "/admin/login";
+
+  React.useEffect(() => {
+    if (supabaseUrl && supabaseAnonKey) {
+      setBrowserClientConfig(supabaseUrl, supabaseAnonKey);
+    }
+  }, [supabaseUrl, supabaseAnonKey]);
 
   if (isLoginPage) {
     return (
@@ -25,7 +42,11 @@ export function AdminLayoutShell({ children }: { children: React.ReactNode }) {
       <AdminPwaRegister />
       <AdminSidebar isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
       <div className="flex flex-1 flex-col h-screen min-w-0 overflow-hidden">
-        <AdminHeader onMenuToggle={() => setSidebarOpen(true)} />
+        <AdminHeader
+          onMenuToggle={() => setSidebarOpen(true)}
+          supabaseUrl={supabaseUrl}
+          supabaseAnonKey={supabaseAnonKey}
+        />
         <main className="flex-1 overflow-y-auto p-4 sm:p-6 lg:p-8">
           {children}
         </main>

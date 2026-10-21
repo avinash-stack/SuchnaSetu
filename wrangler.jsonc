@@ -1,0 +1,18 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "suchnasetu",
+  "compatibility_date": "2024-09-23",
+  "compatibility_flags": [
+    "nodejs_compat"
+  ],
+  "vars": {
+    "NEXT_PUBLIC_SITE_URL": "https://suchnasetu.in",
+    "SITE_URL": "https://suchnasetu.in",
+    "NEXT_PUBLIC_APP_URL": "https://suchnasetu.in"
+    // Public Supabase configuration (NEXT_PUBLIC_SUPABASE_URL, NEXT_PUBLIC_SUPABASE_ANON_KEY)
+    // can be configured here or via Cloudflare Dashboard Variables.
+    // SECURITY NOTICE:
+    // SUPABASE_SERVICE_ROLE_KEY is a privileged secret and must NEVER be placed in wrangler.jsonc.
+    // Set it via: wrangler secret put SUPABASE_SERVICE_ROLE_KEY
+  }
+}

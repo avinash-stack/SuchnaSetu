@@ -30,6 +30,12 @@ export default function AdminLayout({
 }: {
   children: React.ReactNode;
 }) {
-  return <AdminLayoutShell>{children}</AdminLayoutShell>;
-}
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
 
+  return (
+    <AdminLayoutShell supabaseUrl={supabaseUrl} supabaseAnonKey={supabaseAnonKey}>
+      {children}
+    </AdminLayoutShell>
+  );
+}
