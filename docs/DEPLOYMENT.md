@@ -42,9 +42,36 @@ npm install
 # TypeScript Type Check
 npm run typecheck
 
-# Production Build
+# Standard Next.js Build
 npm run build
 
-# Start Production Server
-npm start
+# OpenNext Cloudflare Adapter Build
+npm run build:worker
+
+# Local Cloudflare Worker Preview
+npm run preview
+
+# Deploy to Cloudflare Workers
+npm run deploy
 ```
+
+---
+
+## 5. Cloudflare Dashboard Deployment Settings
+
+When connecting the repository to Cloudflare Workers Builds or Cloudflare Pages:
+
+- **Framework Preset**: `None` / `Custom`
+- **Build Command**: `npm run build:worker` (or `npx opennextjs-cloudflare build`)
+- **Deploy Command**: Automatic via Wrangler configuration (`wrangler.jsonc`)
+- **Build Output Directory**: `.open-next`
+- **Root Directory**: `/`
+- **Compatibility Date**: `2024-12-30` (or latest)
+- **Compatibility Flags**: `nodejs_compat`
+- **Environment Variables**:
+  - `NEXT_PUBLIC_APP_URL`: Canonical site URL (e.g. `https://suchnasetu.in`)
+  - `NEXT_PUBLIC_SITE_URL`: Canonical site URL
+  - `SITE_URL`: Canonical site URL
+  - `NEXT_PUBLIC_SUPABASE_URL`: Supabase project URL
+  - `NEXT_PUBLIC_SUPABASE_ANON_KEY`: Supabase anon key
+  - `SUPABASE_SERVICE_ROLE_KEY`: Add via Cloudflare Workers Secrets (`wrangler secret put SUPABASE_SERVICE_ROLE_KEY` or Dashboard Encrypted Secret). Never expose this key to browser bundles or in public config files.
