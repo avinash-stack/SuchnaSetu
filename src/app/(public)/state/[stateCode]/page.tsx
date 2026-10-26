@@ -25,13 +25,7 @@ interface StatePageProps {
   }>;
 }
 
-export const revalidate = 1800; // 30 minutes cache
-
-export async function generateStaticParams() {
-  return INDIAN_STATES.map((s) => ({
-    stateCode: s.code.toLowerCase(),
-  }));
-}
+export const dynamic = "force-dynamic";
 
 export async function generateMetadata({ params }: StatePageProps): Promise<Metadata> {
   const { stateCode } = await params;
