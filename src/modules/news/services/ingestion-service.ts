@@ -156,11 +156,21 @@ export async function syncSingleNewsSource(source: NewsSource): Promise<Ingestio
       }
     }
 
-    await updateSourceSyncStatus(source.id, {
-      lastSyncedAt: new Date().toISOString(),
-      lastError: null,
-      failureCount: 0,
-    });
+    // Distinguish successful fetch from database persistence failure
+    if (failedCount > 0 && insertedCount === 0 && duplicateCount === 0) {
+      errorMessage = `Database persistence failed for all ${failedCount} fetched articles`;
+      await updateSourceSyncStatus(source.id, {
+        lastSyncedAt: new Date().toISOString(),
+        lastError: errorMessage,
+        failureCount: (source.failure_count || 0) + 1,
+      });
+    } else {
+      await updateSourceSyncStatus(source.id, {
+        lastSyncedAt: new Date().toISOString(),
+        lastError: failedCount > 0 ? `${failedCount} articles failed persistence` : null,
+        failureCount: 0,
+      });
+    }
   } catch (err: any) {
     errorMessage = err.message || "Failed to fetch or parse news feed";
     console.error(`[News Ingestion Error on ${source.code}]:`, errorMessage);
@@ -173,8 +183,14 @@ export async function syncSingleNewsSource(source: NewsSource): Promise<Ingestio
   }
 
   const durationMs = Date.now() - startTime;
-  const status: "success" | "partial" | "failed" =
-    errorMessage && insertedCount === 0 ? "failed" : errorMessage ? "partial" : "success";
+  let status: "success" | "partial" | "failed";
+  if (errorMessage && insertedCount === 0 && duplicateCount === 0) {
+    status = "failed";
+  } else if (failedCount > 0 || errorMessage) {
+    status = "partial";
+  } else {
+    status = "success";
+  }
 
   await recordIngestionLog({
     sourceId: source.id?.startsWith("source-seed") ? null : source.id,

@@ -75,10 +75,10 @@ export function OperationsClient({
     setActionFeedback(null);
     try {
       const res = await retryFailedJobAction(jobId);
-      if (res.success && res.stats) {
+      if (res.success) {
         setActionFeedback({
           type: "success",
-          message: `Retry succeeded: Ingested ${res.stats.totalInserted}, Updated ${res.stats.totalUpdated}, Skipped ${res.stats.totalSkipped}.`,
+          message: res.message || "Retry job dispatched to GitHub Actions runner successfully.",
         });
         router.refresh();
       } else {

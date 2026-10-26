@@ -126,7 +126,11 @@ export function ManualSyncConsole() {
           {!syncState.isRunning && resp && (
             <div className="flex items-center gap-1.5 rounded-full bg-emerald-50 px-3 py-1 text-xs font-semibold text-emerald-700 border border-emerald-200">
               <CheckCircle2 className="h-3.5 w-3.5" />
-              <span>Last Execution Succeeded ({Math.round(resp.durationMs / 1000)}s)</span>
+              <span>
+                {resp.executionMode === "github_actions_runner"
+                  ? `Dispatched to GitHub Actions (${resp.workflow})`
+                  : `Last Execution Succeeded (${Math.round((resp.durationMs || 0) / 1000)}s)`}
+              </span>
             </div>
           )}
 
@@ -237,15 +241,38 @@ export function ManualSyncConsole() {
             <div className="flex items-center gap-2">
               <Sparkles className="h-4 w-4 text-amber-400" />
               <span className="text-xs font-bold uppercase tracking-wider text-slate-300">
-                Execution Telemetry Breakdown ({resp.type === "news" ? "News Pipeline" : "Batch Orchestrator"})
+                {resp.executionMode === "github_actions_runner"
+                  ? `GitHub Actions Runner Pipeline (${resp.workflow})`
+                  : `Execution Telemetry Breakdown (${resp.type === "news" ? "News Pipeline" : "Batch Orchestrator"})`}
               </span>
             </div>
             <span className="text-[11px] text-slate-400">
-              Completed at {new Date(resp.executedAt).toLocaleTimeString()} in {(resp.durationMs / 1000).toFixed(1)}s
+              {resp.dispatchedAt
+                ? `Dispatched at ${new Date(resp.dispatchedAt).toLocaleTimeString()}`
+                : `Completed at ${new Date(resp.executedAt).toLocaleTimeString()} in ${((resp.durationMs || 0) / 1000).toFixed(1)}s`}
             </span>
           </div>
 
-          {/* Metric Badges */}
+          {resp.executionMode === "github_actions_runner" && (
+            <div className="my-4 rounded-lg bg-slate-800/90 p-4 border border-slate-700">
+              <p className="text-xs text-slate-300 leading-relaxed mb-3">
+                {resp.message}
+              </p>
+              {resp.runUrl && (
+                <a
+                  href={resp.runUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-2 rounded-lg bg-blue-600 px-3.5 py-1.5 text-xs font-semibold text-white hover:bg-blue-500 transition-colors shadow-sm"
+                >
+                  <span>View Live Execution Logs on GitHub Actions &rarr;</span>
+                </a>
+              )}
+            </div>
+          )}
+
+          {/* Metric Badges (when summary data is returned) */}
+          {resp.summary && (
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 my-4">
             {resp.type === "news" ? (
               <>
@@ -291,6 +318,7 @@ export function ManualSyncConsole() {
               </>
             )}
           </div>
+          )}
 
           {/* Toggleable Details Drawer */}
           {resp.results && resp.results.length > 0 && (

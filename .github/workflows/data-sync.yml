@@ -10,6 +10,22 @@ on:
     - cron: '30 10 * * *'
   workflow_dispatch:
     inputs:
+      sync_type:
+        description: 'Type of synchronization'
+        required: false
+        default: 'full'
+        type: choice
+        options:
+          - full
+          - news
+          - jobs
+          - exams
+          - resources
+          - source
+      source_id:
+        description: 'Specific source ID or code (when sync_type is source)'
+        required: false
+        default: ''
       reason:
         description: 'Reason for manual sync trigger'
         required: false
@@ -21,7 +37,7 @@ concurrency:
 
 jobs:
   sync-data-sources:
-    name: Sync Jobs, Exams, News & Career Resources (GitHub Runner Execution)
+    name: Sync Ingestion Runner (GitHub Actions Execution)
     runs-on: ubuntu-latest
     timeout-minutes: 35
 
@@ -38,11 +54,13 @@ jobs:
       - name: Install Dependencies
         run: npm ci
 
-      - name: Execute Standalone Full Data Sync
+      - name: Execute Standalone Sync Runner
         env:
           NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL || secrets.SUPABASE_URL }}
           SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY || secrets.SUPABASE_KEY }}
           GROQ_API_KEY: ${{ secrets.GROQ_API_KEY }}
           CRON_SECRET: ${{ secrets.CRON_SECRET }}
+          SOURCE_ADAPTER_TIMEOUT_MS: 12000
+          STALE_JOB_THRESHOLD_MS: 2100000
           APP_URL: https://suchnasetu.in
-        run: node scripts/run-scheduled-sync.mjs full
+        run: node scripts/run-scheduled-sync.mjs "${{ inputs.sync_type || 'full' }}" "${{ inputs.source_id || '' }}"

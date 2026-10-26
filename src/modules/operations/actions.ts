@@ -3,16 +3,17 @@
 import { revalidatePath } from "next/cache";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { requireAdmin } from "@/lib/auth";
-import { IngestionPipelineEngine } from "@/modules/ingestion/core/pipeline";
 import { IngestionStats } from "@/modules/ingestion/types";
+import { dispatchGitHubSyncWorkflow } from "@/lib/github/dispatch";
+import { recoverStaleImportJobs, StaleJobRecoveryResult } from "@/modules/ingestion/core/recovery";
 
 /**
- * Server Action: Retries a previously failed import job.
+ * Server Action: Retries a previously failed import job via GitHub Actions runner.
  */
 export async function retryFailedJobAction(jobId: string): Promise<{
   success: boolean;
-  newJobId?: string;
-  stats?: IngestionStats;
+  message?: string;
+  runUrl?: string;
   error?: string;
 }> {
   try {
@@ -30,49 +31,34 @@ export async function retryFailedJobAction(jobId: string): Promise<{
     }
 
     const sourceId = previousJob.source_id;
+    const sourceName = previousJob.import_sources?.name || sourceId;
 
-    // 2. Spawn a new retry job
-    const { data: newJob, error: createError } = await (supabase.from("import_jobs") as any)
-      .insert({
-        source_id: sourceId,
-        trigger_type: "retry",
-        status: "running",
-        started_at: new Date().toISOString(),
-      })
-      .select("id")
-      .single();
+    // 2. Dispatch execution to GitHub Actions runner
+    const dispatchResult = await dispatchGitHubSyncWorkflow({
+      syncType: "source",
+      sourceId,
+      reason: `Retry triggered by ${admin.email || admin.id} for job ${jobId}`,
+    });
 
-    if (createError || !newJob) {
-      return { success: false, error: `Failed to spawn retry job: ${createError?.message}` };
-    }
-
-    const newJobId = newJob.id;
-
-    // 3. Execute Ingestion Pipeline
-    const pipeline = new IngestionPipelineEngine();
-    let stats: IngestionStats;
-
-    try {
-      stats = await pipeline.executeJob(newJobId);
-    } catch (execErr: any) {
+    if (!dispatchResult.success) {
       return {
         success: false,
-        newJobId,
-        error: execErr?.message || "Execution failed during pipeline retry",
+        error: dispatchResult.error,
       };
     }
 
-    // 4. Audit Log
+    // 3. Audit Log
     try {
       await (supabase.from("audit_logs") as any).insert({
         admin_id: admin.id,
         action: "RETRY_IMPORT_JOB",
         entity_type: "import_jobs",
-        entity_id: newJobId,
+        entity_id: jobId,
         metadata: {
           original_job_id: jobId,
           source_code: previousJob.import_sources?.code,
-          stats,
+          workflow: dispatchResult.workflow,
+          runUrl: dispatchResult.runUrl,
         },
       });
     } catch (auditErr) {
@@ -81,12 +67,11 @@ export async function retryFailedJobAction(jobId: string): Promise<{
 
     revalidatePath("/admin/operations");
     revalidatePath("/admin/sources");
-    revalidatePath("/jobs");
 
     return {
       success: true,
-      newJobId,
-      stats,
+      message: `Retry for "${sourceName}" dispatched to GitHub Actions runner.`,
+      runUrl: dispatchResult.runUrl,
     };
   } catch (err: any) {
     return {
@@ -94,6 +79,17 @@ export async function retryFailedJobAction(jobId: string): Promise<{
       error: err?.message || "Internal server error retrying job",
     };
   }
+}
+
+/**
+ * Server Action: Runs safe recovery of stale/orphaned jobs exceeding the 35m execution window.
+ */
+export async function recoverStaleJobsAction(): Promise<StaleJobRecoveryResult> {
+  await requireAdmin();
+  const result = await recoverStaleImportJobs();
+  revalidatePath("/admin/operations");
+  revalidatePath("/admin/sources");
+  return result;
 }
 
 /**

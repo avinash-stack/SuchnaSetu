@@ -92,17 +92,23 @@ function restoreTokens(text: string, tokenMap: Map<string, string>): string {
 /**
  * Translates a single text segment using Google Translate API with retry and backoff
  */
+let googleTranslateCooldownUntil = 0;
+
 async function translateSegmentWithRetry(
   text: string,
   targetLang: "hi" | "en",
   sourceLang: "en" | "hi" | "auto" = "en",
-  maxRetries = 3
+  maxRetries = 2
 ): Promise<string> {
   const trimmed = text.trim();
   if (!trimmed) return text;
 
   // Protect sensitive tokens (URLs, notification IDs, emails)
   const { protectedText, tokenMap } = protectTokens(trimmed);
+
+  if (Date.now() < googleTranslateCooldownUntil) {
+    return restoreTokens(protectedText, tokenMap);
+  }
 
   const endpoint = "https://translate.googleapis.com/translate_a/single";
   const params = new URLSearchParams();
@@ -144,12 +150,9 @@ async function translateSegmentWithRetry(
           }
         }
       } else if (res.status === 429) {
-        // Rate limit: back off exponentially
-        const retryAfter = res.headers.get("retry-after");
-        const backoffMs = retryAfter ? parseInt(retryAfter, 10) * 1000 : attempt * 1200;
-        console.warn(`[Google Translate Engine HTTP 429] Rate limit hit. Backing off ${backoffMs}ms (attempt ${attempt}/${maxRetries})`);
-        await new Promise((resolve) => setTimeout(resolve, backoffMs));
-        continue;
+        googleTranslateCooldownUntil = Date.now() + 60000;
+        console.warn("[Google Translate Engine HTTP 429] Rate limit hit. Entered 60s cooldown; falling back to original English.");
+        return restoreTokens(protectedText, tokenMap);
       } else {
         lastError = new Error(`HTTP ${res.status}: ${res.statusText}`);
       }

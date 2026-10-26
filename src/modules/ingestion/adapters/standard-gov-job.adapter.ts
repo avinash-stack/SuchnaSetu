@@ -75,15 +75,19 @@ export class StandardGovJobSourceAdapter extends BaseSourceAdapter<any, Canonica
 
     const extractedItems: CanonicalJobNoticeTemplate[] = [];
     let liveExtractionSucceeded = false;
+    const timeoutMs = process.env.SOURCE_ADAPTER_TIMEOUT_MS
+      ? parseInt(process.env.SOURCE_ADAPTER_TIMEOUT_MS, 10)
+      : 12000;
 
     try {
       const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 4000);
+      const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
 
       const endpoint = `${this.config.baseUrl}${this.config.recruitmentPath}`;
       const response = await fetch(endpoint, {
         method: "GET",
         signal: controller.signal,
+        redirect: "follow",
         headers: {
           "User-Agent":
             "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/128.0.0.0 Safari/537.36",
@@ -117,22 +121,28 @@ export class StandardGovJobSourceAdapter extends BaseSourceAdapter<any, Canonica
             );
           }
         }
+      } else {
+        await context.log(
+          "warn",
+          "extract",
+          `Government portal at ${endpoint} returned HTTP status ${response.status}: ${response.statusText}`
+        );
       }
     } catch (fetchErr: any) {
       await context.log(
         "warn",
         "extract",
-        `Live HTTP query to ${this.config.baseUrl} experienced network constraint: ${fetchErr?.message || "Timeout"}. Activating verified benchmark feed.`
+        `Live HTTP query to ${this.config.baseUrl} experienced network constraint after ${timeoutMs}ms: ${fetchErr?.message || "Timeout"}. Activating verified benchmark feed.`
       );
     }
 
-    // Load authentic active recruitment notices for this source
+    // Load authentic active recruitment notices for this source if live extraction produced 0 items
     if (!liveExtractionSucceeded || extractedItems.length === 0) {
       extractedItems.push(...this.config.canonicalNotices);
       await context.log(
         "info",
         "extract",
-        `Extracted ${extractedItems.length} active canonical recruitment notifications for ${this.config.organizationName}`
+        `Extracted ${extractedItems.length} active canonical benchmark recruitment notifications for ${this.config.organizationName} (Fallback: live sync not confirmed)`
       );
     }
 
@@ -147,6 +157,9 @@ export class StandardGovJobSourceAdapter extends BaseSourceAdapter<any, Canonica
       metadata: {
         source_code: this.config.key,
         total_extracted: extractedItems.length,
+        is_live_extraction: liveExtractionSucceeded,
+        is_canonical_fallback: !liveExtractionSucceeded,
+        live_items_count: liveExtractionSucceeded ? extractedItems.length : 0,
         authority: this.config.organizationName,
         jurisdiction: this.config.jurisdiction,
         state_code: this.config.stateCode,

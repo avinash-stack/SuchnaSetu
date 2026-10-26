@@ -40,5 +40,6 @@ jobs:
           SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY || secrets.SUPABASE_KEY }}
           GROQ_API_KEY: ${{ secrets.GROQ_API_KEY }}
           CRON_SECRET: ${{ secrets.CRON_SECRET }}
+          STALE_JOB_THRESHOLD_MS: 2100000
           APP_URL: https://suchnasetu.in
         run: node scripts/run-scheduled-sync.mjs news

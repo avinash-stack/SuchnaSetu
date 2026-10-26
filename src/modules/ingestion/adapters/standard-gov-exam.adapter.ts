@@ -74,15 +74,19 @@ export class StandardGovExamSourceAdapter extends BaseSourceAdapter<any, Canonic
     const items: RawItem<CanonicalExamNoticeTemplate>[] = [];
     const canonicalList = this.config.canonicalExams || [];
     let liveDiscoveredCount = 0;
+    const timeoutMs = process.env.SOURCE_ADAPTER_TIMEOUT_MS
+      ? parseInt(process.env.SOURCE_ADAPTER_TIMEOUT_MS, 10)
+      : 12000;
 
     try {
       const endpoint = `${this.config.baseUrl}${this.config.examinationPath}`;
       const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 8000);
+      const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
 
       const response = await fetch(endpoint, {
         method: "GET",
         signal: controller.signal,
+        redirect: "follow",
         headers: {
           "User-Agent":
             "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/128.0.0.0 Safari/537.36",
@@ -123,9 +127,19 @@ export class StandardGovExamSourceAdapter extends BaseSourceAdapter<any, Canonic
             }
           }
         }
+      } else {
+        await context.log(
+          "warn",
+          "extract",
+          `Examination portal returned HTTP status ${response.status}: ${response.statusText}`
+        );
       }
-    } catch {
-      // Graceful fallback to verified structured canonical calendar
+    } catch (fetchErr: any) {
+      await context.log(
+        "warn",
+        "extract",
+        `Live query to ${this.config.baseUrl} timed out/failed after ${timeoutMs}ms (${fetchErr?.message || "Timeout"}). Using structured canonical exam calendar.`
+      );
     }
 
     for (let idx = 0; idx < canonicalList.length; idx++) {
@@ -150,6 +164,16 @@ export class StandardGovExamSourceAdapter extends BaseSourceAdapter<any, Canonic
     return {
       items,
       hasMore: false,
+      metadata: {
+        source_code: this.config.key,
+        total_extracted: items.length,
+        is_live_extraction: liveDiscoveredCount > 0,
+        live_discovered_count: liveDiscoveredCount,
+        authority: this.config.organizationName,
+        jurisdiction: this.config.jurisdiction,
+        state_code: this.config.stateCode,
+        extracted_at: new Date().toISOString(),
+      },
     };
   }
 }

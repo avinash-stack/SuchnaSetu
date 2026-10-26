@@ -3,8 +3,9 @@ import path from "path";
 import { createAdminClient } from "../src/lib/supabase/admin";
 import { runNewsIngestionPipeline } from "../src/modules/news/services/ingestion-service";
 import { BatchOrchestrator } from "../src/modules/ingestion/core/batch-orchestrator";
+import { recoverStaleImportJobs } from "../src/modules/ingestion/core/recovery";
 
-// Load environment variables from .env.local if present and not already defined in process.env
+// 1. Load environment variables from .env.local if present and not already defined in process.env
 const envLocalPath = path.resolve(process.cwd(), ".env.local");
 if (fs.existsSync(envLocalPath)) {
   const envContent = fs.readFileSync(envLocalPath, "utf8");
@@ -31,15 +32,38 @@ if (process.env.SUPABASE_KEY && !process.env.SUPABASE_SERVICE_ROLE_KEY) {
   process.env.SUPABASE_SERVICE_ROLE_KEY = process.env.SUPABASE_KEY;
 }
 
+// 2. Mandatory environment validation: Fail-fast before any pipeline initialization
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || process.env.SUPABASE_URL;
+const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_KEY;
+
+if (
+  !supabaseUrl ||
+  !serviceRoleKey ||
+  supabaseUrl.includes("placeholder-project") ||
+  serviceRoleKey.includes("placeholder")
+) {
+  console.error("=================================================================");
+  console.error("❌ FATAL: Missing or Invalid Supabase Credentials");
+  console.error("   NEXT_PUBLIC_SUPABASE_URL (or SUPABASE_URL) and");
+  console.error("   SUPABASE_SERVICE_ROLE_KEY (or SUPABASE_KEY) are strictly required.");
+  console.error("   Ingestion cannot run without valid database persistence credentials.");
+  console.error("=================================================================");
+  process.exit(1);
+}
+
 const targetType = (process.argv[2] || "news").toLowerCase();
+const sourceIdentifier = process.argv[3]?.trim() || undefined;
 const appUrl = (process.env.APP_URL || process.env.NEXT_PUBLIC_SITE_URL || process.env.SITE_URL || "https://suchnasetu.in").replace(/\/+$/, "");
 const cronSecret = process.env.CRON_SECRET || "";
 
+function isUuid(str: string): boolean {
+  return /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(str);
+}
+
 /**
- * Triggers lightweight cache revalidation on Vercel after ingestion completes.
- * Note: This only revalidates ISR page caches (<100ms); it does NOT execute any scraping or ingestion compute.
+ * Triggers lightweight on-demand cache revalidation after ingestion completes.
  */
-async function triggerVercelRevalidate(paths?: string[]) {
+async function triggerCacheRevalidation(paths?: string[]) {
   if (!cronSecret) {
     console.log("ℹ️ No CRON_SECRET provided; skipping remote cache revalidation.");
     return;
@@ -58,20 +82,20 @@ async function triggerVercelRevalidate(paths?: string[]) {
       : `${appUrl}/api/revalidate?secret=${encodeURIComponent(cronSecret)}`;
 
     try {
-      console.log(`📡 Triggering Vercel cache revalidation: ${endpoint.replace(cronSecret, "***")}`);
+      console.log(`📡 Triggering cache revalidation: ${endpoint.replace(cronSecret, "***")}`);
       const res = await fetch(endpoint, {
         method: "POST",
         headers: {
-          "User-Agent": "SuchnaSetu-GitHubActions-SyncRunner/1.0",
+          "User-Agent": "SuchnaSetu-SyncRunner/1.0",
         },
       });
       if (res.ok) {
-        console.log(`✅ Vercel cache revalidation succeeded for ${p || "all primary hubs"}.`);
+        console.log(`✅ Cache revalidation succeeded for ${p || "all primary hubs"}.`);
       } else {
-        console.warn(`⚠️ Vercel revalidation returned HTTP ${res.status}`);
+        console.warn(`⚠️ Cache revalidation returned HTTP ${res.status}`);
       }
     } catch (err: any) {
-      console.warn("⚠️ Failed to trigger Vercel revalidation:", err?.message || err);
+      console.warn("⚠️ Failed to trigger cache revalidation:", err?.message || err);
     }
   }
 }
@@ -106,7 +130,7 @@ export async function runNewsSync() {
   console.log("=================================================================\n");
 
   if (summary.totalArticlesInserted > 0) {
-    await triggerVercelRevalidate(["/news", "/"]);
+    await triggerCacheRevalidation(["/news", "/"]);
   }
 
   return summary;
@@ -115,39 +139,86 @@ export async function runNewsSync() {
 /**
  * Jobs & Exams Ingestion execution directly on GitHub Actions runner.
  * Sequential bounded batches (batchSize: 4, safe per-source timeouts).
+ * Supports optional single-source targeting via sourceIdentifier.
  */
-export async function runJobsExamsSync() {
+export async function runJobsExamsSync(targetSource?: string) {
   console.log("=================================================================");
-  console.log("🚀 Starting Standalone Jobs & Exams Ingestion (GitHub Runner)");
+  console.log(`🚀 Starting Standalone Jobs & Exams Ingestion (GitHub Runner)`);
+  if (targetSource) {
+    console.log(`🎯 Targeted Source: ${targetSource}`);
+  }
   console.log(`⏰ Time: ${new Date().toISOString()}`);
   console.log("=================================================================\n");
 
-  const supabase = createAdminClient();
-
-  // Fetch all active and enabled sources
-  const { data: sources, error: sourcesError } = await (supabase.from("import_sources") as any)
-    .select("id, code, name, target_module, adapter_key, is_enabled")
-    .eq("is_enabled", true)
-    .order("target_module", { ascending: true })
-    .order("name", { ascending: true });
-
-  if (sourcesError || !sources || sources.length === 0) {
-    console.warn("⚠️ No enabled sources found to synchronize:", sourcesError?.message);
-    return null;
+  // Auto-recover any orphaned jobs before starting
+  try {
+    const recovery = await recoverStaleImportJobs();
+    if (recovery.recoveredCount > 0) {
+      console.log(`🧹 Auto-recovered ${recovery.recoveredCount} orphaned jobs before execution.`);
+    }
+  } catch (recErr: any) {
+    console.warn("⚠️ Stale job recovery notice:", recErr?.message);
   }
 
-  console.log(`Found ${sources.length} enabled sources to synchronize.`);
+  const supabase = createAdminClient();
 
-  // Use BatchOrchestrator with safe parameters for GitHub Actions environment (up to 20 mins)
+  // Query sources
+  let query = (supabase.from("import_sources") as any)
+    .select("id, code, name, target_module, adapter_key, is_enabled")
+    .eq("is_enabled", true);
+
+  if (targetSource) {
+    if (isUuid(targetSource)) {
+      query = query.eq("id", targetSource);
+    } else {
+      query = query.eq("code", targetSource);
+    }
+  } else {
+    query = query
+      .order("target_module", { ascending: true })
+      .order("name", { ascending: true });
+  }
+
+  const { data: sources, error: sourcesError } = await query;
+
+  if (sourcesError) {
+    console.error("❌ Database query error fetching import_sources:", sourcesError.message);
+    throw new Error(`Database error querying import_sources: ${sourcesError.message}`);
+  }
+
+  if (!sources || sources.length === 0) {
+    if (targetSource) {
+      console.error(`❌ Source "${targetSource}" not found or is disabled in import_sources.`);
+      throw new Error(`Source "${targetSource}" not found or is disabled.`);
+    }
+    console.warn("⚠️ No enabled sources found to synchronize.");
+    return {
+      totalSources: 0,
+      batchesTotal: 0,
+      batchesCompleted: 0,
+      successfulSources: 0,
+      failedSources: 0,
+      timedOutSources: 0,
+      summary: { totalExtracted: 0, totalNormalized: 0, totalInserted: 0, totalUpdated: 0, totalSkipped: 0, totalFailed: 0 },
+      overallDurationMs: 0,
+    };
+  }
+
+  console.log(`Found ${sources.length} enabled source(s) to synchronize.`);
+
+  const sourceTimeoutMs = process.env.SOURCE_ADAPTER_TIMEOUT_MS
+    ? parseInt(process.env.SOURCE_ADAPTER_TIMEOUT_MS, 10)
+    : 12000;
+
   const orchestrator = new BatchOrchestrator({
-    batchSize: 4,
-    sourceTimeoutMs: 12000,
+    batchSize: targetSource ? 1 : 4,
+    sourceTimeoutMs,
     maxFunctionDurationMs: 1200000, // 20 minutes runner budget
   });
 
   const syncSummary = await orchestrator.orchestrateSequentialSync(sources, {
     startBatchIndex: 0,
-    triggerType: "scheduled",
+    triggerType: targetSource ? "manual" : "scheduled",
   });
 
   console.log("\n=================================================================");
@@ -161,11 +232,13 @@ export async function runJobsExamsSync() {
   console.log(`- Total Extracted:         ${syncSummary.summary.totalExtracted}`);
   console.log(`- Total Inserted:          +${syncSummary.summary.totalInserted}`);
   console.log(`- Total Updated:           +${syncSummary.summary.totalUpdated}`);
+  console.log(`- Total Skipped:           ${syncSummary.summary.totalSkipped}`);
+  console.log(`- Total Failed:            ${syncSummary.summary.totalFailed}`);
   console.log(`- Overall Duration:        ${Math.round(syncSummary.overallDurationMs / 1000)}s`);
   console.log("=================================================================\n");
 
   if (syncSummary.summary.totalInserted > 0 || syncSummary.summary.totalUpdated > 0) {
-    await triggerVercelRevalidate(["/jobs", "/exams", "/sitemap.xml", "/"]);
+    await triggerCacheRevalidation(["/jobs", "/exams", "/sitemap.xml", "/"]);
   }
 
   return syncSummary;
@@ -217,7 +290,7 @@ export async function runResourcesSync() {
   const saveResult = await saveGeneratedResource(genResult.resource);
   if (saveResult.success) {
     console.log(`✅ Published to Supabase with ID: ${saveResult.id}`);
-    await triggerVercelRevalidate(["/resources", `/resources/${genResult.resource.slug}`, "/sitemap.xml"]);
+    await triggerCacheRevalidation(["/resources", `/resources/${genResult.resource.slug}`, "/sitemap.xml"]);
     return { success: true, id: saveResult.id, slug: genResult.resource.slug };
   } else {
     console.warn(`⚠️ Supabase save result (migration may need to be applied in Supabase dashboard):`, saveResult.error);
@@ -259,7 +332,7 @@ export async function runFullSync() {
   console.log("🏁 OVERALL FULL SYNCHRONIZATION RUN COMPLETE");
   console.log(`- Total Duration:       ${overallSec}s`);
   console.log(`- Jobs & Exams Sources: ${jobsSummary ? `${jobsSummary.successfulSources}/${jobsSummary.totalSources} succeeded` : "N/A"}`);
-  console.log(`- News Sources:         ${newsSummary.successfulSources}/${newsSummary.totalSources} succeeded`);
+  console.log(`- News Sources:         ${newsSummary ? `${newsSummary.successfulSources}/${newsSummary.totalSources} succeeded` : "N/A"}`);
   console.log(`- Career Resources:     ${resourcesSummary?.success ? "Generated & Saved" : "Skipped/Failed"}`);
   console.log("#################################################################\n");
 
@@ -284,6 +357,17 @@ async function main() {
       console.error("❌ Critical Failure: All jobs/exams sources failed in this execution run.");
       process.exit(1);
     }
+  } else if (targetType === "source") {
+    if (!sourceIdentifier) {
+      console.error("❌ Error: Missing required source identifier argument.");
+      console.error("   Usage: node scripts/run-scheduled-sync.mjs source <source_id_or_code>");
+      process.exit(1);
+    }
+    const summary = await runJobsExamsSync(sourceIdentifier);
+    if (summary && summary.totalSources > 0 && summary.successfulSources === 0) {
+      console.error(`❌ Critical Failure: Targeted source sync failed for "${sourceIdentifier}".`);
+      process.exit(1);
+    }
   } else if (targetType === "resources") {
     const result = await runResourcesSync();
     if (!result.success) {
@@ -292,13 +376,16 @@ async function main() {
   } else if (targetType === "full" || targetType === "all") {
     const result = await runFullSync();
     const jobsFailed = result.jobsSummary && result.jobsSummary.totalSources > 0 && result.jobsSummary.successfulSources === 0;
-    const newsFailed = result.newsSummary.totalSources > 0 && result.newsSummary.successfulSources === 0;
-    if (jobsFailed && newsFailed) {
-      console.error("❌ Critical Failure: Both Jobs/Exams and News ingestions completely failed.");
+    const newsFailed = result.newsSummary && result.newsSummary.totalSources > 0 && result.newsSummary.successfulSources === 0;
+
+    if (jobsFailed || newsFailed) {
+      console.error("❌ Critical Failure: Ingestion pipeline failure detected.");
+      if (jobsFailed) console.error("   - Jobs & Exams synchronization failed completely.");
+      if (newsFailed) console.error("   - News synchronization failed completely.");
       process.exit(1);
     }
   } else {
-    console.error(`❌ Unknown sync target: "${targetType}". Must be "news", "jobs", "exams", "resources", or "full".`);
+    console.error(`❌ Unknown sync target: "${targetType}". Must be "news", "jobs", "exams", "resources", "source", or "full".`);
     process.exit(1);
   }
 }

@@ -8,51 +8,55 @@ import { BatchOrchestrator } from "./core/batch-orchestrator";
 import { SourceAdapterRegistry } from "./core/registry";
 import { IngestionStats, ImportSource } from "./types";
 import { getSchedulerConfig } from "./config/scheduler.config";
+import { dispatchGitHubSyncWorkflow } from "@/lib/github/dispatch";
+import { recoverStaleImportJobs, getStaleThresholdMs } from "./core/recovery";
 
 /**
  * Checks whether an active sync job is currently running for a source.
- * Enforces timeout window to auto-clear stalled jobs.
+ * Uses a safe execution threshold (35m) matching GitHub Actions execution budget.
+ * Clears genuinely stale/interrupted jobs without terminating active runs.
  */
 export async function isSourceActivelyRunning(sourceId: string): Promise<boolean> {
   const supabase = createAdminClient();
-  const config = getSchedulerConfig();
-  // 60-second safety window for deadlock recovery
-  const timeoutWindowMs = 60 * 1000;
-  const cutoffTime = new Date(Date.now() - timeoutWindowMs).toISOString();
+  const thresholdMs = getStaleThresholdMs();
+  const cutoffTime = new Date(Date.now() - thresholdMs).toISOString();
 
-  // 1. Auto-clear stale jobs for this source older than cutoff window
-  try {
-    await (supabase.from("import_jobs") as any)
-      .update({
-        status: "failed",
-        completed_at: new Date().toISOString(),
-        error_message: "Job timed out and was cleared by scheduler deadlock recovery",
-      })
-      .eq("source_id", sourceId)
-      .eq("status", "running")
-      .lt("created_at", cutoffTime);
-  } catch (clearErr) {
-    console.error("Failed to clear stale running jobs:", clearErr);
+  // 1. Check for genuine active running job within threshold
+  const { data: runningJobs } = await (supabase.from("import_jobs") as any)
+    .select("id, created_at")
+    .eq("source_id", sourceId)
+    .eq("status", "running");
+
+  if (!runningJobs || runningJobs.length === 0) return false;
+
+  const genuinelyActive = runningJobs.some(
+    (j: any) => new Date(j.created_at).getTime() >= Date.now() - thresholdMs
+  );
+
+  // If there are orphaned/stale jobs, trigger recovery safely
+  const hasStale = runningJobs.some(
+    (j: any) => new Date(j.created_at).getTime() < Date.now() - thresholdMs
+  );
+  if (hasStale) {
+    recoverStaleImportJobs(thresholdMs).catch((e) =>
+      console.warn("[ACTIONS] Stale job recovery notice:", e?.message)
+    );
   }
 
-  // 2. Check for active running job within valid window
-  const { data: runningJobs } = await (supabase.from("import_jobs") as any)
-    .select("id")
-    .eq("source_id", sourceId)
-    .eq("status", "running")
-    .limit(1);
-
-  return Boolean(runningJobs && runningJobs.length > 0);
+  return genuinelyActive;
 }
 
 /**
- * Triggers a manual execution of an import job for a given source.
- * Prevents concurrent execution if a job is already in progress for this source.
+ * Triggers a manual synchronization of an import job for a given source.
+ * Dispatches execution to the GitHub Actions runner rather than running inside Cloudflare Workers.
  */
 export async function triggerImportJob(sourceId: string): Promise<{
   success: boolean;
   jobId?: string;
   stats?: IngestionStats;
+  message?: string;
+  runUrl?: string;
+  executionMode?: "github_actions_runner";
   error?: string;
 }> {
   try {
@@ -73,47 +77,30 @@ export async function triggerImportJob(sourceId: string): Promise<{
       return { success: false, error: `Import source "${source.name}" is currently disabled` };
     }
 
-    // 2. Concurrency Lock: Auto-clear stale running jobs and prevent concurrent sync
+    // 2. Concurrency Lock: Check if actively running within execution window
     const isRunning = await isSourceActivelyRunning(sourceId);
     if (isRunning) {
       return {
         success: false,
-        error: `A synchronization job is already running for "${source.name}". Concurrent execution is prevented.`,
+        error: `A synchronization run is currently active for "${source.name}". Concurrent execution is prevented.`,
       };
     }
 
-    // 3. Create Import Job Record with start timestamp
-    const { data: job, error: jobError } = await (supabase.from("import_jobs") as any)
-      .insert({
-        source_id: sourceId,
-        trigger_type: "manual",
-        status: "running",
-        started_at: new Date().toISOString(),
-      })
-      .select("id")
-      .single();
+    // 3. Dispatch execution to GitHub Actions runner
+    const dispatchResult = await dispatchGitHubSyncWorkflow({
+      syncType: "source",
+      sourceId: source.id,
+      reason: `Admin manual trigger for source: ${source.code} (${admin.email || admin.id})`,
+    });
 
-    if (jobError || !job) {
-      return { success: false, error: `Failed to create import job: ${jobError?.message}` };
-    }
-
-    const jobId = job.id;
-
-    // 4. Execute the Ingestion Pipeline
-    const pipeline = new IngestionPipelineEngine();
-    let stats: IngestionStats;
-
-    try {
-      stats = await pipeline.executeJob(jobId);
-    } catch (execErr: any) {
+    if (!dispatchResult.success) {
       return {
         success: false,
-        jobId,
-        error: execErr?.message || "Execution failed during ingestion pipeline processing",
+        error: dispatchResult.error,
       };
     }
 
-    // 5. Record Admin Audit Log
+    // 4. Record Admin Audit Log
     try {
       await (supabase.from("audit_logs") as any).insert({
         admin_id: admin.id,
@@ -121,28 +108,24 @@ export async function triggerImportJob(sourceId: string): Promise<{
         entity_type: "import_sources",
         entity_id: sourceId,
         metadata: {
-          job_id: jobId,
           source_code: source.code,
-          stats,
+          workflow: dispatchResult.workflow,
+          runUrl: dispatchResult.runUrl,
         },
       });
     } catch (auditErr) {
       console.warn("Failed to write audit log for import sync:", auditErr);
     }
 
-    // 6. Revalidate cache
+    // 5. Revalidate cache
     revalidatePath("/admin/sources");
     revalidatePath("/admin/operations");
-    revalidatePath("/jobs");
-    revalidatePath("/exams");
-    revalidatePath("/news");
-    revalidatePath("/sitemap.xml");
-    revalidatePath("/");
 
     return {
       success: true,
-      jobId,
-      stats,
+      executionMode: "github_actions_runner",
+      message: `Synchronization for "${source.name}" dispatched to GitHub Actions runner successfully.`,
+      runUrl: dispatchResult.runUrl,
     };
   } catch (err: any) {
     return {
@@ -190,13 +173,14 @@ async function runWithTimeout<T>(promise: Promise<T>, ms: number, fallback: T): 
 }
 
 /**
- * Executes a bulk synchronization across all enabled sources or specified IDs.
- * Utilizes Durable Sequential Batch Orchestration to prevent HTTP connection timeouts.
+ * Executes a bulk synchronization across all enabled sources.
+ * Dispatches execution to the GitHub Actions runner to avoid Cloudflare Worker CPU limits.
  */
 export async function bulkSyncSourcesAction(sourceIds?: string[]): Promise<{
   success: boolean;
   totalSynced: number;
   totalErrors: number;
+  message?: string;
   results: Array<{ sourceId: string; sourceCode: string; success: boolean; error?: string }>;
 }> {
   try {
@@ -204,7 +188,7 @@ export async function bulkSyncSourcesAction(sourceIds?: string[]): Promise<{
     const supabase = createAdminClient();
 
     let query = (supabase.from("import_sources") as any)
-      .select("*")
+      .select("id, code, name")
       .eq("is_enabled", true);
 
     if (sourceIds && sourceIds.length > 0) {
@@ -217,38 +201,39 @@ export async function bulkSyncSourcesAction(sourceIds?: string[]): Promise<{
         success: false,
         totalSynced: 0,
         totalErrors: 1,
+        message: "No enabled sources found to synchronize.",
         results: [],
       };
     }
 
-    // Execute via Durable Sequential Batch Orchestrator
-    const orchestrator = new BatchOrchestrator({
-      batchSize: 4,
-      sourceTimeoutMs: 10000,
-      maxFunctionDurationMs: 240000,
+    // Dispatch full sync workflow to GitHub Actions runner
+    const dispatchResult = await dispatchGitHubSyncWorkflow({
+      syncType: "full",
+      reason: `Bulk sync triggered for ${sources.length} sources`,
     });
 
-    const syncSummary = await orchestrator.orchestrateSequentialSync(sources as ImportSource[], {
-      triggerType: "manual",
-    });
+    if (!dispatchResult.success) {
+      return {
+        success: false,
+        totalSynced: 0,
+        totalErrors: sources.length,
+        message: dispatchResult.error || "Failed to dispatch workflow to GitHub Actions",
+        results: [],
+      };
+    }
 
     revalidatePath("/admin/sources");
     revalidatePath("/admin/operations");
-    revalidatePath("/jobs");
-    revalidatePath("/exams");
-    revalidatePath("/news");
-    revalidatePath("/sitemap.xml");
-    revalidatePath("/");
 
     return {
-      success: syncSummary.failedSources === 0 || syncSummary.successfulSources > 0,
-      totalSynced: syncSummary.successfulSources,
-      totalErrors: syncSummary.failedSources + syncSummary.timedOutSources,
-      results: syncSummary.results.map((r) => ({
-        sourceId: r.sourceId,
-        sourceCode: r.sourceCode,
-        success: r.status === "SUCCESS",
-        error: r.error,
+      success: true,
+      totalSynced: sources.length,
+      totalErrors: 0,
+      message: `Bulk synchronization dispatched to GitHub Actions runner (${dispatchResult.workflow}).`,
+      results: sources.map((s: any) => ({
+        sourceId: s.id,
+        sourceCode: s.code,
+        success: true,
       })),
     };
   } catch (err: any) {
@@ -256,6 +241,7 @@ export async function bulkSyncSourcesAction(sourceIds?: string[]): Promise<{
       success: false,
       totalSynced: 0,
       totalErrors: 1,
+      message: err?.message || "Internal server error dispatching bulk sync",
       results: [],
     };
   }
@@ -263,6 +249,7 @@ export async function bulkSyncSourcesAction(sourceIds?: string[]): Promise<{
 
 /**
  * Retrieves currently active running sync jobs.
+ * Excludes stale jobs older than 35m execution threshold.
  */
 export async function getActiveRunningJobsAction(): Promise<{
   success: boolean;
@@ -272,13 +259,12 @@ export async function getActiveRunningJobsAction(): Promise<{
   try {
     await requireAdmin();
     const supabase = createAdminClient();
-    const config = getSchedulerConfig();
-    const cutoffTime = new Date(Date.now() - config.jobTimeoutMinutes * 60 * 1000).toISOString();
+    const cutoffTime = new Date(Date.now() - getStaleThresholdMs()).toISOString();
 
     const { data: jobs, error } = await (supabase.from("import_jobs") as any)
       .select("id, source_id, started_at, trigger_type, import_sources(name, code)")
       .eq("status", "running")
-      .gt("started_at", cutoffTime);
+      .gt("created_at", cutoffTime);
 
     if (error) throw error;
 
@@ -293,6 +279,26 @@ export async function getActiveRunningJobsAction(): Promise<{
       success: false,
       runningJobSourceIds: [],
       runningJobs: [],
+    };
+  }
+}
+
+/**
+ * Server Action: Explicitly triggers recovery of stale/orphaned running jobs.
+ */
+export async function recoverStaleJobsAction() {
+  try {
+    await requireAdmin();
+    const result = await recoverStaleImportJobs();
+    revalidatePath("/admin/operations");
+    revalidatePath("/admin/sources");
+    return result;
+  } catch (err: any) {
+    return {
+      success: false,
+      recoveredCount: 0,
+      recoveredJobIds: [],
+      error: err?.message || "Failed to recover stale jobs",
     };
   }
 }

@@ -1,11 +1,10 @@
 #!/usr/bin/env node
 
 /**
- * SuchnaSetu Scheduled Ingestion Runner (Node / GitHub Actions Entry Point)
+ * SuchnaSetu Ingestion Runner (Node.js / GitHub Actions Entry Point)
  * 
- * Executes scheduled data synchronization directly on the GitHub Actions runner.
- * Bypasses Vercel serverless compute completely to eliminate function execution quotas
- * and Fluid Active CPU usage.
+ * Executes scheduled and dispatched data synchronization directly on the GitHub Actions runner.
+ * Offloads compute-heavy scraping and AI enrichment completely off Cloudflare Workers.
  */
 
 import { spawn } from "child_process";

@@ -21,19 +21,20 @@ export async function getEnabledNewsSources(): Promise<NewsSource[]> {
       .eq("is_enabled", true)
       .order("priority", { ascending: true });
 
-    if (error || !data || data.length === 0) {
-      return DEFAULT_NEWS_SOURCES.map((s, idx) => ({
-        ...s,
-        id: `source-seed-${idx + 1}`,
-      }));
+    if (error) {
+      console.error("❌ Failed to query enabled news sources from database:", error.message);
+      throw new Error(`Database error querying news_sources: ${error.message}`);
+    }
+
+    if (!data || data.length === 0) {
+      console.warn("⚠️ No enabled news sources found in database.");
+      return [];
     }
 
     return data as NewsSource[];
-  } catch {
-    return DEFAULT_NEWS_SOURCES.map((s, idx) => ({
-      ...s,
-      id: `source-seed-${idx + 1}`,
-    }));
+  } catch (err: any) {
+    console.error("❌ Critical error accessing news sources repository:", err.message);
+    throw err;
   }
 }
 

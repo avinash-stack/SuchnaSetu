@@ -38,6 +38,9 @@ import { ArticleContentExtractor } from "./article-content-extractor";
 import { NewsContentSynthesizer } from "./content-synthesizer";
 import { CategoryClassifier } from "./category-classifier";
 
+// In-memory rate-limit circuit-breaker: if Groq returns 429, skip subsequent requests for 60s
+let groqRateLimitCooldownUntil = 0;
+
 export async function enrichNewsArticleWithAi(
   payload: NormalizedNewsPayload
 ): Promise<EnrichedNewsMetadata> {
@@ -75,6 +78,11 @@ export async function enrichNewsArticleWithAi(
     aiStatus: "skipped",
     aiModel: null,
   };
+
+  // 1. Fast circuit-breaker check
+  if (Date.now() < groqRateLimitCooldownUntil) {
+    return defaultMetadata;
+  }
 
   const config = getAiConfig();
   if (!config.isEnabled || !config.apiKey) {
@@ -155,7 +163,8 @@ Respond with a single raw JSON object matching:
 
     if (!res.ok) {
       if (res.status === 429) {
-        console.warn("[News AI Enrichment HTTP 429] Groq rate limit reached; immediately using synthesized fallback metadata without blocking serverless runtime.");
+        groqRateLimitCooldownUntil = Date.now() + 60000; // 60-second cooldown
+        console.warn("[News AI Enrichment HTTP 429] Groq rate limit reached; entered 60s cooldown and using synthesized fallback metadata.");
       } else {
         console.warn(`[News AI Enrichment HTTP ${res.status}] using fallback metadata`);
       }
